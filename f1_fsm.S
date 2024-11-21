@@ -9,5 +9,5 @@ mloop:
 iloop:
     slli    a0, a0, 1
     ori     a0, a0, 0b1         # Shift left and replace the gap with a 1 (increment states)
-    beq     a0, a1, mloop       # if a0 != 1111 1111 (State 8) then reset to 0 
+    beq     a0, a1, mloop       # if a0 == 1111 1111 (State 8) then reset to 0 
     bne     a0, a1, iloop       # if a0 != 1111 1111 (State 8) then cycle through
