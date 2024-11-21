@@ -2,7 +2,6 @@
 .globl main
 # a0 is the current state
 main:
-    addi    t1, zero, 0x0        # a0 = 0         -  Value at State 0
     addi    a0, zero, 0x0        # a0 = 0         -  Value at State 0
     addi    a1, zero, 0b11111111 # a1 = 11111111  -  Value at State 8
 mloop:
