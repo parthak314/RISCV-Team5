@@ -28,47 +28,51 @@ module execute_top #(
 
 );
 
-    wire ZeroE;
-    wire [DATA_WIDTH-1:0] SrcBE;
+    wire                            zero_wire;
+    wire [DATA_WIDTH-1:0]           srcB_wire;
+    wire [DATA_WIDTH-1:0]           aluResult_wire;
+
+    assign PCSrcE = JumpE ^ (BranchE & zero_wire);
 
     alu alu_mod (
-        .ALUControl(),
-        .SrcA(),
-        .SrcB(),
-        .ALUResult()
+        .ALUControl(ALUControlE),
+        .SrcA(RD1E),
+        .SrcB(srcB_wire),
+        .ALUResult(aluResult_wire),
+        .EQ(zero_wire)
     );
 
     mux mux_SrcB (
-        .in0(),
-        .in1(),
-        .sel(),
-        .out()
+        .in0(RD2E),
+        .in1(ImmExtE),
+        .sel(ALUSrcE),
+        .out(srcB_wire)
     );
 
     adder adder_PC (
-        .in0(),
-        .in1(),
-        .out(),
+        .in0(PCE),
+        .in1(ImmExtE),
+        .out(PCTargetE)
     );
 
     execute_pipeline_regfile pipeline_reg (
         .clk()
 
-        .RegWrite_i(),
-        .ResultsSrc_i(),
-        .MemWrite_i(),
-        .ALUResult_i(),
-        .WriteData_i(),
-        .Rd_i(),
-        .PCPlus4_i(),
+        .RegWrite_i(RegWriteE),
+        .ResultsSrc_i(ResultsSrcE),
+        .MemWrite_i(MemWriteE),
+        .ALUResult_i(aluResult_wire),
+        .WriteData_i(RD2E),
+        .Rd_i(RdE),
+        .PCPlus4_i(PCPlus4E),
 
-        .RegWrite_o(),
-        .ResultsSrc_o(),
-        .MemWrite_o(),
-        .ALUResult_o(),
-        .WriteData_o(),
-        .Rd_o(),
-        .PCPlus4_o(),
-    )
+        .RegWrite_o(RegWriteM),
+        .ResultsSrc_o(ResultsSrcM),
+        .MemWrite_o(MemWriteM),
+        .ALUResult_o(ALUResultM),
+        .WriteData_o(WriteDataM),
+        .Rd_o(RdM),
+        .PCPlus4_o(PCPlus4M)
+    );
 
 endmodule

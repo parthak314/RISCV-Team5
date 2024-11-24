@@ -1,4 +1,4 @@
-module execute_pipeline_regfile # (
+module execute_pipeline_regfile #(
     parameter   DATA_WIDTH = 32
 ) (
     input logic                     clk,
