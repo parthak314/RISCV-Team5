@@ -1,4 +1,4 @@
-module adder # (
+module adder #(
     parameter DATA_WIDTH = 32
 ) (
     input   logic [DATA_WIDTH-1:0] in0,
