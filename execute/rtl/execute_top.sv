@@ -1,6 +1,7 @@
 module execute_top #(
     parameter DATA_WIDTH = 32
 ) (
+    input logic                     clk,
     input logic                     RegWriteE,
     input logic [1:0]               ResultsSrcE,
     input logic                     MemWriteE,
@@ -21,10 +22,10 @@ module execute_top #(
     output logic [DATA_WIDTH-1:0]   ALUResultM,
     output logic [DATA_WIDTH-1:0]   WriteDataM,
     output logic [4:0]              RdM,    
-    output logic                    PCPlus4M,
+    output logic [DATA_WIDTH-1:0]   PCPlus4M,
 
     output logic [DATA_WIDTH-1:0]   PCTargetE,  // not pipelined
-    output logic                    PCSrcE,     // not pipelined
+    output logic                    PCSrcE     // not pipelined
 
 );
 
@@ -56,7 +57,7 @@ module execute_top #(
     );
 
     execute_pipeline_regfile pipeline_reg (
-        .clk()
+        .clk(clk),
 
         .RegWrite_i(RegWriteE),
         .ResultsSrc_i(ResultsSrcE),
