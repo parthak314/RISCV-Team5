@@ -9,7 +9,7 @@ module execute_pipeline_regfile #(
     input logic [DATA_WIDTH-1:0]    ALUResult_i,
     input logic [DATA_WIDTH-1:0]    WriteData_i,
     input logic [4:0]               Rd_i,
-    input logic                     PCPlus4_i,
+    input logic [DATA_WIDTH-1:0]    PCPlus4_i,
     
     output logic                    RegWrite_o,
     output logic [1:0]              ResultsSrc_o,
@@ -17,7 +17,7 @@ module execute_pipeline_regfile #(
     output logic [DATA_WIDTH-1:0]   ALUResult_o,
     output logic [DATA_WIDTH-1:0]   WriteData_o,
     output logic [4:0]              Rd_o,
-    output logic                    PCPlus4_o,
+    output logic [DATA_WIDTH-1:0]   PCPlus4_o
 );
 
     always_ff @ (negedge clk) begin
