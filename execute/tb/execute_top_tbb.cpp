@@ -15,15 +15,15 @@ int main(int argc, char **argv, char **env)
     top->trace(tfp, 99);
     tfp->open("execute_top_tbb_waveform.vcd");
 
-    top->clk = 1;
+    top->clk = 0;
 
     top->ALUSrcE = 0;
-    top->ALUControlE = 1;
+    top->ALUControlE = 0b000;
     top->RD1E = 5;
     top->RD2E = 2;
 
 
-    for (simcyc = 0; simcyc < 10; simcyc++)
+    for (simcyc = 0; simcyc <= 2; simcyc++)
     {
         for (tick = 0; tick < 2; tick++)
         {
@@ -32,7 +32,7 @@ int main(int argc, char **argv, char **env)
             top->eval();
         }
 
-        std::cout << "ALUResultM: " << top->ALUResultM << std::endl;
+        std::cout << "ALUResultM register: " << top->ALUResultM << std::endl;
         
         if (Verilated::gotFinish())
             exit(0);
