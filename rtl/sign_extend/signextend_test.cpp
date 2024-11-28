@@ -58,20 +58,8 @@ TEST_F(SignExtensionTest, Jtype) {
     dut->instr = 0xff600313;   
     dut->ImmSrc = 0b100;
     evaluate();
-    std::cout << "\n------------------------------------------------\n";
-    std::cout << "Running Jtype\n";
-    std::cout << "instr: " << dut->instr << " | immSrc: " << dut->ImmSrc << " | immOp: " << dut->ImmOp << " | expected: " << 0xFFF803FB;
-    std::cout << "\n------------------------------------------------\n";
     EXPECT_EQ(dut->ImmOp, 0xFFF803FB); 
 }
-
-// TEST_F(SignExtensionTest, other) {
-//     dut->instr = 0x00000A;   
-//     dut->ImmSrc = 1;
-//     evaluate();
-//     EXPECT_EQ(dut->ImmOp, 0x0000000A); 
-// }
-
 
 int main(int argc, char **argv)
 {
