@@ -31,7 +31,7 @@ The `ImmSrc` is taken from the control unit which send the value of this as per 
 - Considering that there are 5 instructions `I-type`, `S-type`, `B-type`, `U-type`, `J-type`, we have 2<sup>3</sup> options - therefore requiring 3 bits for `ImmSrc` as shown below.
 
 | ImmSrc | Instruction Type |
-| ------ | ---------------- |
+| :------: | :----------------: |
 | `000`  | Immediate        |
 | `001`  | Store            |
 | `010`  | Branch           |
