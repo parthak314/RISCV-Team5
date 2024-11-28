@@ -68,9 +68,7 @@ protected:
     std::unique_ptr<VerilatedVcdC> tfp;
 };
 
-
-
-// test ADD with RA and RB
+// test all currently implemented ALU functions
 TEST_F(TestDut, testALU)
 {
     verifyALU(0, 0b000, 62, 97, 62+97); // ADD
@@ -88,6 +86,35 @@ TEST_F(TestDut, testALU)
     verifyALU(1, 0b100, 0b1111'0000, 0, 0b0010'0100); // XOR IMM
 }
 
+// verify PCSrc flag functions as intended
+TEST_F(TestDut, testPCSrc)
+{
+    // enable PCSrc if: JumpE = 1, OR (BranchE AND ZeroE) 
+    top->JumpE = 1;
+    top->BranchE = 0;
+    runSimulation();
+    EXPECT_EQ(top->PCSrcE, 1) << "Failed for JumpE test";
+
+
+    // imitate control unit BNE, where branch = 1, ALUSrc = 0, ALUControl = 0001 (subtraction)
+    // and we are branching if not EQ (i.e. if zero flag not true)
+
+    top->JumpE = 0;
+    top->BranchE = 1;
+    top->ALUSrcE = 0;
+    top->ALUControlE = 0b0001;
+    top->RD1E = 1;
+
+
+    top->RD2E = 1; // equal, expect no branch
+    runSimulation();
+    EXPECT_EQ(top->PCSrcE, 0) << "Failed for BNE testcase when equal";
+
+    top->RD2E = 2; // not equal, expect branch
+    runSimulation();
+    EXPECT_EQ(top->PCSrcE, 1) << "Failed for BNE test when not equal";
+
+}
 
 int main(int argc, char **argv)
 {
