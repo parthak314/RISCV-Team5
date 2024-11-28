@@ -30,17 +30,17 @@ module execute_top #(
 );
 
     wire                            zero_wire;
+    wire                            negative_wire;
     wire [DATA_WIDTH-1:0]           srcB_wire;
     wire [DATA_WIDTH-1:0]           aluResult_wire;
-
-    assign PCSrcE = JumpE ^ (BranchE & zero_wire);
 
     alu alu_mod (
         .ALUControl(ALUControlE),
         .SrcA(RD1E),
         .SrcB(srcB_wire),
         .ALUResult(aluResult_wire),
-        .EQ(zero_wire)
+        .ZeroFlag(zero_wire),
+        .NegativeFlag(negative_wire)
     );
 
     mux mux_SrcB (
@@ -54,6 +54,14 @@ module execute_top #(
         .in0(PCE),
         .in1(ImmExtE),
         .out(PCTargetE)
+    );
+
+    branch_logic branch_logic_mod (
+        .branch({2'b0, BranchE}), // change to just BranchE once implemented as 3-bit in control unit
+        .jump(JumpE),
+        .zero(zero_wire),
+        .negative(negative_wire),
+        .PCSrc(PCSrcE)
     );
 
     execute_pipeline_regfile pipeline_reg (

@@ -18,7 +18,8 @@ module alu #(
     input   logic [DATA_WIDTH-1:0]      SrcA,
     input   logic [DATA_WIDTH-1:0]      SrcB,
     output  logic [DATA_WIDTH-1:0]      ALUResult,
-    output  logic                       EQ
+    output  logic                       ZeroFlag,
+    output  logic                       NegativeFlag
 );
 
     always_comb begin
@@ -32,7 +33,8 @@ module alu #(
             default: ALUResult = 0;
         endcase
 
-        assign EQ = (SrcA == SrcB);
+        assign ZeroFlag = (ALUResult == 0);
+        assign NegativeFlag = (ALUResult[DATA_WIDTH-1] == 1); // negative if MSB = 1
     end
 
 endmodule
