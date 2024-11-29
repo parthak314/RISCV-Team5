@@ -11,7 +11,7 @@ logic [DATA_WIDTH-1:0] rom_array [32'h00000FFF:0]; // instruction ROM from 0xBFC
 
 initial begin
     $display("Loading rom.");
-    $readmemh("../rtl/program.hex", rom_array); 
+    $readmemh("./reference/pdf.hex", rom_array); 
 end;
 
     always_comb begin
