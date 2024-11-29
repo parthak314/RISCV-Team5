@@ -2,7 +2,7 @@ module datamem_top #(
     parameter DATA_WIDTH = 32 
 
 ) (
-    input logic [DATA_WIDTH-1:0] a, //Input address for data 
+    input logic [DATA_WIDTH-1:0]    a, //Input address for data 
     input logic [DATA_WIDTH-1:0]    wd, // Data to be written in
     input logic                     clk, // Allows for it to be clocked
     input logic                     we, // Wrte enable
