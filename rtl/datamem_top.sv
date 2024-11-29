@@ -1,4 +1,4 @@
-module datamem #(
+module datamem_top #(
     parameter DATA_WIDTH = 32 
 
 ) (
