@@ -71,19 +71,19 @@ protected:
 // test all currently implemented ALU functions
 TEST_F(TestDut, testALU)
 {
-    verifyALU(0, 0b000, 62, 97, 62+97); // ADD
-    verifyALU(0, 0b001, 45, 87, 45-87); // SUB
-    verifyALU(0, 0b010, 0b1111'0000, 0b1010'1010, 0b1010'0000); // AND
-    verifyALU(0, 0b011, 0b1111'0000, 0b1010'1010, 0b1111'1010); // OR
-    verifyALU(0, 0b100, 0b1111'0000, 0b1010'1010, 0b0101'1010); // XOR
+    verifyALU(0, 0b0000, 62, 97, 62+97); // ADD
+    verifyALU(0, 0b0001, 45, 87, 45-87); // SUB
+    verifyALU(0, 0b0010, 0b1111'0000, 0b1010'1010, 0b1010'0000); // AND
+    verifyALU(0, 0b0011, 0b1111'0000, 0b1010'1010, 0b1111'1010); // OR
+    verifyALU(0, 0b0100, 0b1111'0000, 0b1010'1010, 0b0101'1010); // XOR
 
     top->ImmExtE = 0b1101'0100; // decimal 212
 
-    verifyALU(1, 0b000, 69, 0, 69+212); // ADD IMM
-    verifyALU(1, 0b001, 69, 0, 69-212); // SUB IMM
-    verifyALU(1, 0b010, 0b1111'0000, 0, 0b1101'0000); // AND IMM
-    verifyALU(1, 0b011, 0b1111'0000, 0, 0b1111'0100); // OR IMM
-    verifyALU(1, 0b100, 0b1111'0000, 0, 0b0010'0100); // XOR IMM
+    verifyALU(1, 0b0000, 69, 0, 69+212); // ADD IMM
+    verifyALU(1, 0b0001, 69, 0, 69-212); // SUB IMM
+    verifyALU(1, 0b0010, 0b1111'0000, 0, 0b1101'0000); // AND IMM
+    verifyALU(1, 0b0011, 0b1111'0000, 0, 0b1111'0100); // OR IMM
+    verifyALU(1, 0b0100, 0b1111'0000, 0, 0b0010'0100); // XOR IMM
 }
 
 // verify PCSrc flag functions as intended
@@ -91,7 +91,7 @@ TEST_F(TestDut, testPCSrc)
 {
     // enable PCSrc if: JumpE = 1, OR (BranchE AND ZeroE) 
     top->JumpE = 1;
-    top->BranchE = 0;
+    top->BranchE = 0b000;
     runSimulation();
     EXPECT_EQ(top->PCSrcE, 1) << "Failed for JumpE test";
 
@@ -100,7 +100,7 @@ TEST_F(TestDut, testPCSrc)
     // and we are branching if not EQ (i.e. if zero flag not true)
 
     top->JumpE = 0;
-    top->BranchE = 1;
+    top->BranchE = 0b010;
     top->ALUSrcE = 0;
     top->ALUControlE = 0b0001;
     top->RD1E = 1;

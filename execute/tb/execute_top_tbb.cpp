@@ -18,7 +18,7 @@ int main(int argc, char **argv, char **env)
     top->clk = 0;
 
     top->ALUSrcE = 0;
-    top->ALUControlE = 0b000;
+    top->ALUControlE = 0b0000;
     top->RD1E = 5;
     top->RD2E = 2;
 

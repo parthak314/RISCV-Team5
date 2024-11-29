@@ -1,6 +1,7 @@
 rm -rf obj_dir/
 
-verilator   -Wall --cc --trace execute_top.sv adder.sv alu.sv execute_pipeline_regfile.sv mux.sv \
+verilator   -Wall --trace --cc *.sv \
+            -y . \
             --exe ../tb/verify_exe_top.cpp \
             --prefix "Vdut" \
             -o Vdut \
