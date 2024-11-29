@@ -3,7 +3,6 @@
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 #include <vector>
-#include <iostream>
 
 Vdut *top;
 VerilatedVcdC *tfp;
@@ -140,7 +139,6 @@ TEST_F(TestDut, FullTest)
     int i = branch;
     top->ImmOp = branch * NUM_BYTES;
     runSimulation();
-    std::cout << i << std::endl;
     EXPECT_EQ(top->Instr, GROUND_TRUTH[i]);
     
     // iterate once forward
