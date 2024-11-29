@@ -13,7 +13,7 @@ int main(int argc, char **argv, char **env)
     Verilated::traceEverOn(true);
     VerilatedVcdC *tfp = new VerilatedVcdC;
     top->trace(tfp, 99);
-    tfp->open("execute_top_tbb_waveform.vcd");
+    tfp->open("execute.vcd");
 
     top->clk = 0;
 

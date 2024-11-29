@@ -1,8 +1,8 @@
 rm -rf obj_dir/
 
-verilator   -Wall --trace --cc *.sv \
-            -y . \
-            --exe ../tb/verify_exe_top.cpp \
+verilator   -Wall --trace --cc ../rtl/execute_top.sv \
+            -y ../rtl/ \
+            --exe ./our_tests/execute_tb.cpp \
             --prefix "Vdut" \
             -o Vdut \
             -LDFLAGS "-lgtest -lgtest_main -lpthread" \

@@ -3,7 +3,7 @@ module fetch_top # (
 ) (
     input logic clk,
     input logic rst,
-    input logic PCsrc, // mux sel line: select PC + Imm if 1, else select PC + 4 (increment by 4 bytes)
+    input logic PCSrc, // mux sel line: select PC + Imm if 1, else select PC + 4 (increment by 4 bytes)
     input logic [DATA_WIDTH-1:0] ImmOp,
     output logic [DATA_WIDTH-1:0] Instr
 );
@@ -13,7 +13,7 @@ module fetch_top # (
     mux mux_pc (
         .in0 (PCPlus4),
         .in1 (PCTarget),
-        .sel (PCsrc),
+        .sel (PCSrc),
         .out (PCNext)
     );
 
