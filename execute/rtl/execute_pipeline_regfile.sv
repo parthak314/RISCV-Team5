@@ -36,6 +36,6 @@ endmodule
 
 /*
 TO REMOVE PIPELINING AND RETURN TO SINGLE-CYCLE:
-- remove/comment out clock variable (line 4)
-- change "always_ff @ (negedge clk)" -- to -> "always_comb" (line 24)
+- remove/comment out clock variable
+- change "always_ff @ (negedge clk)" -- to -> "always_comb"
 */

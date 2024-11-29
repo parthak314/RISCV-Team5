@@ -1,14 +1,14 @@
-typedef enum logic [2:0] {
-    ADD = 3'b000,
-    SUB = 3'b001,
-    AND = 3'b010,
-    OR  = 3'b011,
-    XOR = 3'b100
-    // SLL = // shift left logical
-    // SRL = // shift right logical
-    // SRA = // shift right arithmetic (msb extended)
-    // SLT = // set less than
-    // SLTU = // set less than unsigned (zero extended)
+typedef enum logic [3:0] {
+    ADD = 4'b0000,
+    SUB = 4'b0001,
+    AND = 4'b0010,
+    OR  = 4'b0011,
+    XOR = 4'b0100,
+    SLL = 4'b0101, // shift left logical
+    SRL = 4'b0110, // shift right logical
+    SRA = 4'b0111, // shift right arithmetic (msb extended)
+    SLT = 4'b1000, // set less than
+    SLTU = 4'b1001 // set less than unsigned (zero extended)
 } control_operation;
 
 module alu #(

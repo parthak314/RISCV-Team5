@@ -6,8 +6,8 @@ module execute_top #(
     input logic [1:0]               ResultsSrcE,
     input logic                     MemWriteE,
     input logic                     JumpE,
-    input logic                     BranchE,
-    input logic [2:0]               ALUControlE,
+    input logic [2:0]               BranchE,
+    input logic [3:0]               ALUControlE,
     input logic                     ALUSrcE,
     input logic [DATA_WIDTH-1:0]    RD1E,
     input logic [DATA_WIDTH-1:0]    RD2E,
@@ -57,14 +57,14 @@ module execute_top #(
     );
 
     branch_logic branch_logic_mod (
-        .branch({2'b0, BranchE}), // change to just BranchE once implemented as 3-bit in control unit
+        .branch(BranchE),
         .jump(JumpE),
         .zero(zero_wire),
         .negative(negative_wire),
         .PCSrc(PCSrcE)
     );
 
-    execute_pipeline_regfile pipeline_reg (
+    execute_pipeline_regfile execute_pipeline_reg (
         .clk(clk),
 
         .RegWrite_i(RegWriteE),
