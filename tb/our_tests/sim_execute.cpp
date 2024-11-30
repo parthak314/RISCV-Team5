@@ -17,10 +17,10 @@ int main(int argc, char **argv, char **env)
 
     top->clk = 0;
 
-    top->ALUSrcE = 0;
-    top->ALUControlE = 0b0000;
-    top->RD1E = 5;
-    top->RD2E = 2;
+    top->ALUSrc = 0;
+    top->ALUControl = 0b0000;
+    top->RD1 = 5;
+    top->RD2 = 2;
 
 
     for (simcyc = 0; simcyc <= 2; simcyc++)
@@ -32,7 +32,7 @@ int main(int argc, char **argv, char **env)
             top->eval();
         }
 
-        std::cout << "ALUResultM register: " << top->ALUResultM << std::endl;
+        std::cout << "ALUResultM register: " << top->ALUResult << std::endl;
         
         if (Verilated::gotFinish())
             exit(0);
