@@ -22,9 +22,9 @@ public:
 
     void initializeInputs()
     {
-        top->a = 0b1;
-        top->wd = 0b10;
-        top->we = 1;
+        top->a = 0;
+        top->wd = 0;
+        top->we = 0;
         top->clk = 0;
     }
 
@@ -50,6 +50,8 @@ public:
 TEST_F(TestDut, Readtest)
 {
     top->a = 1;
+    top->we = 1;
+    top->wd = 0b10;
     runSimulation();
     EXPECT_EQ(top->rd, 0b10);
 }
@@ -58,8 +60,16 @@ TEST_F(TestDut, Writetest)
 {
     top->a = 0b11;
     top->wd = 20;
+    top->we = 1;
     runSimulation();
     EXPECT_EQ(top->rd, 20);
+}
+
+TEST_F(TestDut, Loadtest)
+{
+    top->a = 0x00010003; 
+    runSimulation();
+    EXPECT_EQ(top->rd, 0x00000004);
 }
 
 int main(int argc, char **argv)
