@@ -1,32 +1,103 @@
 module control #(
 ) (
     input   logic   [6:0]   op, // opcode to define instruction type, last 7 bits of instr
-    input   logic   [2:0]   func3, // instruction defined under instr type
+    input   logic   [2:0]   funct3, // instruction defined under instr type
     input   logic           funct7, // 2nd MSB of instr
-    input   logic           zero, // to check if branch is equal
-    output  logic           PCsrc, 
-    output  logic           ResultSrc,
-    output  logic           MemWrite,
-    output  logic   [2:0]   ALUctrl,
-    output  logic           ALUSrc,
-    output  logic   [1:0]   ImmSrc,
-    output  logic           RegWrite
+    input   logic           zero, // flag for when 2 entities are equal
+    input   logic           negative, // flag for when a value is negative
+    output  logic           PCsrc, // imm vs pc + 4 for program counter increment
+    output  logic   [1:0]   ResultSrc, // data to store in register file, ALU result/data memory
+    output  logic           MemWrite, // write enable to data mem
+    output  logic   [3:0]   ALUcontrol, // controls the operation to perform in the ALU
+    output  logic           ALUSrc, // immediate vs register operand for ALU
+    output  logic   [2:0]   ImmSrc, // Type of sign extend performed based on instr type
+    output  logic           RegWrite // enable for when to write to a register
 );
-    logic   branch;
-    logic   ALUOp;
+
+    task get_ALU_control(
+        input   logic [6:0] op,
+        input   logic [2:0] funct3,
+        input   logic       funct7,
+        output  logic [3:0] ALUcontrol
+    );
+        begin
+            case (funct3)
+                3'd0: if (op = 7'b0010011) ALUcontrol = 4'b0000;
+                      else                 ALUcontrol = funct7 ? 4'b0001 : 4'b0000; // add | addi (funct7 = 0) or sub (funct7 = 1)
+                3'd1: ALUcontrol = 4'b0101; // sll | slli
+                3'd2: ALUcontrol = 4'b1000; // slt | slti
+                3'd3: ALUcontrol = 4'b1001; // sltu | sltiu
+                3'd4: ALUcontrol = 4'b0100; // xor | xori
+                3'd5: ALUcontrol = funct7 ? 4'b0110 : 4'b0111; // srl | slri (funct7 = 0) or sra | srai (funct7 = 1)
+                3'd6: ALUcontrol = 4'b0011; // or | ori
+                3'd7: ALUcontrol = 4'b0010; // and | andi
+                default: ALUcontrol = 4'b0000; // undefined
+            endcase
+        end
+    endtask
 
     always_comb begin
         case (op)
-            7'b0110011: begin end // R-type
-            7'b0010011: begin RegWrite = 1'b1; ImmSrc = 1'b1; ALUsrc = 1'b1; branch = 1'b0; ALUctrl = 3'b000; end // I-type
-            7'b0100011: begin end // S-type
-            7'b1100011: begin RegWrite = 1'b0; ImmSrc = 1'b1; ALUsrc = 1'b0; branch = 1'b1; ALUctrl = 3'b001; end // B-type
-            7'b1101111: begin end // J-type
-            7'b0110111: begin end // U-type (lui)
-            7'b0010111: begin end // U-type (auipc)
-            default: begin RegWrite = 1'b1; ImmSrc = 1'b0; ALUsrc = 1'b1; branch = 1'b0; ALUctrl = 3'b000; end
+            // R-type
+            7'b0110011: begin 
+                RegWrite = 1'b1; ALUSrc = 1'b0; MemWrite = 1'b0; ResultSrc = 2'b00; PCsrc = 1'b0;
+                get_ALU_control(op, funct3, funct7, ALUcontrol);
+            end
+
+            // I-type (ALU instructions)
+            7'b0010011: begin 
+                RegWrite = 1'b1; ImmSrc = 3'b000; MemWrite = 1'b0; ResultSrc = 2'b00; ALUSrc = 1'b1; PCsrc = 1'b0; 
+                get_ALU_control(op, funct3, funct7, ALUcontrol);
+            end
+
+            // I-type (loading)
+            7'b0000011: begin
+                RegWrite = 1'b1; ImmSrc = 3'b000; MemWrite = 1'b0; ALUSrc = 1'b1; ALUcontrol = 4'b0000; ResultSrc = 2'b01; PCsrc = 1'b0;
+            end
+
+            // I-type (jalr)
+            7'b1100111: begin
+                RegWrite = 1'b1; MemWrite = 1'b0; ImmSrc = 3'b000; ResultSrc = 2'b10; PCsrc = 1'b1; ALUcontrol = 4'b0000; ALUSrc = 1;
+            end
+
+            // S-type
+            7'b0100011: begin 
+                RegWrite = 1'b0; ImmSrc = 3'b001; ALUSrc = 1'b1; ALUcontrol = 4'b0000; MemWrite = 1'b1; PCsrc = 1'b0;
+            end
+
+            // B-type
+            7'b1100011: begin 
+                RegWrite = 1'b0; ImmSrc = 3'b010; ALUSrc = 1'b0; ALUcontrol = 3'b001; MemWrite = 1'b0;
+                case (funct3)
+                    3'b000: PCsrc = zero; ALUcontrol = 4'b0001;  // beq
+                    3'b001: PCsrc = ~zero; ALUcontrol = 4'b0001; // bne
+                    3'b100: PCsrc = (negative == 1'b1); ALUcontrol = 4'b1000; // blt 
+                    3'b101: PCsrc = (negative == 1'b0); ALUcontrol = 4'b1000; // bge
+                    3'b110: PCsrc = (negative == 1'b1); ALUcontrol = 4'b1001; // bltu
+                    3'b111: PCsrc = (negative == 1'b0); ALUcontrol = 4'b1001; // bgeu
+                    default: PCsrc = 1'b0; ALUcontrol = 4'b0000; // Default case
+                endcase
+            end
+
+             // J-type (jal)
+            7'b1101111: begin 
+                RegWrite = 1'b1; ImmSrc = 3'b011; MemWrite = 1'b0; ResultSrc = 2'b10; PCsrc = 1'b1;
+            end
+
+            // U-type (lui)
+            7'b0110111: begin 
+                RegWrite = 1'b1; ImmSrc = 3'b100; MemWrite = 1'b0; ResultSrc = 2'b11; PCsrc = 1'b0;
+            end
+
+            // U-type (auipc)
+            7'b0010111: begin 
+                RegWrite = 1'b1; ImmSrc = 3'b100; MemWrite = 1'b0; ResultSrc = 2'b00; PCsrc = 1'b0; ALUSrc = 1'b1; ALUcontrol = 4'b0000;
+            end
+
+            default: begin 
+                RegWrite = 1'b0; ImmSrc = 3'b000; MemWrite = 1'b0; ResultSrc = 2'b00; PCsrc = 1'b0; ALUSrc = 1'b0; ALUcontrol = 4'b0000; 
+                end
         endcase
-    PCsrc = branch && zero;
     end
 
 endmodule
