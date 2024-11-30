@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 
     Verilated::traceEverOn(true);
     top->trace(tfp, 99);
-    tfp->open("datamem.vcd");
+    tfp->open("memory.vcd");
 
     testing::InitGoogleTest(&argc, argv);
     auto res = RUN_ALL_TESTS();
