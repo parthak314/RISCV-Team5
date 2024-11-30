@@ -69,13 +69,13 @@ module control #(
             7'b1100011: begin 
                 RegWrite = 1'b0; ImmSrc = 3'b010; ALUSrc = 1'b0; ALUcontrol = 3'b001; MemWrite = 1'b0;
                 case (funct3)
-                    3'b000: PCsrc = zero; ALUcontrol = 4'b0001;  // beq
-                    3'b001: PCsrc = ~zero; ALUcontrol = 4'b0001; // bne
-                    3'b100: PCsrc = (negative == 1'b1); ALUcontrol = 4'b1000; // blt 
-                    3'b101: PCsrc = (negative == 1'b0); ALUcontrol = 4'b1000; // bge
-                    3'b110: PCsrc = (negative == 1'b1); ALUcontrol = 4'b1001; // bltu
-                    3'b111: PCsrc = (negative == 1'b0); ALUcontrol = 4'b1001; // bgeu
-                    default: PCsrc = 1'b0; ALUcontrol = 4'b0000; // Default case
+                    3'b000: PCsrc = zero; // beq
+                    3'b001: PCsrc = ~zero; // bne
+                    3'b100: PCsrc = negative; // blt 
+                    3'b101: PCsrc = ~negative; // bge
+                    3'b110: PCsrc = negative; // bltu
+                    3'b111: PCsrc = ~negative; // bgeu
+                    default: PCsrc = 1'b0; // Default case
                 endcase
             end
 
