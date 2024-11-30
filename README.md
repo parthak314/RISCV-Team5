@@ -13,7 +13,11 @@ Aubeeluck,Kevin
 
 ## Contribution Tables
 
-![alt text](image.png)
+### Single Cycle CPU
+![RISC-V 32I single cycle CPU implementation](images/single-cycle.jpg)
+
+### Pipelined CPU
+![alt text](images/pipelined.png)
 Fetch - Joel \
 Data - Partha\
 Execute - Clarke\
