@@ -15,6 +15,7 @@ module signextend #(
                 3'b100:    ImmOp = {{12{instr[31]}}, instr[31], instr[19:12], instr[20], instr[30:21]}; // J-type
                 default:    ImmOp = {{20{instr[31]}}, instr[31:20]};
             endcase
+        if (instr[6:0]) ;
     end
 
 endmodule
