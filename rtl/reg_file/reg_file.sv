@@ -1,4 +1,34 @@
-module reg_file (
+module regfile #(
+    parameter DATA_WIDTH = 32,
+    parameter ADDR_WIDTH = 5
+)(
+    input logic                  clk,        // clock
+    input logic                  reset,      // reset
+    input logic                  write_enable, // WE3 write enable signal (regwrite from cu)
+    input logic [ADDR_WIDTH-1:0] read_addr1, // A1 address for read port 1
+    input logic [ADDR_WIDTH-1:0] read_addr2, // A2 Address for read port 2
+    input logic [ADDR_WIDTH-1:0] write_addr, // A3 Address for write port
+    input logic [DATA_WIDTH-1:0] write_data, // Data to write
+    output logic [DATA_WIDTH-1:0] read_data1, // Output from read port 1
+    output logic [DATA_WIDTH-1:0] read_data2  // Output from read port 2
 );
-    
+
+    logic [DATA_WIDTH-1:0] registers [2**ADDR_WIDTH-1:0];
+
+    // Read operation (asynchronous reads)
+    assign read_data1 = registers[read_addr1];
+    assign read_data2 = registers[read_addr2];
+
+    // Write operation (synchronous write)
+    always_ff @(posedge clk or posedge reset) begin
+        if (reset) begin
+            for (int i = 1; i < 2**ADDR_WIDTH-1; i++) begin
+                registers[i] <= 0;
+            end
+        end
+        else if (write_enable && write_addr < 2**ADDR_WIDTH) begin
+            registers[write_addr] <= (write_addr == 5'b0) ? 32'b0 : write_data;
+        end
+    end
+
 endmodule
