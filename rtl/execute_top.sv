@@ -2,8 +2,6 @@ module execute_top #(
     parameter DATA_WIDTH = 32
 ) (
     input logic                     clk,
-    input logic                     JumpE,
-    input logic [2:0]               BranchE,
     input logic [3:0]               ALUControl,
     input logic                     ALUSrc,
     input logic [DATA_WIDTH-1:0]    RD1,
