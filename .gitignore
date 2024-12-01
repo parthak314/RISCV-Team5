@@ -1,0 +1,4 @@
+obj_dir/
+.vscode/
+*.bin
+*.vcd
