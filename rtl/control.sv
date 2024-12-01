@@ -1,17 +1,17 @@
 module control #(
 ) (
-    input   logic   [6:0]   op, // opcode to define instruction type, last 7 bits of instr
-    input   logic   [2:0]   funct3, // instruction defined under instr type
-    input   logic           funct7, // 2nd MSB of instr
-    input   logic           zero, // flag for when 2 entities are equal
-    input   logic           negative, // flag for when a value is negative
-    output  logic           PCsrc, // imm vs pc + 4 for program counter increment
-    output  logic   [1:0]   ResultSrc, // data to store in register file, ALU result/data memory
-    output  logic           MemWrite, // write enable to data mem
-    output  logic   [3:0]   ALUcontrol, // controls the operation to perform in the ALU
-    output  logic           ALUSrc, // immediate vs register operand for ALU
-    output  logic   [2:0]   ImmSrc, // Type of sign extend performed based on instr type
-    output  logic           RegWrite // enable for when to write to a register
+    input   logic   [6:0]   op,
+    input   logic   [2:0]   funct3,
+    input   logic           funct7, 
+    input   logic           zero, 
+    input   logic           negative, 
+    output  logic           PCsrc,
+    output  logic   [1:0]   ResultSrc,
+    output  logic           MemWrite,
+    output  logic   [3:0]   ALUcontrol, 
+    output  logic           ALUSrc,
+    output  logic   [2:0]   ImmSrc,
+    output  logic           RegWrite
 );
 
     task get_ALU_control(
@@ -23,7 +23,7 @@ module control #(
         begin
             case (funct_3)
                 3'd0: if (op_code == 7'b0010011) ALU_control = 4'b0000;
-                      else                 ALU_control = funct_7 ? 4'b0001 : 4'b0000; // add | addi (funct7 = 0) or sub (funct7 = 1)
+                      else                       ALU_control = funct_7 ? 4'b0001 : 4'b0000; // add | addi (funct7 = 0) or sub (funct7 = 1)
                 3'd1: ALU_control = 4'b0101; // sll | slli
                 3'd2: ALU_control = 4'b1000; // slt | slti
                 3'd3: ALU_control = 4'b1001; // sltu | sltiu

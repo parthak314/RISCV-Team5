@@ -34,6 +34,6 @@ module reg_file #(
         end
     end
 
-    assign a0 = registers[0];
+    assign a0 = registers[10];
 
 endmodule
