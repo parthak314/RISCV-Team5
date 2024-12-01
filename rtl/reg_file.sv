@@ -10,7 +10,8 @@ module reg_file #(
     input logic [ADDR_WIDTH-1:0] write_addr, // A3 Address for write port
     input logic [DATA_WIDTH-1:0] write_data, // Data to write
     output logic [DATA_WIDTH-1:0] read_data1, // Output from read port 1
-    output logic [DATA_WIDTH-1:0] read_data2  // Output from read port 2
+    output logic [DATA_WIDTH-1:0] read_data2,  // Output from read port 2
+    output logic [DATA_WIDTH-1:0] a0
 );
 
     logic [DATA_WIDTH-1:0] registers [2**ADDR_WIDTH-1:0];
@@ -32,5 +33,7 @@ module reg_file #(
             registers[write_addr] <= write_data;
         end
     end
+
+    assign a0 = registers[0];
 
 endmodule
