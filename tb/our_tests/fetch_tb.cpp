@@ -25,6 +25,7 @@ public:
     {
         top->clk = 0;
         top->rst = 0;
+        top->trigger = 0;
         top->PCSrc = 0;
         top->ImmOp = 5; // random value that will be obviously wrong if PCSrc is not working
     }
@@ -125,6 +126,31 @@ TEST_F(TestDut, BranchTest)
     }
 }
 
+// test that the fetch module correctly stalls with trigger
+TEST_F(TestDut, TriggerTest)
+{
+    runReset();
+    size_t length = GROUND_TRUTH.size();
+    int j = 0;
+    bool increment = true;
+    for (size_t i = 0; i < length; i++) {
+        EXPECT_EQ(top->Instr, GROUND_TRUTH[j]);
+        if (i == 5) {
+            top->trigger = 1;
+            increment = false;
+        }
+        else if (i == 8) {
+            top->trigger = 0;
+            increment = true;
+        }
+
+        if (increment) {
+            j += 1;
+        }
+        runSimulation();
+    }
+}
+
 // test that the fetch module resets, branches and iterates correctly
 // conditions: mix of everything 
 TEST_F(TestDut, FullTest)
@@ -133,10 +159,16 @@ TEST_F(TestDut, FullTest)
     runReset();
     EXPECT_EQ(top->Instr, GROUND_TRUTH[0]);
 
-    // branch forward by 14 instructions
+    // set immop to branch by 14 instructions, but stall with trigger
     int32_t branch = 14;
     top->PCSrc = 1;
+    top->trigger = 1;
+    runSimulation();
+    EXPECT_EQ(top->Instr, GROUND_TRUTH[0]);
+
+    // branch forward by 14 instructions
     int i = branch;
+    top->trigger = 0;
     top->ImmOp = branch * NUM_BYTES;
     runSimulation();
     EXPECT_EQ(top->Instr, GROUND_TRUTH[i]);

@@ -5,7 +5,7 @@ module control #(
     input   logic           funct7, // 2nd MSB of instr
     input   logic           zero, // flag for when 2 entities are equal
     input   logic           negative, // flag for when a value is negative
-    output  logic           PCsrc, // imm vs pc + 4 for program counter increment
+    output  logic           PCSrc, // imm vs pc + 4 for program counter increment
     output  logic   [1:0]   ResultSrc, // data to store in register file, ALU result/data memory
     output  logic           MemWrite, // write enable to data mem
     output  logic   [3:0]   ALUcontrol, // controls the operation to perform in the ALU
@@ -41,65 +41,65 @@ module control #(
         ImmSrc = 3'b000;
         MemWrite = 1'b0;
         ResultSrc = 2'b00;
-        PCsrc = 1'b0;
+        PCSrc = 1'b0;
         ALUSrc = 1'b0;
         ALUcontrol = 4'b0000;
 
         case (op)
             // R-type
             7'b0110011: begin 
-                RegWrite = 1'b1; ALUSrc = 1'b0; MemWrite = 1'b0; ResultSrc = 2'b00; PCsrc = 1'b0;
+                RegWrite = 1'b1; ALUSrc = 1'b0; MemWrite = 1'b0; ResultSrc = 2'b00; PCSrc = 1'b0;
                 get_ALU_control(op, funct3, funct7, ALUcontrol);
             end
 
             // I-type (ALU instructions)
             7'b0010011: begin 
-                RegWrite = 1'b1; ImmSrc = 3'b000; MemWrite = 1'b0; ResultSrc = 2'b00; ALUSrc = 1'b1; PCsrc = 1'b0; 
+                RegWrite = 1'b1; ImmSrc = 3'b000; MemWrite = 1'b0; ResultSrc = 2'b00; ALUSrc = 1'b1; PCSrc = 1'b0; 
                 get_ALU_control(op, funct3, funct7, ALUcontrol);
             end
 
             // I-type (loading)
             7'b0000011: begin
-                RegWrite = 1'b1; ImmSrc = 3'b000; MemWrite = 1'b0; ALUSrc = 1'b1; ALUcontrol = 4'b0000; ResultSrc = 2'b01; PCsrc = 1'b0;
+                RegWrite = 1'b1; ImmSrc = 3'b000; MemWrite = 1'b0; ALUSrc = 1'b1; ALUcontrol = 4'b0000; ResultSrc = 2'b01; PCSrc = 1'b0;
             end
 
             // I-type (jalr)
             7'b1100111: begin
-                RegWrite = 1'b1; MemWrite = 1'b0; ImmSrc = 3'b000; ResultSrc = 2'b10; PCsrc = 1'b1; ALUcontrol = 4'b0000; ALUSrc = 1;
+                RegWrite = 1'b1; MemWrite = 1'b0; ImmSrc = 3'b000; ResultSrc = 2'b10; PCSrc = 1'b1; ALUcontrol = 4'b0000; ALUSrc = 1;
             end
 
             // S-type
             7'b0100011: begin 
-                RegWrite = 1'b0; ImmSrc = 3'b001; ALUSrc = 1'b1; ALUcontrol = 4'b0000; MemWrite = 1'b1; PCsrc = 1'b0;
+                RegWrite = 1'b0; ImmSrc = 3'b001; ALUSrc = 1'b1; ALUcontrol = 4'b0000; MemWrite = 1'b1; PCSrc = 1'b0;
             end
 
             // B-type
             7'b1100011: begin 
                 RegWrite = 1'b0; ImmSrc = 3'b010; ALUSrc = 1'b0; ALUcontrol = 4'b0001; MemWrite = 1'b0;
                 case (funct3)
-                    3'b000: PCsrc = zero; // beq
-                    3'b001: PCsrc = ~zero; // bne
-                    3'b100: PCsrc = negative; // blt 
-                    3'b101: PCsrc = ~negative; // bge
-                    3'b110: PCsrc = negative; // bltu
-                    3'b111: PCsrc = ~negative; // bgeu
-                    default: PCsrc = 1'b0; // Default case
+                    3'b000: PCSrc = zero; // beq
+                    3'b001: PCSrc = ~zero; // bne
+                    3'b100: PCSrc = negative; // blt 
+                    3'b101: PCSrc = ~negative; // bge
+                    3'b110: PCSrc = negative; // bltu
+                    3'b111: PCSrc = ~negative; // bgeu
+                    default: PCSrc = 1'b0; // Default case
                 endcase
             end
 
              // J-type (jal)
             7'b1101111: begin 
-                RegWrite = 1'b1; ImmSrc = 3'b011; MemWrite = 1'b0; ResultSrc = 2'b10; PCsrc = 1'b1;
+                RegWrite = 1'b1; ImmSrc = 3'b011; MemWrite = 1'b0; ResultSrc = 2'b10; PCSrc = 1'b1;
             end
 
             // U-type (lui)
             7'b0110111: begin 
-                RegWrite = 1'b1; ImmSrc = 3'b100; MemWrite = 1'b0; ResultSrc = 2'b11; PCsrc = 1'b0;
+                RegWrite = 1'b1; ImmSrc = 3'b100; MemWrite = 1'b0; ResultSrc = 2'b11; PCSrc = 1'b0;
             end
 
             // U-type (auipc)
             7'b0010111: begin 
-                RegWrite = 1'b1; ImmSrc = 3'b100; MemWrite = 1'b0; ResultSrc = 2'b00; PCsrc = 1'b0; ALUSrc = 1'b1; ALUcontrol = 4'b0000;
+                RegWrite = 1'b1; ImmSrc = 3'b100; MemWrite = 1'b0; ResultSrc = 2'b00; PCSrc = 1'b0; ALUSrc = 1'b1; ALUcontrol = 4'b0000;
             end
 
             default: begin
