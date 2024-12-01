@@ -9,7 +9,6 @@ module top #(
 
 // Fetch Wires
 logic PCSrc;
-logic [DATA_WIDTH-1:0] ImmOp;
 logic [DATA_WIDTH-1:0] Instr;
 logic [DATA_WIDTH-1:0] PCPlus4;
 
@@ -31,7 +30,7 @@ fetch_top fetch_top_mod (
     .rst(rst),
     .trigger(trigger),
     .PCSrc(PCSrc),
-    .ImmOp(ImmOp),
+    .ImmExt(ImmExt),
     .Instr(Instr),
     .PCPlus4(PCPlus4)
 );
