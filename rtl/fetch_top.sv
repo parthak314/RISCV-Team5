@@ -5,7 +5,7 @@ module fetch_top # (
     input logic rst,
     input logic trigger, // needed for f1 fsm. Acts as an ~en input
     input logic PCSrc, // mux sel line: select PC + Imm if 1, else select PC + 4 (increment by 4 bytes)
-    input logic [DATA_WIDTH-1:0] ImmOp,
+    input logic [DATA_WIDTH-1:0] ImmExt,
     output logic [DATA_WIDTH-1:0] Instr,
     output logic [DATA_WIDTH-1:0] PCPlus4
 );
@@ -30,7 +30,7 @@ module fetch_top # (
 
     adder adder_branch_pc (
         .in0 (PC),
-        .in1 (ImmOp),
+        .in1 (ImmExt),
         .out (PCTarget)
     );
 
