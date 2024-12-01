@@ -43,7 +43,7 @@ int main(int argc, char **argv, char **env) {
     }
     
     top->trigger = vbdFlag();
-    vbdBar(top->a0 ^ 0xFF);
+    vbdBar(top->a0 & 0xFF);
     vbdCycle(simcyc);
 
     // either simulation finished, or 'q' is pressed
