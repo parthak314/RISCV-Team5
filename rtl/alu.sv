@@ -29,11 +29,11 @@ module alu #(
             AND:    ALUResult = SrcA & SrcB;
             OR:     ALUResult = SrcA | SrcB;
             XOR:    ALUResult = SrcA ^ SrcB;
-            SLL:    ALUResult = rs1 << rs2;
-            SRL:    ALUResult = rs1 >> rs2;
-            SRA:    ALUResult = rs1 >>> rs2;
-            SLT:    ALUResult = (rs1 < rs2) ? 1'b1 : 1'b0;
-            SLTU:   ALUResult = ($signed(rs1) < $signed(rs2)) ? 1'b1 : 1'b0;
+            SLL:    ALUResult = SrcA << SrcB;
+            SRL:    ALUResult = SrcA >> SrcB;
+            SRA:    ALUResult = SrcA >>> SrcB;
+            SLT:    ALUResult = (SrcA < SrcB) ? 1'b1 : 1'b0;
+            SLTU:   ALUResult = ($signed(SrcA) < $signed(SrcB)) ? 1'b1 : 1'b0;
             default: ALUResult = 0;
         endcase
 
