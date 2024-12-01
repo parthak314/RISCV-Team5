@@ -7,7 +7,7 @@ module data_top #(
     input   logic   [DATA_WIDTH-1:0]  result,
     input   logic                     zero,
     input   logic                     negative,
-    output  logic                     PCSrc,
+    output  logic   [1:0]             PCSrc,
     output  logic   [1:0]             ResultSrc,
     output  logic                     MemWrite,
     output  logic   [3:0]             ALUControl,

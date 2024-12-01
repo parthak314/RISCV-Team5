@@ -8,7 +8,7 @@ module top #(
 );
 
 // Fetch Wires
-logic PCSrc;
+logic [1:0] PCSrc;
 logic [DATA_WIDTH-1:0] Instr;
 logic [DATA_WIDTH-1:0] PCPlus4;
 
@@ -28,6 +28,7 @@ logic [DATA_WIDTH-1:0] ALUResult;
 fetch_top fetch_top_mod (
     .clk(clk),
     .rst(rst),
+    .Result(Result),
     .trigger(trigger),
     .PCSrc(PCSrc),
     .ImmExt(ImmExt),
