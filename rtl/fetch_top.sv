@@ -4,17 +4,20 @@ module fetch_top # (
     input logic clk,
     input logic rst,
     input logic trigger, // needed for f1 fsm. Acts as an ~en input
-    input logic PCSrc, // mux sel line: select PC + Imm if 1, else select PC + 4 (increment by 4 bytes)
-    input logic [DATA_WIDTH-1:0] ImmExt,
-    output logic [DATA_WIDTH-1:0] Instr,
+    input logic [1:0] PCSrc, // mux sel line: 0 = pc + 4, 1 = branch (pc + imm), 2 = jump (from aluresult)
+    input logic [DATA_WIDTH-1:0] Result, // result from ALU
+    input logic [DATA_WIDTH-1:0] ImmExt, // output of extended imm
+    output logic [DATA_WIDTH-1:0] Instr, // output instruction from instr_mem
     output logic [DATA_WIDTH-1:0] PCPlus4
 );
 
     logic [DATA_WIDTH-1:0] PCTarget, PCNext, PC, PCTrigger;
 
-    mux mux_pc (
+    mux_4x2 mux_pc (
         .in0 (PCPlus4),
         .in1 (PCTarget),
+        .in2 (Result),
+        .in3(0), // spare mux position. Not implemented, but can be used for PC reset
         .sel (PCSrc),
         .out (PCNext)
     );
