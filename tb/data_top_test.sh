@@ -4,11 +4,12 @@
 rm -rf obj_dir
 
 # Translate Verilog -> C++ including all required source files
-verilator -Wall --trace \
-          -cc ../rtl/data_top.sv ../rtl/control.sv ../rtl/reg_file.sv ../rtl/signextend.sv \
-          --exe ../our_tests/data_top_test_tb.cpp \
-          -o Vdata_top \
-          -LDFLAGS "-lgtest -lgtest_main -lpthread"
+verilator   -Wall -cc --trace \
+            ../rtl/data_top.sv \
+            --exe ../our_tests/data_top_test_tb.cpp \
+            -y ../rtl/ \
+            --prefix "Vdut" \
+            -o Vdut -LDFLAGS "-lgtest -lgtest_main -lpthread"
 
 # Check if compilation was successful
 if [ $? -ne 0 ]; then
