@@ -1,14 +1,18 @@
+#include <utility>
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 #include "Vdut.h"
+#include "../tests/cpu_testbench.h"
 #include "vbuddy.cpp"     // include vbuddy code
 
 #define MAX_SIM_CYC 1000000
 
-
 int main(int argc, char **argv, char **env) {
   int simcyc;     // simulation clock count
   int tick;       // each clk cycle has two ticks for two edges
+
+  std::ignore = system("./assemble.sh asm/f1_fsm.s");
+  std::ignore = system("touch data.hex");
 
   Verilated::commandArgs(argc, argv);
   // init top verilog instance
@@ -44,10 +48,15 @@ int main(int argc, char **argv, char **env) {
 
     // either simulation finished, or 'q' is pressed
     if ((Verilated::gotFinish()) || (vbdGetkey()=='q')) 
-      exit(0);                // ... exit if finish OR 'q' pressed
+      break;                // ... exit if finish OR 'q' pressed
   }
 
   vbdClose();     // ++++
   tfp->close(); 
+  
+  // Remove program.hex and data.hex
+
+  std::ignore = system("rm -f program.hex data.hex");
+
   exit(0);
 }
