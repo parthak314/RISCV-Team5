@@ -1,20 +1,21 @@
 module data_top #(
-    parameter D_WIDTH = 32
+    parameter DATA_WIDTH = 32
 )(
-    input   logic   [D_WIDTH-1:0]  instr,
-    input   logic                  rst,
-    input   logic                  clk,
-    input   logic   [D_WIDTH-1:0]  result,
-    input   logic                  zero,
-    input   logic                  negative,
-    output  logic                  PCsrc,
-    output  logic   [1:0]          ResultSrc,
-    output  logic                  MemWrite,
-    output  logic   [3:0]          ALUcontrol,
-    output  logic                  ALUSrc,
-    output  logic   [D_WIDTH-1:0]  rd1,
-    output  logic   [D_WIDTH-1:0]  rd2,
-    output  logic   [D_WIDTH-1:0]  ImmExt    
+    input   logic   [DATA_WIDTH-1:0]  instr,
+    input   logic                     rst,
+    input   logic                     clk,
+    input   logic   [DATA_WIDTH-1:0]  result,
+    input   logic                     zero,
+    input   logic                     negative,
+    output  logic                     PCsrc,
+    output  logic   [1:0]             ResultSrc,
+    output  logic                     MemWrite,
+    output  logic   [3:0]             ALUcontrol,
+    output  logic                     ALUSrc,
+    output  logic   [DATA_WIDTH-1:0]  rd1,
+    output  logic   [DATA_WIDTH-1:0]  rd2,
+    output  logic   [DATA_WIDTH-1:0]  ImmExt, 
+    output  logic   [DATA_WIDTH-1:0]  a0  
 );
 
     logic           RegWrite;
@@ -44,7 +45,8 @@ reg_file register_file (
     .write_addr     (instr[11:7]),
     .write_data     (result),
     .read_data1     (rd1),
-    .read_data2     (rd2)
+    .read_data2     (rd2),
+    .a0             (a0)
 );
 
 signextend sign_extension (
