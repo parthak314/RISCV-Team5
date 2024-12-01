@@ -1,4 +1,6 @@
 #include <utility>
+#include <csignal>
+#include <iostream>
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 #include "Vdut.h"
@@ -7,12 +9,21 @@
 
 #define MAX_SIM_CYC 1000000
 
+// remove hex files on ctrl + c
+void end_program(int signum) {
+  std::cout << "\nShutting down..." << std::endl;
+  std::ignore = system("rm -f program.hex data.hex");
+  exit(signum);
+}
+
 int main(int argc, char **argv, char **env) {
   int simcyc;     // simulation clock count
   int tick;       // each clk cycle has two ticks for two edges
 
   std::ignore = system("./assemble.sh asm/f1_fsm.s");
   std::ignore = system("touch data.hex");
+
+  signal(SIGINT, end_program); // detect ctrl + c
 
   Verilated::commandArgs(argc, argv);
   // init top verilog instance
@@ -55,7 +66,6 @@ int main(int argc, char **argv, char **env) {
   tfp->close(); 
   
   // Remove program.hex and data.hex
-
   std::ignore = system("rm -f program.hex data.hex");
 
   exit(0);
