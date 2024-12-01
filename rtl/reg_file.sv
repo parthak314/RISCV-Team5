@@ -21,7 +21,7 @@ module reg_file #(
     assign read_data2 = registers[read_addr2];
 
     // Write operation (synchronous write)
-    always_ff @(posedge clk or posedge reset) begin
+    always_ff @(posedge clk) begin
         if (reset) begin
             // Reset all registers, including register 0
             for (int i = 0; i < 2**ADDR_WIDTH; i++) begin
