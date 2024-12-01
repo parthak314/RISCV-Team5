@@ -2,13 +2,13 @@
 
 # Translate Verilog -> C++ including testbench
 verilator -Wall --trace \
-          -cc control.sv \
-          --exe control_test_tb.cpp \
-          -o Vcontrol \
+          -cc ../../rtl/reg_file.sv \
+          --exe ../tests/reg_file_test_tb.cpp \
+          -o Vreg_file \
           -LDFLAGS "-lgtest -lgtest_main -lpthread"
 
 # Build C++ project with automatically generated Makefile
-make -j -C obj_dir/ -f Vcontrol.mk
+make -j -C obj_dir/ -f Vreg_file.mk
 
 # Run executable simulation file
-./obj_dir/Vcontrol
+./obj_dir/Vreg_file
