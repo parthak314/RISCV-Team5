@@ -1,4 +1,4 @@
-module regfile #(
+module reg_file #( 
     parameter DATA_WIDTH = 32,
     parameter ADDR_WIDTH = 5
 )(
@@ -22,12 +22,14 @@ module regfile #(
     // Write operation (synchronous write)
     always_ff @(posedge clk or posedge reset) begin
         if (reset) begin
-            for (int i = 1; i < 2**ADDR_WIDTH-1; i++) begin
+            // Reset all registers, including register 0
+            for (int i = 0; i < 2**ADDR_WIDTH; i++) begin
                 registers[i] <= 0;
             end
         end
-        else if (write_enable && write_addr < 2**ADDR_WIDTH) begin
-            registers[write_addr] <= (write_addr == 5'b0) ? 32'b0 : write_data;
+        else if (write_enable && write_addr != 5'b0) begin
+            // Don't write to register 0
+            registers[write_addr] <= write_data;
         end
     end
 
