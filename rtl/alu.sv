@@ -32,8 +32,8 @@ module alu #(
             SLL:    ALUResult = SrcA << SrcB;
             SRL:    ALUResult = SrcA >> SrcB;
             SRA:    ALUResult = SrcA >>> SrcB;
-            SLT:    ALUResult = (SrcA < SrcB) ? 1'b1 : 1'b0;
-            SLTU:   ALUResult = ($signed(SrcA) < $signed(SrcB)) ? 1'b1 : 1'b0;
+            SLT:    ALUResult = (SrcA < SrcB) ? {31'b0, 1'b1} : 32'b0;
+            SLTU:   ALUResult = ($signed(SrcA) < $signed(SrcB)) ? {31'b0, 1'b1} : 32'b0;
             default: ALUResult = 0;
         endcase
 
