@@ -42,7 +42,7 @@ int main(int argc, char **argv, char **env) {
       top->eval ();
     }
     
-    top->trigger = vbdFlag();
+    top->trigger = vbdFlag(); // toggle trigger with rotary push button
     vbdBar(top->a0 & 0xFF);
     vbdCycle(simcyc);
 
