@@ -13,7 +13,7 @@ logic [DATA_WIDTH-1:0] ram_array [32'h0001FFFF:0]; //I'm not using 2**ADDRESS_WI
 
 initial begin
     $display("Loading ram");
-    $readmemh("./reference/triangle.mem", ram_array, 32'h00010000); 
+    $readmemh("data.hex", ram_array, 32'h00010000); 
 end;
 
 always_comb begin
