@@ -1,0 +1,58 @@
+
+a.out.reloc:     file format elf32-littleriscv
+architecture: riscv:rv32, flags 0x00000112:
+EXEC_P, HAS_SYMS, D_PAGED
+start address 0xbfc00000
+
+
+Disassembly of section .text:
+
+bfc00000 <main>:
+bfc00000:	010000ef          	jal	ra,bfc00010 <init>
+bfc00004:	020000ef          	jal	ra,bfc00024 <build>
+bfc00008:	050000ef          	jal	ra,bfc00058 <display>
+bfc0000c:	06c0006f          	j	bfc00078 <finish>
+
+bfc00010 <init>:
+bfc00010:	10000593          	li	a1,256
+
+bfc00014 <_loop1>:
+bfc00014:	fff58593          	addi	a1,a1,-1
+bfc00018:	10058023          	sb	zero,256(a1)
+bfc0001c:	fe059ce3          	bnez	a1,bfc00014 <_loop1>
+bfc00020:	00008067          	ret
+
+bfc00024 <build>:
+bfc00024:	000105b7          	lui	a1,0x10
+bfc00028:	00000613          	li	a2,0
+bfc0002c:	10000693          	li	a3,256
+bfc00030:	0c800713          	li	a4,200
+
+bfc00034 <_loop2>:
+bfc00034:	00c587b3          	add	a5,a1,a2
+bfc00038:	0007c283          	lbu	t0,0(a5)
+bfc0003c:	00d28833          	add	a6,t0,a3
+bfc00040:	00084303          	lbu	t1,0(a6)
+bfc00044:	00130313          	addi	t1,t1,1
+bfc00048:	00680023          	sb	t1,0(a6)
+bfc0004c:	00160613          	addi	a2,a2,1
+bfc00050:	fee312e3          	bne	t1,a4,bfc00034 <_loop2>
+bfc00054:	00008067          	ret
+
+bfc00058 <display>:
+bfc00058:	00000493          	li	s1,0
+bfc0005c:	00000593          	li	a1,0
+bfc00060:	0ff00613          	li	a2,255
+
+bfc00064 <_loop3>:
+bfc00064:	1005c503          	lbu	a0,256(a1) # 10100 <base_data+0x100>
+bfc00068:	00a484b3          	add	s1,s1,a0
+bfc0006c:	00158593          	addi	a1,a1,1
+bfc00070:	fec59ae3          	bne	a1,a2,bfc00064 <_loop3>
+bfc00074:	00008067          	ret
+
+bfc00078 <finish>:
+bfc00078:	00048513          	mv	a0,s1
+
+bfc0007c <_wait>:
+bfc0007c:	00051063          	bnez	a0,bfc0007c <_wait>

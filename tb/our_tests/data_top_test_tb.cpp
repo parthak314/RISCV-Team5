@@ -49,10 +49,10 @@ TEST_F(data_topTest, ResetTest) {
     clockTick();
     dut->rst = 0;
 
-    EXPECT_EQ(dut->PCsrc, 0);
+    EXPECT_EQ(dut->PCSrc, 0);
     EXPECT_EQ(dut->ResultSrc, 0);
     EXPECT_EQ(dut->MemWrite, 0);
-    EXPECT_EQ(dut->ALUcontrol, 0);
+    EXPECT_EQ(dut->ALUControl, 0);
     EXPECT_EQ(dut->ALUSrc, 0);
     EXPECT_EQ(dut->rd1, 0);
     EXPECT_EQ(dut->rd2, 0);
@@ -122,12 +122,12 @@ TEST_F(data_topTest, BranchInstructions) {
     dut->instr = 0x00018663; // beq x3, x0, offset=12 (branch if x3 == x0)
     dut->zero = 1; // Assume x3 == x0
     evaluate();
-    EXPECT_EQ(dut->PCsrc, 1);
+    EXPECT_EQ(dut->PCSrc, 1);
 
     dut->instr = 0x0011C063; // bne x3, x1, offset=16 (branch if x3 != x1)
     dut->zero = 0; // Assume x3 != x1
     evaluate();
-    EXPECT_EQ(dut->PCsrc, 1);
+    EXPECT_EQ(dut->PCSrc, 1);
 }
 
 TEST_F(data_topTest, ImmediateInstructions) {
@@ -169,14 +169,14 @@ TEST_F(data_topTest, ComprehensiveControlUnitVerification) {
     evaluate();
     clockTick();
 
-    EXPECT_EQ(dut->ALUcontrol, 0x0); // ALU should perform addition
+    EXPECT_EQ(dut->ALUControl, 0x0); // ALU should perform addition
     EXPECT_EQ(dut->ALUSrc, 1);       // Immediate value should be selected
 
     dut->instr = 0x00018663; // beq x3, x0, offset=12
     dut->zero = 1;
     evaluate();
 
-    EXPECT_EQ(dut->PCsrc, 1);
+    EXPECT_EQ(dut->PCSrc, 1);
 }
 
 int main(int argc, char **argv) {
