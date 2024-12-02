@@ -29,7 +29,6 @@ fetch_top fetch_top_mod (
     .clk(clk),
     .rst(rst),
     .Result(Result),
-    .trigger(trigger),
     .PCSrc(PCSrc),
     .ImmExt(ImmExt),
     .Instr(Instr),
@@ -39,6 +38,7 @@ fetch_top fetch_top_mod (
 data_top data_top_mod (
     .clk(clk),
     .rst(rst),
+    .trigger(trigger),
     .instr(Instr),
     .result(Result),
     .zero(Zero),

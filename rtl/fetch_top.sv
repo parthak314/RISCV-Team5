@@ -3,32 +3,22 @@ module fetch_top # (
 ) (
     input logic clk,
     input logic rst,
-    input logic trigger, // needed for f1 fsm. Acts as an ~en input
-    input logic [1:0] PCSrc, // mux sel line: 0 = pc + 4, 1 = branch (pc + imm), 2 = jump (from aluresult)
+    input logic [1:0] PCSrc, // mux sel line: 0 = pc + 4, 1 = branch (pc + imm), 2 = jump (from aluresult), 3 = pc (stall)
     input logic [DATA_WIDTH-1:0] Result, // result from ALU
     input logic [DATA_WIDTH-1:0] ImmExt, // output of extended imm
     output logic [DATA_WIDTH-1:0] Instr, // output instruction from instr_mem
     output logic [DATA_WIDTH-1:0] PCPlus4
 );
 
-    logic [DATA_WIDTH-1:0] PCTarget, PCNext, PC, PCTrigger;
+    logic [DATA_WIDTH-1:0] PCTarget, PCNext, PC;
 
     mux_4x2 mux_pc (
         .in0 (PCPlus4),
         .in1 (PCTarget),
         .in2 (Result),
-        .in3(0), // spare mux position. Not implemented, but can be used for PC reset
+        .in3(PC),
         .sel (PCSrc),
         .out (PCNext)
-    );
-
-    // mux after mux_pc to determine if we should progress
-    // or just stall at the current pc ie PCNext = PC
-    mux mux_trigger (
-        .in0 (PCNext),
-        .in1 (PC),
-        .sel (trigger),
-        .out (PCTrigger)
     );
 
     adder adder_branch_pc (
@@ -46,7 +36,7 @@ module fetch_top # (
     pc_register pc_reg (
         .clk (clk),
         .rst (rst),
-        .PCTrigger (PCTrigger),
+        .PCNext (PCNext),
         .out_PC (PC)
     );
 
