@@ -8,7 +8,7 @@
 #include "vbuddy.cpp"     // include vbuddy code
 
 #define MAX_SIM_CYC 1e9
-#define MAX_FUNC_CYC 1e6
+#define MAX_FUNC_CYC 1e6 // script needs time to generate the pdf function
 
 // remove hex files on ctrl + c
 void end_program(int signum) {
@@ -25,7 +25,7 @@ int main(int argc, char **argv, char **env) {
 
   std::ignore = system("./assemble.sh reference/pdf.s");
   std::ignore = system("touch data.hex");
-  std::ignore = system("cat ./reference/noisy.mem > data.hex");
+  std::ignore = system("cat ./reference/gaussian.mem > data.hex");
 
   Verilated::commandArgs(argc, argv);
   // init top verilog instance
@@ -39,7 +39,6 @@ int main(int argc, char **argv, char **env) {
   // init Vbuddy
   if (vbdOpen()!=1) return(-1);
   vbdHeader("PDF");
-  //vbdSetMode(1);        // Flag mode set to one-shot
 
   // initialize simulation inputs
   top->clk = 0;
