@@ -20,11 +20,10 @@ int main(int argc, char **argv, char **env) {
   int simcyc;     // simulation clock count
   int tick;       // each clk cycle has two ticks for two edges
 
-  std::ignore = system("./assemble.sh asm/5_pdf.s");
-  std::ignore = system("touch data.hex");
-  std::ignore = system("cp ./reference/gaussian.mem data.hex");
-
   signal(SIGINT, end_program); // detect ctrl + c
+
+  std::ignore = system("./assemble.sh asm/f1_fsm.s");
+  std::ignore = system("touch data.hex");
 
   Verilated::commandArgs(argc, argv);
   // init top verilog instance
@@ -33,11 +32,11 @@ int main(int argc, char **argv, char **env) {
   Verilated::traceEverOn(true);
   VerilatedVcdC* tfp = new VerilatedVcdC;
   top->trace (tfp, 99);
-  tfp->open ("5_pdf.vcd");
+  tfp->open ("test_out/f1_fsm/waveform.vcd");
  
   // init Vbuddy
   if (vbdOpen()!=1) return(-1);
-  vbdHeader("PDF");
+  vbdHeader("F1 FSM");
   //vbdSetMode(1);        // Flag mode set to one-shot
 
   // initialize simulation inputs
@@ -47,6 +46,9 @@ int main(int argc, char **argv, char **env) {
 
   // run simulation for MAX_SIM_CYC clock cycles
   for (simcyc=0; simcyc<MAX_SIM_CYC; simcyc++) {
+
+    top->trigger = !vbdFlag(); // toggle trigger with rotary push button
+
     // dump variables into VCD file and toggle clock
     for (tick=0; tick<2; tick++) {
       tfp->dump (2*simcyc+tick);
@@ -54,7 +56,6 @@ int main(int argc, char **argv, char **env) {
       top->eval ();
     }
     
-    top->trigger = vbdFlag(); // toggle trigger with rotary push button
     vbdBar(top->a0 & 0xFF);
     vbdCycle(simcyc);
 
