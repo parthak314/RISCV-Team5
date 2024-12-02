@@ -70,6 +70,8 @@ int main(int argc, char **argv, char **env) {
 
     // only plot after the signal generating function is done
     if (displaying) {
+
+      // during the display phase, the plot can be paused with the rotary push button
       bool is_paused = vbdFlag();
       top->trigger = is_paused;
       if (!is_paused) {
