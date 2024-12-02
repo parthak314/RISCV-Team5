@@ -7,13 +7,13 @@
 #include "../tests/cpu_testbench.h"
 #include "vbuddy.cpp"     // include vbuddy code
 
-#define MAX_SIM_CYC 1000000000
-#define MAX_FUNC_CYC 1000000
+#define MAX_SIM_CYC 1e9
+#define MAX_FUNC_CYC 1e6
 
 // remove hex files on ctrl + c
 void end_program(int signum) {
   std::cout << "\nShutting down..." << std::endl;
-  std::ignore = system("rm -f gaussian.hex data.hex");
+  std::ignore = system("rm -f program.hex data.hex");
   exit(signum);
 }
 
