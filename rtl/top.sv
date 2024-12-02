@@ -1,3 +1,8 @@
+`include "./fetch/fetch_top.sv"
+`include "./data/data_top.sv"
+`include "./execute/execute_top.sv"
+`include "./memory/memory_top.sv"
+
 module top #(
     parameter DATA_WIDTH = 32
 )(

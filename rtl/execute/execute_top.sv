@@ -1,3 +1,5 @@
+`include "./execute/alu.sv"
+
 module execute_top #(
     parameter DATA_WIDTH = 32
 ) (
