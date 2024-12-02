@@ -7,12 +7,13 @@
 #include "../tests/cpu_testbench.h"
 #include "vbuddy.cpp"     // include vbuddy code
 
-#define MAX_SIM_CYC 1000000
+#define MAX_SIM_CYC 1000000000
+#define MAX_FUNC_CYC 1000000
 
 // remove hex files on ctrl + c
 void end_program(int signum) {
   std::cout << "\nShutting down..." << std::endl;
-  std::ignore = system("rm -f program.hex data.hex");
+  std::ignore = system("rm -f gaussian.hex data.hex");
   exit(signum);
 }
 
@@ -20,10 +21,11 @@ int main(int argc, char **argv, char **env) {
   int simcyc;     // simulation clock count
   int tick;       // each clk cycle has two ticks for two edges
 
-  std::ignore = system("./assemble.sh asm/f1_fsm.s");
-  std::ignore = system("touch data.hex");
-
   signal(SIGINT, end_program); // detect ctrl + c
+
+  std::ignore = system("./assemble.sh reference/pdf.s");
+  std::ignore = system("touch data.hex");
+  std::ignore = system("cat ./reference/noisy.mem > data.hex");
 
   Verilated::commandArgs(argc, argv);
   // init top verilog instance
@@ -32,17 +34,17 @@ int main(int argc, char **argv, char **env) {
   Verilated::traceEverOn(true);
   VerilatedVcdC* tfp = new VerilatedVcdC;
   top->trace (tfp, 99);
-  tfp->open ("f1_fsm.vcd");
+  tfp->open ("test_out/pdf/pdf.vcd");
  
   // init Vbuddy
   if (vbdOpen()!=1) return(-1);
-  vbdHeader("F1 FSM");
+  vbdHeader("PDF");
   //vbdSetMode(1);        // Flag mode set to one-shot
 
   // initialize simulation inputs
   top->clk = 0;
   top->rst = 0;
-  top->trigger = 1;
+  top->trigger = 0;
 
   // run simulation for MAX_SIM_CYC clock cycles
   for (simcyc=0; simcyc<MAX_SIM_CYC; simcyc++) {
@@ -52,13 +54,14 @@ int main(int argc, char **argv, char **env) {
       top->clk = !top->clk;
       top->eval ();
     }
-    
-    top->trigger = vbdFlag(); // toggle trigger with rotary push button
-    vbdBar(top->a0 & 0xFF);
-    vbdCycle(simcyc);
+    // only plot after the signal generating function is done
+    if (simcyc > MAX_FUNC_CYC) {
+      vbdCycle(simcyc);
+      vbdPlot(top->a0, 0, 255);
+    }
 
     // either simulation finished, or 'q' is pressed
-    if ((Verilated::gotFinish()) || (vbdGetkey()=='q')) 
+    if ((Verilated::gotFinish()) || (vbdGetkey()=='q'))
       break;                // ... exit if finish OR 'q' pressed
   }
 
