@@ -3,6 +3,7 @@ module data_top #(
 )(
     input   logic                     rst,
     input   logic                     clk,
+    input   logic                     trigger,
     input   logic   [DATA_WIDTH-1:0]  instr,
     input   logic   [DATA_WIDTH-1:0]  result,
     input   logic                     zero,
@@ -27,6 +28,7 @@ control control_unit (
     .funct7         (instr[30]),
     .zero           (zero),
     .negative       (negative),
+    .trigger        (trigger),
     .PCSrc          (PCSrc),
     .ResultSrc      (ResultSrc),
     .MemWrite       (MemWrite),

@@ -70,13 +70,17 @@ int main(int argc, char **argv, char **env) {
 
     // only plot after the signal generating function is done
     if (displaying) {
-      // we only plot every 3 steps because we only update a0 every 3 steps in the loop
-      // BNE and ADDI don't make any direct changes to a0.
-      j++;
-      displaying = true;
-      if (j % 3 == 0) {
-        vbdCycle(j);
-        vbdPlot(top->a0, 0, 255);
+      bool is_paused = vbdFlag();
+      top->trigger = is_paused;
+      if (!is_paused) {
+        // we only plot every 3 steps because we only update a0 every 3 steps in the loop
+        // BNE and ADDI don't make any direct changes to a0.
+        j++;
+        displaying = true;
+        if (j % 3 == 0) {
+          vbdCycle(j);
+          vbdPlot(top->a0, 0, 255);
+        }
       }
     }
 
