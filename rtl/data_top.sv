@@ -1,7 +1,3 @@
-`include "./data/control.sv"
-`include "./data/reg_file.sv"
-`include "./data/signextend.sv"
-
 module data_top #(
     parameter DATA_WIDTH = 32
 )(

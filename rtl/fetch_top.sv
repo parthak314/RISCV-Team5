@@ -1,6 +1,3 @@
-`include "./fetch/instr_mem.sv"
-`include "./fetch/pc_register.sv"
-
 module fetch_top # (
     parameter DATA_WIDTH = 32
 ) (
