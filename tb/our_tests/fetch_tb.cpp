@@ -3,7 +3,6 @@
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 #include <vector>
-#include <iostream>
 
 Vdut *top;
 VerilatedVcdC *tfp;
@@ -26,8 +25,9 @@ public:
     {
         top->clk = 0;
         top->rst = 0;
-        top->PCsrc = 0;
-        top->ImmOp = 5; // random value that will be obviously wrong if PCsrc is not working
+        top->trigger = 0;
+        top->PCSrc = 0;
+        top->ImmOp = 5; // random value that will be obviously wrong if PCSrc is not working
     }
 
     void runReset()
@@ -89,7 +89,7 @@ std::vector<uint32_t> GROUND_TRUTH = {
 const int NUM_BYTES = 4;
 
 // test that the initial value is correct
-// conditions: clk = 0, rst = 1, PCsrc = 0, ImmOp = 5
+// conditions: clk = 0, rst = 1, PCSrc = 0, ImmOp = 5
 TEST_F(TestDut, InitialStateTest)
 {
     top->rst = 1;
@@ -98,7 +98,7 @@ TEST_F(TestDut, InitialStateTest)
 }
 
 // test that the fetch module iterates through the instruction memory correctly
-// conditions: clk = [0 to GROUND_TRUTH.size() - 1], rst = 0, PCsrc = 0, ImmOp = 5
+// conditions: clk = [0 to GROUND_TRUTH.size() - 1], rst = 0, PCSrc = 0, ImmOp = 5
 TEST_F(TestDut, IterationTest)
 {
     size_t length = GROUND_TRUTH.size();
@@ -110,19 +110,44 @@ TEST_F(TestDut, IterationTest)
 }
 
 // test that the fetch module branches correctly based on the ImmOp input
-// conditions: clk = [0 to BRANCH_SEQ.size() - 1] rst = 0, PCsrc = 1, ImmOp = BRANCH_SEQ[i] * 4
+// conditions: clk = [0 to BRANCH_SEQ.size() - 1] rst = 0, PCSrc = 1, ImmOp = BRANCH_SEQ[i] * 4
 TEST_F(TestDut, BranchTest)
 {
     std::vector<int32_t> BRANCH_SEQ = { 1, 3, 4, 2, -2, 5, -1, -3, 2, 1, 4, -5, 3, -4, 1, -2, 4, 1, -5, 3 };
     size_t length = BRANCH_SEQ.size();
     runReset();
     int j = 0;
-    top->PCsrc = 1;
+    top->PCSrc = 1;
     for (int i = 0; i < length; i++) {
         j += BRANCH_SEQ[i];
         top->ImmOp = BRANCH_SEQ[i] * 4; // because we need to branch in bytes of 4
         runSimulation();
         EXPECT_EQ(top->Instr, GROUND_TRUTH[j]);
+    }
+}
+
+// test that the fetch module correctly stalls with trigger
+TEST_F(TestDut, TriggerTest)
+{
+    runReset();
+    size_t length = GROUND_TRUTH.size();
+    int j = 0;
+    bool increment = true;
+    for (size_t i = 0; i < length; i++) {
+        EXPECT_EQ(top->Instr, GROUND_TRUTH[j]);
+        if (i == 5) {
+            top->trigger = 1;
+            increment = false;
+        }
+        else if (i == 8) {
+            top->trigger = 0;
+            increment = true;
+        }
+
+        if (increment) {
+            j += 1;
+        }
+        runSimulation();
     }
 }
 
@@ -134,24 +159,29 @@ TEST_F(TestDut, FullTest)
     runReset();
     EXPECT_EQ(top->Instr, GROUND_TRUTH[0]);
 
-    // branch forward by 14 instructions
+    // set immop to branch by 14 instructions, but stall with trigger
     int32_t branch = 14;
-    top->PCsrc = 1;
+    top->PCSrc = 1;
+    top->trigger = 1;
+    runSimulation();
+    EXPECT_EQ(top->Instr, GROUND_TRUTH[0]);
+
+    // branch forward by 14 instructions
     int i = branch;
+    top->trigger = 0;
     top->ImmOp = branch * NUM_BYTES;
     runSimulation();
-    std::cout << i << std::endl;
     EXPECT_EQ(top->Instr, GROUND_TRUTH[i]);
     
     // iterate once forward
-    top->PCsrc = 0;
+    top->PCSrc = 0;
     i++;
     runSimulation();
     EXPECT_EQ(top->Instr, GROUND_TRUTH[i]);
 
     // branch backwards by 3 instructions
     branch = -3;
-    top->PCsrc = 1;
+    top->PCSrc = 1;
     i += branch;
     top->ImmOp = branch * NUM_BYTES;
     runSimulation();

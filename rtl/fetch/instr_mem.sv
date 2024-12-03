@@ -10,8 +10,7 @@ module instr_mem #(
 logic [DATA_WIDTH-1:0] rom_array [32'h00000FFF:0]; // instruction ROM from 0xBFC00FFF to 0xBFC00000 as in memory map
 
 initial begin
-    $display("Loading rom.");
-    $readmemh("./reference/pdf.hex", rom_array); 
+    $readmemh("program.hex", rom_array); 
 end;
 
     always_comb begin
