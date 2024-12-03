@@ -1,5 +1,8 @@
 
-## Abstract:
+## Table of contents:
+
+## Evidence 
+
 
 
 ## Team members:
@@ -21,10 +24,24 @@ Aubeeluck,Kevin
 Fetch - Joel \
 Data - Partha\
 Execute - Clarke\
-Memory - Kevin 
+Memory - Kevin
 
-| File | Clarke | Partha | Joel | Kevin |
-| ---- | ------ | ------ | ---- | ----- |
+Key: * = Created ** = Edited
+
+| Task | Files| Clarke | Partha | Joel | Kevin |
+| ---- | ---- | ---- | ---- | ---- | ---- |
+| <u>**Single cycle** | ---- | ---- | ---- | ---- | ---- |
+| Fetch | instr_mem.sv,<br>pc_register.sv,<br>adder.sv,<br>mux.sv,<br>  | ---- | ---- | ---- | ---- |
+| Data | control.sv,<br>reg_file,<br>signextend.sv | ---- | ---- | ---- | ---- |
+| Execute | alu.sv,<br>mux.sv | ---- | ---- | ---- | ---- |
+| Memory/Write | datamem.sv,<br>mux_4x2.sv  | ---- | ---- | ---- | ---- |
+| Integration | top.sv,<br>sim_execute.cpp | ---- | ---- | ---- | ---- |
+| <u>**Pipelining** | ---- | ---- | ---- | ---- | ---- |
+| <u>**Cache** | ---- | ---- | ---- | ---- | ---- |
+| Git | ---- | ---- | ---- | ---- | ---- |
+
+
+
 
 ## Joint Statement of Contribution
 
@@ -70,3 +87,6 @@ Tasks:
 
 ### Goal 1: Single-Cycle RV321 implentation of F1 lights 
 ### Stretch Goal 1: Pipelined RV321 Design
+### Stretch Goal 2: Adding Data Memory Cache
+### Stretch Goal 3: Full RV32I Design
+
