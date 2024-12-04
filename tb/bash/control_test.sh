@@ -4,7 +4,7 @@ rm -rf obj_dir
 
 # Translate Verilog -> C++ including testbench
 verilator -Wall --trace \
-          -cc ../rtl/control.sv \
+          -cc ../rtl/data/control.sv \
           --exe ../our_tests/control_test_tb.cpp \
           -o Vcontrol \
           -LDFLAGS "-lgtest -lgtest_main -lpthread"

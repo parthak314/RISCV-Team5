@@ -1,6 +1,6 @@
 rm -rf obj_dir/
 
-verilator   -Wall --trace --cc ../rtl/execute_top.sv \
+verilator   -Wall --trace --cc ../rtl/execute/execute_top.sv \
             -y ../rtl/ \
             --exe ./our_tests/execute_tb.cpp \
             --prefix "Vdut" \
