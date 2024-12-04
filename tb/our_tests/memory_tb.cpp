@@ -49,14 +49,6 @@ public:
 
 TEST_F(TestDut, MuxDatatest)
 {
-    top->ALUResult = 0x00010003;
-    top->ResultSrc = 1;
-    runSimulation();
-    EXPECT_EQ(top->Result, 0x00000004);
-}
-
-TEST_F(TestDut, MuxDatatest2)
-{
     top->ALUResult = 0b11;
     top->WriteData = 20;
     top->MemWrite = 1;

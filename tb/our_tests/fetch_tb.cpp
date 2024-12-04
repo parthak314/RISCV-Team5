@@ -25,9 +25,9 @@ public:
     {
         top->clk = 0;
         top->rst = 0;
-        top->trigger = 0;
+        // top->trigger = 0;
         top->PCSrc = 0;
-        top->ImmOp = 5; // random value that will be obviously wrong if PCSrc is not working
+        top->ImmExt = 5; // random value that will be obviously wrong if PCSrc is not working
     }
 
     void runReset()
@@ -89,7 +89,7 @@ std::vector<uint32_t> GROUND_TRUTH = {
 const int NUM_BYTES = 4;
 
 // test that the initial value is correct
-// conditions: clk = 0, rst = 1, PCSrc = 0, ImmOp = 5
+// conditions: clk = 0, rst = 1, PCSrc = 0, ImmExt = 5
 TEST_F(TestDut, InitialStateTest)
 {
     top->rst = 1;
@@ -98,7 +98,7 @@ TEST_F(TestDut, InitialStateTest)
 }
 
 // test that the fetch module iterates through the instruction memory correctly
-// conditions: clk = [0 to GROUND_TRUTH.size() - 1], rst = 0, PCSrc = 0, ImmOp = 5
+// conditions: clk = [0 to GROUND_TRUTH.size() - 1], rst = 0, PCSrc = 0, ImmExt = 5
 TEST_F(TestDut, IterationTest)
 {
     size_t length = GROUND_TRUTH.size();
@@ -109,8 +109,8 @@ TEST_F(TestDut, IterationTest)
     }
 }
 
-// test that the fetch module branches correctly based on the ImmOp input
-// conditions: clk = [0 to BRANCH_SEQ.size() - 1] rst = 0, PCSrc = 1, ImmOp = BRANCH_SEQ[i] * 4
+// test that the fetch module branches correctly based on the ImmExt input
+// conditions: clk = [0 to BRANCH_SEQ.size() - 1] rst = 0, PCSrc = 1, ImmExt = BRANCH_SEQ[i] * 4
 TEST_F(TestDut, BranchTest)
 {
     std::vector<int32_t> BRANCH_SEQ = { 1, 3, 4, 2, -2, 5, -1, -3, 2, 1, 4, -5, 3, -4, 1, -2, 4, 1, -5, 3 };
@@ -120,36 +120,37 @@ TEST_F(TestDut, BranchTest)
     top->PCSrc = 1;
     for (int i = 0; i < length; i++) {
         j += BRANCH_SEQ[i];
-        top->ImmOp = BRANCH_SEQ[i] * 4; // because we need to branch in bytes of 4
+        top->ImmExt = BRANCH_SEQ[i] * 4; // because we need to branch in bytes of 4
         runSimulation();
         EXPECT_EQ(top->Instr, GROUND_TRUTH[j]);
     }
 }
 
 // test that the fetch module correctly stalls with trigger
-TEST_F(TestDut, TriggerTest)
-{
-    runReset();
-    size_t length = GROUND_TRUTH.size();
-    int j = 0;
-    bool increment = true;
-    for (size_t i = 0; i < length; i++) {
-        EXPECT_EQ(top->Instr, GROUND_TRUTH[j]);
-        if (i == 5) {
-            top->trigger = 1;
-            increment = false;
-        }
-        else if (i == 8) {
-            top->trigger = 0;
-            increment = true;
-        }
+// trigger moved out of fetch
+// TEST_F(TestDut, TriggerTest)
+// {
+//     runReset();
+//     size_t length = GROUND_TRUTH.size();
+//     int j = 0;
+//     bool increment = true;
+//     for (size_t i = 0; i < length; i++) {
+//         EXPECT_EQ(top->Instr, GROUND_TRUTH[j]);
+//         if (i == 5) {
+//             top->trigger = 1;
+//             increment = false;
+//         }
+//         else if (i == 8) {
+//             top->trigger = 0;
+//             increment = true;
+//         }
 
-        if (increment) {
-            j += 1;
-        }
-        runSimulation();
-    }
-}
+//         if (increment) {
+//             j += 1;
+//         }
+//         runSimulation();
+//     }
+// }
 
 // test that the fetch module resets, branches and iterates correctly
 // conditions: mix of everything 
@@ -162,14 +163,14 @@ TEST_F(TestDut, FullTest)
     // set immop to branch by 14 instructions, but stall with trigger
     int32_t branch = 14;
     top->PCSrc = 1;
-    top->trigger = 1;
-    runSimulation();
-    EXPECT_EQ(top->Instr, GROUND_TRUTH[0]);
+    // top->trigger = 1;
+    // runSimulation();
+    // EXPECT_EQ(top->Instr, GROUND_TRUTH[0]);
 
     // branch forward by 14 instructions
     int i = branch;
-    top->trigger = 0;
-    top->ImmOp = branch * NUM_BYTES;
+    // top->trigger = 0;
+    top->ImmExt = branch * NUM_BYTES;
     runSimulation();
     EXPECT_EQ(top->Instr, GROUND_TRUTH[i]);
     
@@ -183,7 +184,7 @@ TEST_F(TestDut, FullTest)
     branch = -3;
     top->PCSrc = 1;
     i += branch;
-    top->ImmOp = branch * NUM_BYTES;
+    top->ImmExt = branch * NUM_BYTES;
     runSimulation();
     EXPECT_EQ(top->Instr, GROUND_TRUTH[i]);
 
@@ -195,6 +196,10 @@ TEST_F(TestDut, FullTest)
 
 int main(int argc, char **argv)
 {
+    std::ignore = system("rm -f program.hex");
+    std::ignore = system("touch program.hex");
+    std::ignore = system("cat ./reference/pdf.hex > program.hex");
+
     top = new Vdut;
     tfp = new VerilatedVcdC;
 
@@ -210,6 +215,6 @@ int main(int argc, char **argv)
 
     delete top;
     delete tfp;
-
+    std::ignore = system("rm -f program.hex");
     return res;
 }

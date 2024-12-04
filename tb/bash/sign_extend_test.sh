@@ -4,7 +4,7 @@ rm -rf obj_dir
 
 # Translate Verilog -> C++ including testbench
 verilator -Wall --trace \
-          -cc ../rtl/signextend.sv \
+          -cc ../rtl/data/signextend.sv \
           --exe ../our_tests/signextend_test_tb.cpp \
           -o Vsignextend \
           -LDFLAGS "-lgtest -lgtest_main -lpthread"

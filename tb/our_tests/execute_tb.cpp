@@ -15,37 +15,12 @@ public:
 
         Verilated::traceEverOn(true);
         top->trace(tfp.get(), 99);
-        initializeInputs();
     }
 
     void TearDown() override
     {
         top->final();
         tfp->close();
-    }
-
-    void initializeInputs()
-    {
-        top->clk = 1;
-        
-    }
-
-    // Runs the simulation for a clock cycle, evaluates the DUT, dumps waveform.
-    void runSimulation()
-    {
-        for (int clk = 0; clk < 2; clk++)
-        {
-            // printf("evaluate at %d\n", clk);
-            top->eval();
-            tfp->dump(2 * ticks + clk);
-            top->clk = !top->clk;
-        }
-        ticks++;
-
-        if (Verilated::gotFinish())
-        {
-            exit(0);
-        }
     }
 
     void verifyALU( uint8_t ALUSrc,
@@ -58,7 +33,7 @@ public:
     top->ALUControl = ALUControl;
     top->RD1 = RD1;
     top->RD2 = RD2;
-    runSimulation();
+    top->eval();
     EXPECT_EQ(top->ALUResult, expected_result) << "Failed for ALU control: " << std::bitset<3>(ALUControl);
     }
 
