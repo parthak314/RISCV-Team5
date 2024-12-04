@@ -105,11 +105,6 @@ module control #(
                     RegWrite = 1'b1; ImmSrc = 3'b011; MemWrite = 1'b0; ResultSrc = 2'b11; PCSrc = 2'b0;
                 end
 
-                // U-type (auipc)
-                7'b0010111: begin 
-                    RegWrite = 1'b1; ImmSrc = 3'b011; MemWrite = 1'b0; ResultSrc = 2'b00; PCSrc = 2'b0; ALUSrc = 1'b1; ALUControl = 4'b0000;
-                end
-
                 // J-type (jal)
                 7'b1101111: begin 
                     RegWrite = 1'b1; ImmSrc = 3'b100; MemWrite = 1'b0; ResultSrc = 2'b10; PCSrc = 2'b01;
