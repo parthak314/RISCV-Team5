@@ -6,25 +6,28 @@
 
 ---
 
-## Overview (Add internal links)
+## Overview
 
-- Sign Extension
-- Control Unit
-- Register File
+- [[#Single Cycle RISCV-32I Design]]
+	- [[#Sign Extension Unit]]
+	- [[#Control Unit]]
+	- [[#Register File]]
+	- [[#Single cycle CPU assembling and testing]]
+		- [[#F1 Assembly]]
+		- [[#Probability Distribution Function]]
+		- [[#System Debugging]]
+- 
 
 ---
 
+# Single Cycle RISCV-32I Design
 ## Sign Extension Unit
-
-*([link to section](../rtl/sign_extend))* (Add internal links)
-
-### **Aims:**
-
+[System Verilog](../rtl/data/sign_extend) | [Testbench with test cases](../tb/our_tests/signextend_test_tb.cpp) | [Shell script for testing](../tb/bash/sign_extend_test.sh)
+### Aims
 - Create a module that will sign extend the immediate value.
 - However, the problem we face here is that there are many types of instructions, each with a different arrangement for the immediate to be sign extended
 
-### **Implementation:**
-
+### Implementation
 Using what I created in the reduced RISC-V CPU (lab 4), I extended this to include all other instruction types. This meant using `ImmSrc` for 5 different instruction types (excluding R-type since it has no immediate).
 
 The following structure was used for each of the instruction types:
@@ -43,9 +46,7 @@ Considering that there are 5 instructions `I-type`, `S-type`, `B-type`, `U-type`
 | `010` | Branch |
 | `011` | Jump |
 | `100` | Upper Immediate |
-
-### **Testing:**
-
+### Testing
 Using G-test to check whether this works following the basic framework along with a test block for each of the instruction types and by manually finding an expected solution.
 An example for this is for U-type:
 
@@ -59,19 +60,12 @@ TEST_F(SignExtensionTest, Utype) {   
 ```
 
 ---
-
 ## Control Unit
-
-*([link to section](../rtl/sign_extend))* (Add internal links)
-
-### Aims:
-
+[System Verilog](../rtl/data/control.sv) | [Testbench with test cases](../tb/our_tests/control_test_tb.cpp) | [Shell script for testing](../tb/bash/control_test.sh)
+### Aims
 - Create a module that will take in the 32 bit instruction and produce the required signals that depend on the `op` (opcode), `funct3`, `funct7` (part of instruction) and the flags `zero` and `negative`.
-
-### Implementation:
-
+### Implementation
 The inputs and outputs of the system are:
-
 - Inputs
     - `op` - The 7 bit opcode that is the classification for the instructions
     - `funct3` - defining the type of instruction under the classification (within `op`)
@@ -91,20 +85,19 @@ The image below shows the structure for this and the table below shows the value
 
 ![Untitled(10).png](../images/control-unit.png)
 
-| **Instruction Type** | **`PCSrc`** | **`ResultSrc`** | **`MemWrite`** | **`ALUcontrol`** | **`ALUSrc`** | **`ImmSrc`** | **`RegWrite`** |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| R-type | `0` | `00` | `0` | `get_ALU_control()` | `0` | `XXX` | `1` |
-| I-type (ALU) | `0` | `00` | `0` | `get_ALU_control()` | `1` | `000` | `1` |
-| I-type (load) | `0` | `01` | `0` | `0000` | `1` | `000` | `1` |
-| I-type (`jalr`) | `1` | `10` | `0` | `0000` | `1` | `000` | `1` |
-| S-type | `0` | `XX` | `1` | `0000` | `1` | `001` | `0` |
-| B-type | as per `funct3` | `XX` | `0` | `0001` | `0` | `010` | `0` |
-| J-type (`jal`) | `1` | `10` | `0` | `XXXX` | `X` | `011` | `1` |
-| U-type (`lui`) | `0` | `11` | `0` | `XXXX` | `X` | `100` | `1` |
-| U-type (`auipc`) | `0` | `00` | `0` | `0000` | `1` | `100` | `1` |
+| **Instruction Type** |   **`PCSrc`**   | **`ResultSrc`** | **`MemWrite`** |  **`ALUcontrol`**   | **`ALUSrc`** | **`ImmSrc`** | **`RegWrite`** |
+| -------------------- | :-------------: | :-------------: | :------------: | :-----------------: | :----------: | :----------: | :------------: |
+| R-type               |       `0`       |      `00`       |      `0`       | `get_ALU_control()` |     `0`      |    `XXX`     |      `1`       |
+| I-type (ALU)         |       `0`       |      `00`       |      `0`       | `get_ALU_control()` |     `1`      |    `000`     |      `1`       |
+| I-type (load)        |       `0`       |      `01`       |      `0`       |       `0000`        |     `1`      |    `000`     |      `1`       |
+| I-type (`jalr`)      |       `1`       |      `10`       |      `0`       |       `0000`        |     `1`      |    `000`     |      `1`       |
+| S-type               |       `0`       |      `XX`       |      `1`       |       `0000`        |     `1`      |    `001`     |      `0`       |
+| B-type               | as per `funct3` |      `XX`       |      `0`       |       `0001`        |     `0`      |    `010`     |      `0`       |
+| J-type (`jal`)       |       `1`       |      `10`       |      `0`       |       `XXXX`        |     `X`      |    `011`     |      `1`       |
+| U-type (`lui`)       |       `0`       |      `11`       |      `0`       |       `XXXX`        |     `X`      |    `100`     |      `1`       |
+| U-type (`auipc`)     |       `0`       |      `00`       |      `0`       |       `0000`        |     `1`      |    `100`     |      `1`       |
 
 **PCSrc:**
-
 The value for `PCSrc` in the branch instruction type depends on the value for `funct3` which can be implemented with the flags `zero` and `negative` 
 
 ```verilog
@@ -122,7 +115,6 @@ endcase
 If `PCSrc` is 0, the program counter increments to the next instruction (with byte addressing this is PC + 4). If `PCSrc` is 1, the program counter increments to PC + immediate.
 
 **ALUcontrol:**
-
 The value for `ALUcontrol` is determined by `get_ALU_control()` for R-type and I-type (alu) instructions. When designing this it is important that we have parameters addressed by reference, but it is not critical to return a value making a systemVerilog task better in this scenario than a function.
 
 ```systemVerilog
@@ -145,7 +137,6 @@ Which satisfies the following implementation as per the RISC-V 32I base instruct
 ![image.png](../images/alucontrol-instructions.png)
 
 **ResultSrc:**
-
 `ResultSrc` was initially defined as 1 bit as the select signal for the result which is written into the regfile on the next clock cycle. When this is:
 
 - `0`, `ALUResult` is written back for R-type, I-type (ALU) and branch comparisons.
@@ -158,9 +149,7 @@ However this poses a problem since jump instructions cannot be implemented. ther
 - `11`, when storing upper immediate values into the registers for `lui` and `auipc`
 
 ### Testing
-
 Using G-test for the following test cases:
-
 - R-type Instruction
     - inputs: opcode `0110011`, `funct3` = `000`, `funct7` = `0`
     - outputs: `RegWrite = 1`, `ALUSrc = 0`, `MemWrite = 0`, `ResultSrc = 00`, `PCsrc = 0`, `ALUcontrol = 0000` (Add)
@@ -183,14 +172,11 @@ Using G-test for the following test cases:
 ---
 
 ## Register File
-
-### Aims:
-
+[System Verilog](../rtl/data/reg_file.sv) | [Testbench with test cases](../tb/our_tests/reg_file_test_tb.cpp) | [Shell script for testing](../tb/bash/reg_file_test.sh)
+### Aims
 - Design an array to store 32 32-bit registers including the zero register (x0) hardwired to 0.
 - Asynchronous Reads and Synchronous Writes to minimise delays
-
-### Implementation:
-
+### Implementation
 Inputs, outputs and Parameters used here are:
 
 - Parameters:
@@ -234,8 +220,7 @@ This is in sequential logic, on the positive/rising clock edge, values are writt
 
 This encourages efficient operand access with dual read ports, useful for R-type instructions, compliant with RISC-V standard since x0 is not modified, reset functionality exists to provide a clean initial state for the processor and in case it needs to be reinitialised at any point, produces an output `a0` which may be utilised for debugging.
 
-### Testing:
-
+### Testing
 - Reset Test
     - inputs: `reset = 1`, then `reset = 0`
     - outputs: All registers are `0`
@@ -261,8 +246,55 @@ This encourages efficient operand access with dual read ports, useful for R-type
     - inputs: `write_addr = 4`, `write_data = 0x12345678`, `write_enable = 1`, `clk ↑`; then `read_addr1 = 4`
     - outputs: For 3 cycles after the write, `read_data1 = 0x12345678`
 
-### Potential Enhancements:
-
-- Clock gating for Power efficiency. In a low power concept, clock gating can be added to disable write operations for when `write_enable` is low.
+### Potential Enhancements
+- Clock gating for Power efficiency. In a low power concept, clock gating (disabling the clock) can be added to disable write operations for when `write_enable` is low.
 - Verify that the address is less than 32 for writing
 - Use other addresses for output as defined above - registers which return a value are also `a1`, `f10`, `f11`
+
+---
+## Single cycle CPU assembling and testing
+After the individual components had been designed and tested, I assembled them into the `data_top.sv` file which is the top module for the control unit, sign extension and register file.
+
+This was then incorporated by @Joel into the `top.sv` which is the model of the CPU at this stage.
+
+This was then tested through the following test cases (assembly, shell scripts and testbench) that were already provided:
+1. `addi bne`: initialising registers, incrementing values, comparing values with conditional branching
+2. `li add`: handling loading large signed and unsigned values and performing addition
+3. `lbu sb`: storing bytes, loading unsigned bytes and adding the loaded values
+4. `jal ret`: using `jal`(jump and link) and `ret` (a special case of `jalr x0, ra, 0`) to add numbers and output a result
+5. `pdf`: counting occurrences of data values  and computing the sum  for different probability distribution functions.
+There were 2 tests for which extra work was done by @Joel and myself:
+### F1 Assembly
+I created the program to test the F1 lights as per previous lab work. The basic version tests the lights sequences whereas a more advanced version tests this using a random delay (the pseudorandom binary value generated by the lfsr module)
+
+This can be found here ==(add link)==
+
+The video for its functionality can be found on the team statement
+### Probability Distribution Function
+We then tested the system by creating a test bench for various `*.mem` files provided as the input for `pdf.s`. This included `noisy.mem`, `gaussian.mem` and `triangle.mem`. The videos can be found on the team statement.
+
+### System Debugging
+As a result of testing and debugging (using gtkwave), we found out that there were certain issues which were debugged, with the following being the notable changes:
+- `jal` uses byte addressing so has an assumed `0` at the LSB position, which was implemented.
+- `a0` needed to be an output register.
+- `PCSrc` currently increments to either the next instruction or branches to another instruction. However, for jumping the target is the immediate field. However by using a 4x2 mux, it not only uses extra hardware but also results in a vacant space for `PCSrc = 11`. This is useful later on for when a stall is required, which can be pre-emptively addressed here:
+
+| `PCSrc` | Program counter    | Action                                                       |
+| ------- | ------------------ | ------------------------------------------------------------ |
+| `00`    | `PC = PC + 4`      | Go to next instruction                                       |
+| `01`    | `PC = PC + Target` | Branch to another instruction (relative to current position) |
+| `10`    | `PC = imm`         | Jumping to another position regardless of current position   |
+| `11`    | `PC = PC`          | PC stall (repeat current PC cycle)                           |
+
+- `Trigger` was also used but the current implementation would stall at the current program counter, but this implementation is not sufficient for all opcodes as it will continue adding/subtracting during the stall. This can be solved by routing trigger through the control unit to ensure that the default values are instated (with no writing to registers/memory).
+
+---
+# Pipelined RISCV-32I Design
+
+
+---
+# Data Memory Cache Implementation
+
+
+---
+# Complete RISCV-32I Design
