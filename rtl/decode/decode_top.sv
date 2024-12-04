@@ -1,8 +1,8 @@
-`include "./data/control.sv"
-`include "./data/reg_file.sv"
-`include "./data/signextend.sv"
+`include "./decode/control.sv"
+`include "./decode/reg_file.sv"
+`include "./decode/signextend.sv"
 
-module data_top #(
+module decode_top #(
     parameter DATA_WIDTH = 32
 )(
     input   logic                     rst,
