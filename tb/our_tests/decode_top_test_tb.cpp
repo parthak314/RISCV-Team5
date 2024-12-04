@@ -1,15 +1,15 @@
 #include "gtest/gtest.h"
-#include "Vdata_top.h"
+#include "Vdecode_top.h"
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 
-class data_topTest : public ::testing::Test {
+class decode_topTest : public ::testing::Test {
 public:
-    Vdata_top* dut;
+    Vdecode_top* dut;
 
 protected:
     virtual void SetUp() override {
-        dut = new Vdata_top;
+        dut = new Vdecode_top;
 
         Verilated::traceEverOn(true);
         auto tfp = new VerilatedVcdC;
@@ -44,7 +44,7 @@ protected:
     }
 };
 
-TEST_F(data_topTest, ResetTest) {
+TEST_F(decode_topTest, ResetTest) {
     dut->rst = 1;
     clockTick();
     dut->rst = 0;
@@ -59,7 +59,7 @@ TEST_F(data_topTest, ResetTest) {
     EXPECT_EQ(dut->ImmExt, 0);
 }
 
-TEST_F(data_topTest, InstructionDecoding) {
+TEST_F(decode_topTest, InstructionDecoding) {
     dut->instr = 0x001000B3;  // add x1, x0, x1
     evaluate();
 
@@ -67,14 +67,14 @@ TEST_F(data_topTest, InstructionDecoding) {
     EXPECT_EQ(dut->MemWrite, 0);
 }
 
-TEST_F(data_topTest, ImmediateExtension) {
+TEST_F(decode_topTest, ImmediateExtension) {
     dut->instr = 0x00500113;  // addi x1, x0, 5
     evaluate();
 
     EXPECT_EQ(dut->ImmExt, 0x5);
 }
 
-TEST_F(data_topTest, ALUOperations) {
+TEST_F(decode_topTest, ALUOperations) {
     dut->instr = 0x004000B3; // add x1, x0, x1 (x1 = 0 + 0)
     dut->result = 0;
     evaluate();
@@ -103,7 +103,7 @@ TEST_F(data_topTest, ALUOperations) {
     EXPECT_EQ(dut->rd1, 3);
 }
 
-TEST_F(data_topTest, MemoryAccessOperations) {
+TEST_F(decode_topTest, MemoryAccessOperations) {
     dut->instr = 0x00002003; // lb x4, 0(x0) (load byte from memory at x0+0 into x4)
     dut->result = 0xFF; // Assume memory[0] = 0xFF
     evaluate();
@@ -118,7 +118,7 @@ TEST_F(data_topTest, MemoryAccessOperations) {
     EXPECT_EQ(dut->MemWrite, 1);
 }
 
-TEST_F(data_topTest, BranchInstructions) {
+TEST_F(decode_topTest, BranchInstructions) {
     dut->instr = 0x00018663; // beq x3, x0, offset=12 (branch if x3 == x0)
     dut->zero = 1; // Assume x3 == x0
     evaluate();
@@ -130,7 +130,7 @@ TEST_F(data_topTest, BranchInstructions) {
     EXPECT_EQ(dut->PCSrc, 1);
 }
 
-TEST_F(data_topTest, ImmediateInstructions) {
+TEST_F(decode_topTest, ImmediateInstructions) {
     dut->instr = 0x000000B7; // lui x1, 0x1 (load upper immediate into x1)
     dut->result = 0x1000;
     evaluate();
@@ -144,7 +144,7 @@ TEST_F(data_topTest, ImmediateInstructions) {
     EXPECT_EQ(dut->rd1, 0x1000);
 }
 
-TEST_F(data_topTest, ShiftOperations) {
+TEST_F(decode_topTest, ShiftOperations) {
     dut->instr = 0x001081B3; // sll x3, x1, x2 (x3 = x1 << x2)
     dut->result = 0;
     evaluate();
@@ -163,7 +163,7 @@ TEST_F(data_topTest, ShiftOperations) {
     EXPECT_EQ(dut->rd1, 0);
 }
 
-TEST_F(data_topTest, ComprehensiveControlUnitVerification) {
+TEST_F(decode_topTest, ComprehensiveControlUnitVerification) {
     dut->instr = 0x00400093; // addi x1, x0, 4
     dut->result = 4;
     evaluate();

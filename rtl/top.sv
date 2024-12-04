@@ -1,5 +1,5 @@
 `include "./fetch/fetch_top.sv"
-`include "./data/data_top.sv"
+`include "./decode/decode_top.sv"
 `include "./execute/execute_top.sv"
 `include "./memory/memory_top.sv"
 
@@ -40,7 +40,7 @@ fetch_top fetch_top_mod (
     .PCPlus4(PCPlus4)
 );
 
-data_top data_top_mod (
+decode_top decode_top_mod (
     .clk(clk),
     .rst(rst),
     .trigger(trigger),
