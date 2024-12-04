@@ -2,7 +2,7 @@ module fetch_top #(
     parameter DATA_WIDTH = 32
 ) (
     input logic clk,
-    input logic PCSrc,
+    input logic PCSrcE,
     input logic [DATA_WIDTH-1:0] PCTarget,
 
     output logic [DATA_WIDTH-1:0] InstrD,
@@ -19,7 +19,7 @@ module fetch_top #(
     mux mux_pc (
         .in0 (PCPlus4_wire),
         .in1 (PCTarget),
-        .sel (PCSrc),
+        .sel (PCSrcE),
         .out (pc_reg_in)
     );
 
