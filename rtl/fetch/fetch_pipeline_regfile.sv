@@ -2,6 +2,7 @@ module fetch_pipeline_regfile #(
     parameter   DATA_WIDTH = 32
 ) (
     input logic clk,
+    input logic en, // en can be disabled for stall
     input logic [DATA_WIDTH-1:0] Instr_i,
     input logic [DATA_WIDTH-1:0] PC_i,
     input logic [DATA_WIDTH-1:0] PCPlus4_i,
@@ -13,11 +14,11 @@ module fetch_pipeline_regfile #(
 );
 
     always_ff @ (negedge clk) begin
-
-        Instr_o     <= Instr_i;
-        PC_o        <= PC_i;
-        PCPlus4_o   <= PCPlus4_i;
-
+        if (en) begin
+            Instr_o     <= Instr_i;
+            PC_o        <= PC_i;
+            PCPlus4_o   <= PCPlus4_i;
+        end;
     end
 
 endmodule
