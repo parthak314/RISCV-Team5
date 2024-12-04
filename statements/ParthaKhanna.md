@@ -158,3 +158,111 @@ However this poses a problem since jump instructions cannot be implemented. ther
 - `11`, when storing upper immediate values into the registers for `lui` and `auipc`
 
 ### Testing
+
+Using G-test for the following test cases:
+
+- R-type Instruction
+    - inputs: opcode `0110011`, `funct3` = `000`, `funct7` = `0`
+    - outputs: `RegWrite = 1`, `ALUSrc = 0`, `MemWrite = 0`, `ResultSrc = 00`, `PCsrc = 0`, `ALUcontrol = 0000` (Add)
+- I-Type Addi Instruction
+    - inputs: opcode `0010011`, `funct3` = `000`, `funct7` = `0`
+    - outputs: `RegWrite = 1`, `ALUSrc = 1`, `MemWrite = 0`, `ResultSrc = 00`, `PCsrc = 0`, `ALUcontrol = 0000` (Add immediate)
+- I-Type Load Instruction
+    - inputs: opcode `0000011`, `funct3` = `010`, `funct7` = `0`
+    - outputs: `RegWrite = 1`, `ALUSrc = 1`, `MemWrite = 0`, `ResultSrc = 01`, `PCsrc = 0`, `ALUcontrol = 0000` (Add for address calculation)
+- B-Type Branch Equal
+    - inputs: opcode `1100011`, `funct3` = `000`, `zero` = `1`
+    - outputs: `RegWrite = 0`, `MemWrite = 0`, `PCsrc = 1` (Branch taken), `ALUcontrol = 001` (Subtraction)
+- J-Type Jal
+    - inputs: opcode `1101111`
+    - outputs: `RegWrite = 1`, `MemWrite = 0`, `PCsrc = 1` (Jump), `ResultSrc = 10` (PC + 4)
+- Default Case
+    - inputs: opcode `1111111`
+    - outputs: `RegWrite = 0`, `MemWrite = 0`, `ResultSrc = 00`, `PCsrc = 0`, `ALUcontrol = 0000` (Default)
+
+---
+
+## Register File
+
+### Aims:
+
+- Design an array to store 32 32-bit registers including the zero register (x0) hardwired to 0.
+- Asynchronous Reads and Synchronous Writes to minimise delays
+
+### Implementation:
+
+Inputs, outputs and Parameters used here are:
+
+- Parameters:
+    - `DATA_WIDTH = 32` to specify the bit width of the registers
+    - `ADDR_WIDTH = 5` to specify the number of registers.
+- Inputs:
+    - `clk` to synchronise writes
+    - `reset` used to clear all registers
+    - `write_enable` (`WE3`) control signal to enable writing to a register
+    - `read_addr1` (`A1`) and `read_addr2` (`A2`) addresses for the read ports
+    - `write_addr` (`A3`) write port address
+    - `write_data` (`WD3`) Data to write into the register specified by `write_addr`
+- Outputs:
+    - `read_data1` (`RD1`) and `read_data2` (`RD2`) contains the data read from the specified registers
+    - `a0` - debug the output for monitoring register 10
+
+![Register File Schematic](../images/regfile-schematic.png)
+
+The registers are first created as an array by:
+
+```systemVerilog
+logic [DATA_WIDTH-1:0] registers [2**ADDR_WIDTH-1:0];
+```
+
+The entire RISC-V CPU makes use of all 32 32-bit registers with some kept for a specific purpose and others for temporary and other usage as described here:
+
+![registers](../images/registers.png)
+
+This is also specified here: [https://en.wikichip.org/wiki/risc-v/registers](https://en.wikichip.org/wiki/risc-v/registers)
+
+**Reading:**
+
+```systemVerilog
+assign read_data1 = registers[read_addr1];
+assign read_data2 = registers[read_addr2];
+```
+
+**Writing:**
+
+This is in sequential logic, on the positive/rising clock edge, values are written to the specified register as long as write enable is high and the write address is not 0 (pointing to x0 which is hardwired to 0)
+
+This encourages efficient operand access with dual read ports, useful for R-type instructions, compliant with RISC-V standard since x0 is not modified, reset functionality exists to provide a clean initial state for the processor and in case it needs to be reinitialised at any point, produces an output `a0` which may be utilised for debugging.
+
+### Testing:
+
+- Reset Test
+    - inputs: `reset = 1`, then `reset = 0`
+    - outputs: All registers are `0`
+- Write and Read Valid Register
+    - inputs: `write_addr = 1`, `write_data = 0xA5A5A5A5`, `write_enable = 1`, `clk ↑`; then `read_addr1 = 1`
+    - outputs: `read_data1 = 0xA5A5A5A5`
+- Write and Read Another Register
+    - inputs: `write_addr = 2`, `write_data = 0xDEADBEEF`, `write_enable = 1`, `clk ↑`; then `read_addr2 = 2`
+    - outputs: `read_data2 = 0xDEADBEEF`
+- Write to Register 0 Should Not Change
+    - inputs: `write_addr = 0`, `write_data = 0x12345678`, `write_enable = 1`, `clk ↑`; then `read_addr1 = 0`
+    - outputs: `read_data1 = 0`
+- Reset After Write Operations
+    - inputs: `write_addr = 1`, `write_data = 0xA5A5A5A5`, `write_enable = 1`, `clk ↑`; then `reset = 1`, `clk ↑`, `reset = 0`
+    - outputs: All registers are `0`
+- Write and Read Multiple Registers
+    - inputs: `write_addr = 1`, `write_data = 0x1`, `write_enable = 1`, `clk ↑`; then `write_addr = 2`, `write_data = 0x2`, `clk ↑`; then `read_addr1 = 1`, `read_addr2 = 2`
+    - outputs: `read_data1 = 0x1`, `read_data2 = 0x2`
+- Write and Read From Same Register
+    - inputs: `write_addr = 3`, `write_data = 0xDEADBEEF`, `write_enable = 1`, `clk ↑`; then `read_addr1 = 3`, `read_addr2 = 3`
+    - outputs: `read_data1 = 0xDEADBEEF`, `read_data2 = 0xDEADBEEF`
+- Write With Multiple Clocks
+    - inputs: `write_addr = 4`, `write_data = 0x12345678`, `write_enable = 1`, `clk ↑`; then `read_addr1 = 4`
+    - outputs: For 3 cycles after the write, `read_data1 = 0x12345678`
+
+### Potential Enhancements:
+
+- Clock gating for Power efficiency. In a low power concept, clock gating can be added to disable write operations for when `write_enable` is low.
+- Verify that the address is less than 32 for writing
+- Use other addresses for output as defined above - registers which return a value are also `a1`, `f10`, `f11`
