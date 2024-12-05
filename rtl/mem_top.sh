@@ -6,8 +6,8 @@ rm -f *.vcd
 
 # Translate Verilog -> C++ including testbench
 verilator   -Wall --trace \
-            -cc datamem.sv \
-            --exe datamemverify.cpp \
+            -cc top_mem.sv \
+            --exe pipe_mem_tb.cpp \
             --prefix "Vdut" \
             -o Vdut \
             -CFLAGS "-isystem /opt/homebrew/Cellar/googletest/1.15.2/include"\

@@ -1,3 +1,4 @@
+/* verilator lint_off UNUSED */
 module datamem #(
     parameter DATA_WIDTH = 32 
 

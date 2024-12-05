@@ -1,31 +1,59 @@
-module top #(
+/* verilator lint_off UNUSED */
+
+module top_mem #(
     parameter DATA_WIDTH = 32     
 ) (
-    logic input clk
+    input logic                     clk,
+    input logic                     RegWriteM,
+    input logic                     RdM,
+    input logic [DATA_WIDTH-1:0]    PCPlus4M,
+    input logic [1:0]               ResultSrcM,
+    input logic [DATA_WIDTH-1:0]    ALUResultM,
+    input logic [DATA_WIDTH-1:0]    WriteDataM,
+    input logic                     MemWriteM,
+    output logic                    RegWriteW,
+    output logic                    RdW,
+    output logic [DATA_WIDTH-1:0]   ResultW,
 );
-    
-logic [DATA_WIDTH-1:0] ALUResult; //ALUResult should be 32 bit as the ALU output is 32 bit but i have my Address 
-logic [DATA_WIDTH-1:0] WriteData; //Connects to reg file
-logic [DATA_WIDTH-1:0] ALUcompare; //This is the wire that muxes with ReadData
-logic [DATA_WIDTH-1:0] ReadData; // Connects to Mux
-logic [DATA_WIDTH-1:0] MemWrite; // Connects to control unit 
-logic [DATA_WIDTH-1:0] ResultSrc; // Connects to control unit
-logic [DATA_WIDTH-1:0] Result; // Connects to WD3 of reg
 
-datamem mydata (
-    .a(ALUResult),
-    .wd(WriteData),
+logic [DATA_WIDTH-1:0]   ALUresultW;
+logic [DATA_WIDTH-1:0]   ReadDataW;
+logic [DATA_WIDTH-1:0]   PCPlus4W;
+logic [1:0]              ResultSrcW;
+logic [DATA_WIDTH-1:0]   ReadData;
+
+datamem data_mem_mod (
+    .a(ALUResultM),
+    .wd(WriteDataM),
     .clk(clk),
-    .we(MemWrite),
+    .we(MemWriteM),
     .rd(ReadData)
 );
 
-mux mymux (
-    .in0(ALUcompare),
-    .in1(ReadData),
-    .sel(ResultSrc),
-    .out(Result)
-)
+pc_register_mem meow(
+    .clk(clk),
+    .RegWriteM(RegWriteM),
+    .RdM(RdM),
+    .PCPlus4M(PCPlus4M),
+    .ResultSrcM(ResultSrcM),
+    .ALUResultM(ALUResultM),
+    .ReadDataM(ReadData),
+    .ALUresultW(ALUresultW),
+    .ReadDataW(ReadDataW),
+    .PCPlus4W(PCPlus4W),
+    .ResultSrcW(ResultSrcW),
+    .RegWriteW(RegWriteW),
+    .RdW(RdW)
+);
+
+mux_4x2 result_mux (
+    .in0(ALUresultW),
+    .in1(ReadDataW),
+    .in2(PCPlus4W),
+    .in3(0),
+    .sel(ResultSrcW),
+    .out(ResultW)
+);
 
 
 endmodule
