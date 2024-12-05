@@ -28,8 +28,8 @@ module decode_pipeline_reg #(
     output  logic                   RegWriteE,
     output  logic                   ResultSrcE,
     output  logic                   MemWriteE,
-    input   logic [1:0]             JumpE,
-    input   logic [2:0]             BranchE,
+    output  logic [1:0]             JumpE,
+    output  logic [2:0]             BranchE,
     output  logic [3:0]             ALUControlE,
     output  logic                   ALUSrcE,
 
