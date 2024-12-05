@@ -26,7 +26,7 @@ module decode_pipeline_regfile #(
 
     // output control signals
     output  logic                   RegWriteE,
-    output  logic                   ResultSrcE,
+    output  logic [1:0]             ResultSrcE,
     output  logic                   MemWriteE,
     output  logic [1:0]             JumpE,
     output  logic [2:0]             BranchE,
@@ -53,7 +53,7 @@ always_ff @(posedge clk) begin
     end else begin
         // assign inputs to outputs
         {RegWriteE, ResultSrcE, MemWriteE, JumpE, BranchE, ALUControlE, ALUSrcE, 
-         Rd1E, Rd2D, PCE, Rs1E, Rs2E, RdE, ImmExtE, PCPlus4E} <= 
+         Rd1E, Rd2E, PCE, Rs1E, Rs2E, RdE, ImmExtE, PCPlus4E} <= 
          {RegWriteD, ResultSrcD, MemWriteD, JumpD, BranchD, ALUControlD, ALUSrcD, 
           Rd1D, Rd2D, PCD, Rs1D, Rs2D, RdD, ImmExtD, PCPlus4D};
     end

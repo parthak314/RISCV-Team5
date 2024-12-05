@@ -10,7 +10,7 @@ module control_unit #(
     output  logic   [3:0]   ALUControl,
     output  logic           ALUSrc,
     output  logic   [2:0]   ImmSrc,
-    output  logic           RegWrite
+    output  logic           RegWrite,
     output  logic   [1:0]   Jump,
     output  logic   [2:0]   Branch
 );
@@ -78,13 +78,13 @@ module control_unit #(
                 7'b1100011: begin 
                     RegWrite = 1'b0; ImmSrc = 3'b010; ALUSrc = 1'b0; ALUControl = 4'b0001; MemWrite = 1'b0; Jump = 2'b00;
                     case (funct3)
-                        3'b000: Branch = 3'b001       // beq 
-                        3'b001: Branch = 3'b010       // bne 
-                        3'b100: Branch = 3'b100       // blt 
-                        3'b101: Branch = 3'b101       // bge 
-                        3'b110: Branch = 3'b110       // bltu
-                        3'b111: Branch = 3'b111       // bgeu
-                        default: Branch = 3'b000 // Default case
+                        3'b000: Branch = 3'b001;       // beq 
+                        3'b001: Branch = 3'b010;       // bne 
+                        3'b100: Branch = 3'b100;       // blt 
+                        3'b101: Branch = 3'b101;       // bge 
+                        3'b110: Branch = 3'b110;       // bltu
+                        3'b111: Branch = 3'b111;       // bgeu
+                        default: Branch = 3'b000; // Default case
                     endcase
                 end
 

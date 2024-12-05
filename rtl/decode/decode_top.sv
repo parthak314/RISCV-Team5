@@ -57,7 +57,7 @@ module decode_top #(
     logic   [DATA_WIDTH-1:0] Rd2D;
 
     // Control Unit Instantiation
-    control_pipelined control_unit_pipelined (
+    control_unit control_unit_mod (
         .op             (instrD[6:0]),
         .funct3         (instrD[14:12]),
         .funct7         (instrD[30]),
@@ -87,14 +87,14 @@ module decode_top #(
     );
 
     // Sign Extension Instantiation
-    signextend sign_extension (
+    sign_extend sign_extension (
         .instr          (instrD),
         .ImmSrc         (ImmSrc),
         .ImmOp          (ImmExtD)
     );
 
     // Decode Pipeline Register Instantiation
-    decode_pipeline_reg pipeline_register (
+    decode_pipeline_regfile pipeline_register (
         .clk            (clk),
         .clr            (rst || FlushE), // Clear signal derived from rst or FlushE
         .RegWriteD      (RegWriteD),
