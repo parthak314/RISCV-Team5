@@ -94,7 +94,7 @@ module decode_top #(
     );
 
     // Decode Pipeline Register Instantiation
-    decode_pipeline_regfile pipeline_register (
+    decode_pipeline_regfile decode_pipeline_reg (
         .clk            (clk),
         .clr            (rst || FlushE), // Clear signal derived from rst or FlushE
         .RegWriteD      (RegWriteD),

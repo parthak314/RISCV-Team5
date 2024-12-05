@@ -11,7 +11,7 @@ module memwrite_top #(
     input logic                     MemWriteM,
     output logic                    RegWriteW,
     output logic                    RdW,
-    output logic [DATA_WIDTH-1:0]   ResultW,
+    output logic [DATA_WIDTH-1:0]   ResultW
 );
 
 logic [DATA_WIDTH-1:0]   ALUresultW;
@@ -20,7 +20,7 @@ logic [DATA_WIDTH-1:0]   PCPlus4W;
 logic [1:0]              ResultSrcW;
 logic [DATA_WIDTH-1:0]   ReadData;
 
-datamem data_mem_mod (
+data_ram ram (
     .a(ALUResultM),
     .wd(WriteDataM),
     .clk(clk),
@@ -28,7 +28,7 @@ datamem data_mem_mod (
     .rd(ReadData)
 );
 
-pc_register_mem meow(
+memwrite_pipeline_regfile memwrite_pipeline_reg (
     .clk(clk),
     .RegWriteM(RegWriteM),
     .RdM(RdM),
@@ -44,7 +44,7 @@ pc_register_mem meow(
     .RdW(RdW)
 );
 
-mux_4x2 result_mux (
+mux4 result_mux (
     .in0(ALUresultW),
     .in1(ReadDataW),
     .in2(PCPlus4W),
