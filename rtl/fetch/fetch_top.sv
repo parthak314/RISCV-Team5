@@ -1,7 +1,3 @@
-`include "./fetch/instr_mem.sv"
-`include "./fetch/pc_register.sv"
-`include "./fetch/fetch_pipeline_regfile.sv"
-
 /* 
 Notes for integration:
 To implement trigger, route it to:
@@ -35,7 +31,7 @@ module fetch_top #(
     wire [DATA_WIDTH-1:0]           Instr_wire;
     wire [DATA_WIDTH-1:0]           PCTargetE_wire;
 
-    mux_4x2 mux_pc (
+    mux4 mux_pc (
         .in0 (PCPlus4_wire),
         .in1 (PCTargetE_wire),
         .in2 (ResultW),
