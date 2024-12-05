@@ -2,6 +2,13 @@
 `include "./fetch/pc_register.sv"
 `include "./fetch/fetch_pipeline_regfile.sv"
 
+/* 
+Notes for integration:
+To implement trigger, route it to:
+    1. set PCSRCE to 2'b11 (so that PCF is maintained)
+    2. set en to 0 (so that we retain the same InstrD)
+*/
+
 module fetch_top #(
     parameter DATA_WIDTH = 32
 ) (
@@ -52,8 +59,8 @@ module fetch_top #(
     pc_register pc_register_mod (
         .clk(clk),
         .rst(rst),
-        .PCin(PCF_in),
-        .PCout(PCF_out)
+        .PCF_in(PCF_in),
+        .PCF_out(PCF_out)
     );
 
     instr_mem instr_mem_mod (

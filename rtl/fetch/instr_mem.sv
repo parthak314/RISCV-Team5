@@ -16,7 +16,7 @@ initial begin
 end;
 
     always_comb begin
-        instr = {rom_array[addr+0], rom_array[addr+1], rom_array[addr+2], rom_array[addr+3]}; // assemble 32-bit word from 4 bytes
+        instr = {rom_array[addr+3], rom_array[addr+2], rom_array[addr+1], rom_array[addr+0]}; // assemble 32-bit word from 4 bytes
     end
 
 endmodule
