@@ -134,58 +134,63 @@ TEST_F(TestDut, BranchTest)
     }
 }
 
+TEST_F(TestDut, ResultTest) {
+    runReset();
+    top->PCSrcE = 2;
+    top->ResultW = 20;
+    runSimulation(2);
+    EXPECT_EQ(top->InstrD, GROUND_TRUTH[20 / 4]);
+}
+
+TEST_F(TestDut, PCRepeatTest) {
+    int first_instr_i = 5;
+    int second_instr_i = 3;
+    runReset();
+    top->PCSrcE = 2;
+    top->ResultW = first_instr_i * 4;
+    runSimulation();
+
+    // set PCF to repeat itself
+    top->PCSrcE = 3;
+    top->ResultW = second_instr_i * 4;
+    runSimulation();
+    EXPECT_EQ(top->InstrD, GROUND_TRUTH[first_instr_i]);
+
+    // expect PCF to repeat itself
+    top->PCSrcE = 2;
+    runSimulation();
+    EXPECT_EQ(top->InstrD, GROUND_TRUTH[first_instr_i]);
+
+    // return back to original PCSrcE (aka from ResultW)
+    runSimulation();
+    EXPECT_EQ(top->InstrD, GROUND_TRUTH[second_instr_i]);
+}
+
 // Test that the fetch module en works correctly
 TEST_F(TestDut, EnableTest)
 {
+    int first_instr_i = 3;
+    int second_instr_i = 2;
     runReset();
+    // send the first and second instr into the pc pipeline
     top->PCSrcE = 1;
-    top->ImmExtE = 12;
+    top->ImmExtE = first_instr_i * 4;
     top->PCE = 0;
-    runSimulation(2);
-    EXPECT_EQ(top->InstrD, GROUND_TRUTH[12 / 4]);
+    runSimulation();
+    top->ImmExtE = second_instr_i * 4;
+    runSimulation();
+    EXPECT_EQ(top->InstrD, GROUND_TRUTH[first_instr_i]);
+
+    // disable en, ie retain instrD output. If en was high, it should return GROUND_TRUTH[second_instr_i]
+    top->en = 0;
+    runSimulation();
+    EXPECT_EQ(top->InstrD, GROUND_TRUTH[first_instr_i]);
+
+    // set en back to HIGH, continue on to second_instr
+    top->en = 1;
+    runSimulation();
+    EXPECT_EQ(top->InstrD, GROUND_TRUTH[second_instr_i]);
 }
-
-// // test that the fetch module resets, branches and iterates correctly
-// // conditions: mix of everything 
-// TEST_F(TestDut, FullTest)
-// {
-//     // verify that reset works
-//     runReset();
-//     EXPECT_EQ(top->Instr, GROUND_TRUTH[0]);
-
-//     // set immop to branch by 14 instructions, but stall with trigger
-//     int32_t branch = 14;
-//     top->PCSrc = 1;
-//     // top->trigger = 1;
-//     // runSimulation();
-//     // EXPECT_EQ(top->Instr, GROUND_TRUTH[0]);
-
-//     // branch forward by 14 instructions
-//     int i = branch;
-//     // top->trigger = 0;
-//     top->ImmExt = branch * NUM_BYTES;
-//     runSimulation();
-//     EXPECT_EQ(top->Instr, GROUND_TRUTH[i]);
-    
-//     // iterate once forward
-//     top->PCSrc = 0;
-//     i++;
-//     runSimulation();
-//     EXPECT_EQ(top->Instr, GROUND_TRUTH[i]);
-
-//     // branch backwards by 3 instructions
-//     branch = -3;
-//     top->PCSrc = 1;
-//     i += branch;
-//     top->ImmExt = branch * NUM_BYTES;
-//     runSimulation();
-//     EXPECT_EQ(top->Instr, GROUND_TRUTH[i]);
-
-//     // verify again that reset works
-//     runReset();
-//     EXPECT_EQ(top->Instr, GROUND_TRUTH[0]);
-// }
-
 
 int main(int argc, char **argv)
 {
