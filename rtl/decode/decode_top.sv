@@ -1,4 +1,4 @@
-module decode_pipelined_top #(
+module decode_top #(
     parameter DATA_WIDTH = 32,
               ADDR_WIDTH = 5
 )(

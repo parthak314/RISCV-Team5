@@ -1,4 +1,4 @@
-module control_pipelined #(
+module control_unit #(
 ) (
     input   logic   [6:0]   op,
     input   logic   [2:0]   funct3, 

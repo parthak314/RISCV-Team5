@@ -1,5 +1,4 @@
-/* verilator lint_off UNUSED */
-module datamem #(
+module data_ram #(
     parameter DATA_WIDTH = 32 
 
 ) (

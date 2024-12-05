@@ -1,6 +1,4 @@
-/* verilator lint_off UNUSED */
-
-module top_mem #(
+module memwrite_top #(
     parameter DATA_WIDTH = 32     
 ) (
     input logic                     clk,

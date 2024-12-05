@@ -1,4 +1,4 @@
-module decode_pipeline_reg #(
+module decode_pipeline_regfile #(
     parameter DATA_WIDTH = 32,
               ADDR_WIDTH = 5
 )(
