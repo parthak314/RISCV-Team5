@@ -1,16 +1,21 @@
-module data_top #(
+`include "./decode/control.sv"
+`include "./decode/reg_file.sv"
+`include "./decode/signextend.sv"
+
+module decode_top #(
     parameter DATA_WIDTH = 32
 )(
-    input   logic   [DATA_WIDTH-1:0]  instr,
     input   logic                     rst,
     input   logic                     clk,
+    input   logic                     trigger,
+    input   logic   [DATA_WIDTH-1:0]  instr,
     input   logic   [DATA_WIDTH-1:0]  result,
     input   logic                     zero,
     input   logic                     negative,
-    output  logic                     PCsrc,
+    output  logic   [1:0]             PCSrc,
     output  logic   [1:0]             ResultSrc,
     output  logic                     MemWrite,
-    output  logic   [3:0]             ALUcontrol,
+    output  logic   [3:0]             ALUControl,
     output  logic                     ALUSrc,
     output  logic   [DATA_WIDTH-1:0]  rd1,
     output  logic   [DATA_WIDTH-1:0]  rd2,
@@ -27,10 +32,11 @@ control control_unit (
     .funct7         (instr[30]),
     .zero           (zero),
     .negative       (negative),
-    .PCsrc          (PCsrc),
+    .trigger        (trigger),
+    .PCSrc          (PCSrc),
     .ResultSrc      (ResultSrc),
     .MemWrite       (MemWrite),
-    .ALUcontrol     (ALUcontrol),
+    .ALUControl     (ALUControl),
     .ALUSrc         (ALUSrc),
     .ImmSrc         (ImmSrc),
     .RegWrite       (RegWrite)
