@@ -93,7 +93,7 @@ const int NUM_BYTES = 4;
 TEST_F(TestDut, InitialStateTest)
 {
     top->rst = 1;
-    runSimulation();
+    top->eval(); // instr mem is async, so should ready to read immediately
     EXPECT_EQ(top->Instr, GROUND_TRUTH[0]);
 }
 
