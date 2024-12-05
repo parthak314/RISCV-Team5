@@ -1,16 +1,18 @@
 module instr_mem #(
     parameter ADDRESS_WIDTH = 32,
-              DATA_WIDTH = 8,
-              OUT_WIDTH = 32
+              DATA_WIDTH = 8
 )(
     input logic     [ADDRESS_WIDTH-1:0] addr,
-    output logic    [OUT_WIDTH-1:0] instr
+    output logic    [31:0] instr
 );
 
 logic [DATA_WIDTH-1:0] rom_array [32'h00000FFF:0]; // instruction ROM from 0xBFC00FFF to 0xBFC00000 as in memory map
 
 initial begin
-    $readmemh("program.hex", rom_array); 
+    $display("Loading rom.");
+    $readmemh("program.hex", rom_array);
+    $display("Loaded!");
+
 end;
 
     always_comb begin

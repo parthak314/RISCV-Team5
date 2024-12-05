@@ -25,32 +25,38 @@ public:
     {
         top->clk = 0;
         top->rst = 0;
-        top->trigger = 0;
-        top->PCSrc = 0;
-        top->ImmOp = 5; // random value that will be obviously wrong if PCSrc is not working
+        top->en = 1;
+        top->PCSrcE = 0;
+        top->ResultW = 5; // random value that will be obviously wrong if PCSrc is not working
+        top->PCE = 6;
+        top->RdE = 7;
+        top->ImmExtE = 8;
     }
-
     void runReset()
     {
         top->rst = 1;
         runSimulation();
-        top->rst = 0;
+        initializeInputs();
     }
 
-    // Runs the simulation for a clock cycle, evaluates the DUT, dumps waveform.
-    void runSimulation()
-    {
-        for (int clk = 0; clk < 2; clk++)
-        {
-            top->eval();
-            tfp->dump(2 * ticks + clk);
-            top->clk = !top->clk;
-        }
-        ticks++;
 
-        if (Verilated::gotFinish())
+    // Runs the simulation for a clock cycle, evaluates the DUT, dumps waveform.
+    void runSimulation(int cycles = 1)
+    {
+        for (int i = 0; i < cycles; i++)
         {
-            exit(0);
+            for (int clk = 0; clk < 2; clk++)
+            {
+                top->eval();
+                tfp->dump(2 * ticks + clk);
+                top->clk = !top->clk;
+            }
+            ticks++;
+
+            if (Verilated::gotFinish())
+            {
+                exit(0);
+            }
         }
     }
 };
@@ -89,112 +95,109 @@ std::vector<uint32_t> GROUND_TRUTH = {
 const int NUM_BYTES = 4;
 
 // test that the initial value is correct
-// conditions: clk = 0, rst = 1, PCSrc = 0, ImmOp = 5
 TEST_F(TestDut, InitialStateTest)
 {
-    top->rst = 1;
-    runSimulation();
-    EXPECT_EQ(top->Instr, GROUND_TRUTH[0]);
+    runReset();
+    runSimulation(); // run extra cycle of sim to push instr_mem output to instrD
+    EXPECT_EQ(top->InstrD, GROUND_TRUTH[0]);
 }
 
 // test that the fetch module iterates through the instruction memory correctly
-// conditions: clk = [0 to GROUND_TRUTH.size() - 1], rst = 0, PCSrc = 0, ImmOp = 5
 TEST_F(TestDut, IterationTest)
 {
     size_t length = GROUND_TRUTH.size();
     runReset();
+    runSimulation();
     for (size_t i = 0; i < length; i++) {
-        EXPECT_EQ(top->Instr, GROUND_TRUTH[i]);
+        EXPECT_EQ(top->InstrD, GROUND_TRUTH[i]);
         runSimulation();
     }
 }
 
-// test that the fetch module branches correctly based on the ImmOp input
-// conditions: clk = [0 to BRANCH_SEQ.size() - 1] rst = 0, PCSrc = 1, ImmOp = BRANCH_SEQ[i] * 4
+// // test that the fetch module branches correctly based on the ImmExtE input
 TEST_F(TestDut, BranchTest)
 {
     std::vector<int32_t> BRANCH_SEQ = { 1, 3, 4, 2, -2, 5, -1, -3, 2, 1, 4, -5, 3, -4, 1, -2, 4, 1, -5, 3 };
     size_t length = BRANCH_SEQ.size();
     runReset();
-    int j = 0;
-    top->PCSrc = 1;
-    for (int i = 0; i < length; i++) {
+    top->PCSrcE = 1;
+    top->PCE = 0;
+    top->ImmExtE = BRANCH_SEQ[0] * 4; // because we need to branch in bytes of 4
+    int j = BRANCH_SEQ[0]; // This will only show up 1 cycle later (because of pipeline)
+    runSimulation();
+    for (int i = 1; i < length; i++) {
+        top->PCE += top->ImmExtE; // feed the PC of current InstrD back into PCE to create test loop
+        top->ImmExtE = BRANCH_SEQ[i] * 4;
+        runSimulation();
+        EXPECT_EQ(top->InstrD, GROUND_TRUTH[j]);
         j += BRANCH_SEQ[i];
-        top->ImmOp = BRANCH_SEQ[i] * 4; // because we need to branch in bytes of 4
-        runSimulation();
-        EXPECT_EQ(top->Instr, GROUND_TRUTH[j]);
     }
 }
 
-// test that the fetch module correctly stalls with trigger
-TEST_F(TestDut, TriggerTest)
-{
+TEST_F(TestDut, ResultTest) {
     runReset();
-    size_t length = GROUND_TRUTH.size();
-    int j = 0;
-    bool increment = true;
-    for (size_t i = 0; i < length; i++) {
-        EXPECT_EQ(top->Instr, GROUND_TRUTH[j]);
-        if (i == 5) {
-            top->trigger = 1;
-            increment = false;
-        }
-        else if (i == 8) {
-            top->trigger = 0;
-            increment = true;
-        }
-
-        if (increment) {
-            j += 1;
-        }
-        runSimulation();
-    }
+    top->PCSrcE = 2;
+    top->ResultW = 20;
+    runSimulation(2);
+    EXPECT_EQ(top->InstrD, GROUND_TRUTH[20 / 4]);
 }
 
-// test that the fetch module resets, branches and iterates correctly
-// conditions: mix of everything 
-TEST_F(TestDut, FullTest)
-{
-    // verify that reset works
+TEST_F(TestDut, PCRepeatTest) {
+    int first_instr_i = 5;
+    int second_instr_i = 3;
     runReset();
-    EXPECT_EQ(top->Instr, GROUND_TRUTH[0]);
-
-    // set immop to branch by 14 instructions, but stall with trigger
-    int32_t branch = 14;
-    top->PCSrc = 1;
-    top->trigger = 1;
+    top->PCSrcE = 2;
+    top->ResultW = first_instr_i * 4;
     runSimulation();
-    EXPECT_EQ(top->Instr, GROUND_TRUTH[0]);
 
-    // branch forward by 14 instructions
-    int i = branch;
-    top->trigger = 0;
-    top->ImmOp = branch * NUM_BYTES;
+    // set PCF to repeat itself
+    top->PCSrcE = 3;
+    top->ResultW = second_instr_i * 4;
     runSimulation();
-    EXPECT_EQ(top->Instr, GROUND_TRUTH[i]);
-    
-    // iterate once forward
-    top->PCSrc = 0;
-    i++;
-    runSimulation();
-    EXPECT_EQ(top->Instr, GROUND_TRUTH[i]);
+    EXPECT_EQ(top->InstrD, GROUND_TRUTH[first_instr_i]);
 
-    // branch backwards by 3 instructions
-    branch = -3;
-    top->PCSrc = 1;
-    i += branch;
-    top->ImmOp = branch * NUM_BYTES;
+    // expect PCF to repeat itself
+    top->PCSrcE = 2;
     runSimulation();
-    EXPECT_EQ(top->Instr, GROUND_TRUTH[i]);
+    EXPECT_EQ(top->InstrD, GROUND_TRUTH[first_instr_i]);
 
-    // verify again that reset works
-    runReset();
-    EXPECT_EQ(top->Instr, GROUND_TRUTH[0]);
+    // return back to original PCSrcE (aka from ResultW)
+    runSimulation();
+    EXPECT_EQ(top->InstrD, GROUND_TRUTH[second_instr_i]);
 }
 
+// Test that the fetch module en works correctly
+TEST_F(TestDut, EnableTest)
+{
+    int first_instr_i = 3;
+    int second_instr_i = 2;
+    runReset();
+    // send the first and second instr into the pc pipeline
+    top->PCSrcE = 1;
+    top->ImmExtE = first_instr_i * 4;
+    top->PCE = 0;
+    runSimulation();
+    top->ImmExtE = second_instr_i * 4;
+    runSimulation();
+    EXPECT_EQ(top->InstrD, GROUND_TRUTH[first_instr_i]);
+
+    // disable en, ie retain instrD output. If en was high, it should return GROUND_TRUTH[second_instr_i]
+    top->en = 0;
+    runSimulation();
+    EXPECT_EQ(top->InstrD, GROUND_TRUTH[first_instr_i]);
+
+    // set en back to HIGH, continue on to second_instr
+    top->en = 1;
+    runSimulation();
+    EXPECT_EQ(top->InstrD, GROUND_TRUTH[second_instr_i]);
+}
 
 int main(int argc, char **argv)
 {
+    std::ignore = system("rm -f program.hex");
+    std::ignore = system("touch program.hex");
+    std::ignore = system("cat ./reference/pdf.hex > program.hex");
+
     top = new Vdut;
     tfp = new VerilatedVcdC;
 
@@ -210,6 +213,6 @@ int main(int argc, char **argv)
 
     delete top;
     delete tfp;
-
+    std::ignore = system("rm -f program.hex");
     return res;
 }

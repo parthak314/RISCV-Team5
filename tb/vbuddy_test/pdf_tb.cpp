@@ -23,7 +23,7 @@ int main(int argc, char **argv, char **env) {
   int simcyc;     // simulation clock count
   int tick;       // each clk cycle has two ticks for two edges
   std::string data_command = "cat ./reference/" + distribution + ".mem > data.hex";
-  std::string header = "PDF: " + distribution;
+  std::string header = "PDF: " + std::string(1, std::toupper(distribution[0])) + distribution.substr(1);
 
   signal(SIGINT, end_program); // detect ctrl + c
 
