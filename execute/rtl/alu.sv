@@ -6,7 +6,7 @@ typedef enum logic [3:0] {
     XOR = 4'b0100,
     SLL = 4'b0101, // shift left logical
     SRL = 4'b0110, // shift right logical
-    SRA = 4'b0111, // shift right arithmetic (msb extended)
+    SRA = 4'b0111, // shift right arithmetic (signed, msb extended)
     SLT = 4'b1000, // set less than
     SLTU = 4'b1001 // set less than unsigned (zero extended)
 } control_operation;
@@ -29,6 +29,11 @@ module alu #(
             AND:    ALUResult = SrcA & SrcB;
             OR:     ALUResult = SrcA | SrcB;
             XOR:    ALUResult = SrcA ^ SrcB;
+            SLL:    ALUResult = SrcA << SrcB;
+            SRL:    ALUResult = SrcA >> SrcB;
+            SRA:    ALUResult = SrcA >>> SrcB;
+            SLT:    ALUResult = (SrcA < SrcB) ? {31'b0, 1'b1} : 32'b0;
+            SLTU:   ALUResult = ($signed(SrcA) < $signed(SrcB)) ? {31'b0, 1'b1} : 32'b0;
 
             default: ALUResult = 0;
         endcase
