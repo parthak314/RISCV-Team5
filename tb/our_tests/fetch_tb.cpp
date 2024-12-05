@@ -25,7 +25,7 @@ public:
     {
         top->clk = 0;
         top->rst = 0;
-        top->en = 1;
+        top->pipeline_en = 1;
         top->PCSrcE = 0;
         top->ResultW = 5; // random value that will be obviously wrong if PCSrc is not working
         top->PCE = 6;
@@ -182,12 +182,12 @@ TEST_F(TestDut, EnableTest)
     EXPECT_EQ(top->InstrD, GROUND_TRUTH[first_instr_i]);
 
     // disable en, ie retain instrD output. If en was high, it should return GROUND_TRUTH[second_instr_i]
-    top->en = 0;
+    top->pipeline_en = 0;
     runSimulation();
     EXPECT_EQ(top->InstrD, GROUND_TRUTH[first_instr_i]);
 
     // set en back to HIGH, continue on to second_instr
-    top->en = 1;
+    top->pipeline_en = 1;
     runSimulation();
     EXPECT_EQ(top->InstrD, GROUND_TRUTH[second_instr_i]);
 }

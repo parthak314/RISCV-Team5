@@ -6,14 +6,14 @@
 Notes for integration:
 To implement trigger, route it to:
     1. set PCSRCE to 2'b11 (so that PCF is maintained)
-    2. set en to 0 (so that we retain the same InstrD)
+    2. set pipeline_en to 0 (so that we retain the same InstrD)
 */
 
 module fetch_top #(
     parameter DATA_WIDTH = 32
 ) (
     input logic clk,
-    input logic en, // en for pipeline register
+    input logic pipeline_en, // en for pipeline register
     input logic rst,
     input logic [1:0] PCSrcE,
     input logic [DATA_WIDTH-1:0] ResultW,
@@ -70,7 +70,7 @@ module fetch_top #(
 
     fetch_pipeline_regfile fetch_pipeline_reg (
         .clk(clk),
-        .en(en),
+        .en(pipeline_en),
 
         .Instr_i(Instr_wire),
         .PC_i(PCF_out),
