@@ -1,5 +1,3 @@
-# ParthaKhanna
-
 # Personal Statement of Contributions
 
 ***Partha Khanna***
@@ -290,6 +288,38 @@ As a result of testing and debugging (using gtkwave), we found out that there we
 
 ---
 # Pipelined RISCV-32I Design
+
+controlmunit
+
+
+| `branch` | logic     |
+| -------- | --------- |
+| `000`    | No branch |
+| `001`    | beq       |
+| `010`    | bne       |
+| `100`    | blt       |
+| `101`    | bge       |
+| `110`    | bltu      |
+| `111`    | bgeu      |
+`branch` not used is `011`
+This implementation uses the logic:
+- if branch = 0 then no branching
+- if branch != 0:
+	- MSB = 0: use zero flag
+	- MSB = 1: use negative flag
+
+jump:
+
+
+| `jump` | logic         |
+| ------ | ------------- |
+| `00`   | no jump       |
+| `01`   | `jal`         |
+| `10`   | `jalr`        |
+| `11`   | trigger/stall |
+
+
+
 
 
 ---
