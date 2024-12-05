@@ -20,7 +20,8 @@ Aubeeluck,Kevin
 ![RISC-V 32I single cycle CPU implementation](images/single-cycle.jpg)
 
 ### Pipelined CPU
-![alt text](images/pipelined.png)
+![alt text](images/pipelined-schematic.png)
+
 Fetch - Joel \
 Data - Partha\
 Execute - Clarke\
