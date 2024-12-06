@@ -18,13 +18,7 @@ module fetch_pipeline_regfile #(
             Instr_o     <= Instr_i;
             PC_o        <= PC_i;
             PCPlus4_o   <= PCPlus4_i;
-        end;
+        end
     end
 
 endmodule
-
-/*
-TO REMOVE PIPELINING AND RETURN TO SINGLE-CYCLE:
-- remove/comment out clock variable
-- change "always_ff @ (negedge clk)" -- to -> "always_comb"
-*/

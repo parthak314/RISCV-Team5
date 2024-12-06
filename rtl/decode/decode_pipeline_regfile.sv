@@ -1,64 +1,67 @@
 module decode_pipeline_regfile #(
-    parameter DATA_WIDTH = 32,
-              ADDR_WIDTH = 5
-)(
-    input   logic                   clk,   
-    input   logic                   clr, 
+    parameter DATA_WIDTH = 32
+) (
+    input logic                     clk,
 
-    // input control signals       
-    input   logic                   RegWriteD,
-    input   logic [1:0]             ResultSrcD,
-    input   logic                   MemWriteD,
-    input   logic [1:0]             JumpD,
-    input   logic [2:0]             BranchD,
-    input   logic [3:0]             ALUControlD,
-    input   logic                   ALUSrcD,
+    input logic                     RegWrite_i,
+    input logic [1:0]               ResultSrc_i,
+    input logic                     MemWrite_i,
+    input logic                     Jump_i,
+    input logic [2:0]               Branch_i,
+    input logic [3:0]               ALUControl_i,
+    input logic                     ALUSrc_i,
+    input logic [1:0]               UpperOp_i,
+    input logic [2:0]               MemoryOp_i,
+    input logic [DATA_WIDTH-1:0]    RD1_i,
+    input logic [DATA_WIDTH-1:0]    RD2_i,
+    input logic [DATA_WIDTH-1:0]    PC_i,
+    input logic [4:0]               Rs1_i,
+    input logic [4:0]               Rs2_i,
+    input logic [4:0]               Rd_i,
+    input logic [DATA_WIDTH-1:0]    ImmExt_i,
+    input logic [DATA_WIDTH-1:0]    PCPlus4_i,
 
-    // other inputs
-    input   logic [DATA_WIDTH-1:0]  Rd1D,
-    input   logic [DATA_WIDTH-1:0]  Rd2D,
-    input   logic [DATA_WIDTH-1:0]  PCD,
-    input   logic [ADDR_WIDTH-1:0]  Rs1D,
-    input   logic [ADDR_WIDTH-1:0]  Rs2D,
-    input   logic [ADDR_WIDTH-1:0]  RdD,
-    input   logic [DATA_WIDTH-1:0]  ImmExtD,
-    input   logic [DATA_WIDTH-1:0]  PCPlus4D,
-
-    // output control signals
-    output  logic                   RegWriteE,
-    output  logic [1:0]             ResultSrcE,
-    output  logic                   MemWriteE,
-    output  logic [1:0]             JumpE,
-    output  logic [2:0]             BranchE,
-    output  logic [3:0]             ALUControlE,
-    output  logic                   ALUSrcE,
-
-    // other outputs
-    output   logic [DATA_WIDTH-1:0]  Rd1E,
-    output   logic [DATA_WIDTH-1:0]  Rd2E,
-    output   logic [DATA_WIDTH-1:0]  PCE,
-    output   logic [ADDR_WIDTH-1:0]  Rs1E,
-    output   logic [ADDR_WIDTH-1:0]  Rs2E,
-    output   logic [ADDR_WIDTH-1:0]  RdE,
-    output   logic [DATA_WIDTH-1:0]  ImmExtE,
-    output   logic [DATA_WIDTH-1:0]  PCPlus4E
+    output logic                    RegWrite_o,
+    output logic [1:0]              ResultSrc_o,
+    output logic                    MemWrite_o,
+    output logic                    Jump_o,
+    output logic [2:0]              Branch_o,
+    output logic [3:0]              ALUControl_o,
+    output logic                    ALUSrc_o,
+    output logic [1:0]              UpperOp_o,
+    output logic [2:0]              MemoryOp_o,
+    output logic [DATA_WIDTH-1:0]   RD1_o,
+    output logic [DATA_WIDTH-1:0]   RD2_o,
+    output logic [DATA_WIDTH-1:0]   PC_o,
+    output logic [4:0]              Rs1_o,
+    output logic [4:0]              Rs2_o,
+    output logic [4:0]              Rd_o,
+    output logic [DATA_WIDTH-1:0]   ImmExt_o,
+    output logic [DATA_WIDTH-1:0]   PCPlus4_o
 
 );
 
-always_ff @(posedge clk) begin
-    if (clr) begin
-        // assign all outputs to zero
-        {RegWriteE, ResultSrcE, MemWriteE, JumpE, BranchE, ALUControlE, ALUSrcE, 
-         Rd1E, Rd2E, PCE, Rs1E, Rs2E, RdE, ImmExtE, PCPlus4E} <= '0;
-    end else begin
-        // assign inputs to outputs
-        {RegWriteE, ResultSrcE, MemWriteE, JumpE, BranchE, ALUControlE, ALUSrcE, 
-         Rd1E, Rd2E, PCE, Rs1E, Rs2E, RdE, ImmExtE, PCPlus4E} <= 
-         {RegWriteD, ResultSrcD, MemWriteD, JumpD, BranchD, ALUControlD, ALUSrcD, 
-          Rd1D, Rd2D, PCD, Rs1D, Rs2D, RdD, ImmExtD, PCPlus4D};
+    always_ff @ (negedge clk) begin
+
+        RegWrite_o      <= RegWrite_i;
+        ResultSrc_o     <= ResultSrc_i;
+        MemWrite_o      <= MemWrite_i;
+        Jump_o          <= Jump_i;
+        Branch_o        <= Branch_i;
+        ALUControl_o    <= ALUControl_i;
+        ALUSrc_o        <= ALUSrc_i;
+        UpperOp_o       <= UpperOp_i;
+        MemoryOp_o      <= MemoryOp_i;
+        RD1_o           <= RD1_i;
+        RD2_o           <= RD2_i;
+        PC_o            <= PC_i;
+        Rs1_o           <= Rs1_i;
+        Rs2_o           <= Rs2_i;
+        Rd_o            <= Rd_i;
+        ImmExt_o        <= ImmExt_i;
+        PCPlus4_o       <= PCPlus4_i;
+
     end
-end
-
-
 
 endmodule
+
