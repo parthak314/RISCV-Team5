@@ -1,7 +1,9 @@
-`include "./memory/datamem.sv"
+`include "./memory/ram2port.sv"
+`include "./memory/two_way_cache_top.sv"
 
 module memory_top #(
-    parameter DATA_WIDTH = 32     
+    parameter   DATA_WIDTH = 32,
+                RAM_ADDR_WIDTH = 32 // though we only use 17 bits of this
 ) (
     input logic                     clk,
     input logic [1:0]               ResultSrc, // Connects to control unit
@@ -13,14 +15,35 @@ module memory_top #(
     output logic [DATA_WIDTH-1:0]   Result // Connects to WD3 of reg
 );
     
-logic [DATA_WIDTH-1:0] ReadData; // Connects to Mux
+logic [DATA_WIDTH-1:0]  ReadData; // Connects to Mux
 
-datamem data_mem_mod (
-    .a(ALUResult),
-    .wd(WriteData),
+// input and output from ram to cache
+logic                   RAMWriteEnable;
+logic [DATA_WIDTH-1:0]  RAMWriteData;
+logic [DATA_WIDTH-1:0]  RAMWriteAddr;
+logic [DATA_WIDTH-1:0]  RAMReadData;
+
+two_way_cache_top cache_top_mod (
     .clk(clk),
+    .wd(WriteData),
     .we(MemWrite),
-    .rd(ReadData)
+    .addr(ALUResult),
+    .rd(ReadData),
+    .rd_from_ram(RAMReadData),
+    .wd_to_ram(RAMWriteData),
+    .we_to_ram(RAMWriteEnable),
+    .w_addr_to_ram(RAMWriteAddr)
+);
+
+// if evicted, write to RAM
+// TODO: potentially add a read enable to prevent reading when no miss
+ram2port ram_mod (
+    .clk(clk),
+    .w_addr(RAMWriteAddr),
+    .wd(RAMWriteData),
+    .we(RAMWriteEnable),
+    .r_addr(ALUResult),
+    .rd(RAMReadData)
 );
 
 mux_4x2 result_mux (

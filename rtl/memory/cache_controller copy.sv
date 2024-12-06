@@ -1,25 +1,16 @@
 // Perhaps use LRU array based implementation as per slide 21
 
 module cache_controller #(
-    parameter   ADDR_WIDTH = 64,
-                DATA_WIDTH = 32,
-                BLOCK_SIZE = 4,
-                NUM_SETS = 256
+    parameter   DATA_WIDTH = 32, // width of 
+                NUM_WORDS = 1024,
 ) (
     input   logic                   clk,
-    input   logic                   reset,
-    input   logic [ADDR_WIDTH-1:0]  addr,
+    input   logic [ADDR_WIDTH-1:0]  wd,
     input   logic                   mem_write_en,
-
-    output  logic [DATA_WIDTH-1:0]  read_data,
-    output  logic                   hit,
-    output  logic                   miss
-    output  logic                   write_back, 
-    output  logic [ADDR_WIDTH-1:0]  wb_addr,    
-    output  logic [DATA_WIDTH-1:0]  wb_data  
 );
     // specify derived parameters (as per lecture slides)
-    localparam  OFFSET = $clog2(BLOCK_SIZE); //2
+    localparam  BYTE_SIZE = 8; // 8 bits in one byte
+    localparam  OFFSET = $clog2(DATA_WIDTH / BYTE_SIZE); // addr offset of 2 bits (recall that least sig 2 bits are implicity always 2'b00 for 32 bits)
     localparam  INDEX  = $clog2(NUM_SETS); //8
     localparam  TAG    = ADDR_WIDTH - INDEX - OFFSET; // 22
 
@@ -110,16 +101,6 @@ module cache_controller #(
             wb_addr <= {tag_array[index][way], index, offset};
             wb_data <= data_array[index][way][offset]
         end else write_back <= 0;
-    end
-
-    // reset logic
-    always_ff @(posedge clk or posedge reset) begin
-        if (reset) begin
-            valid_array <= '0;
-            dirty_array <= '0;
-            tag_array <= '0;
-            lru_array <= '0;
-        end
     end
     
 endmodule
