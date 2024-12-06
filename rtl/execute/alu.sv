@@ -9,12 +9,12 @@ typedef enum logic [3:0] {
     SRA = 4'b0111, // shift right arithmetic (signed, msb extended)
     SLT = 4'b1000, // set less than
     SLTU = 4'b1001 // set less than unsigned (zero extended)
-} control_operation;
+} alu_operation;
 
 module alu #(
     parameter   DATA_WIDTH = 32
 ) (
-    input   control_operation           ALUControl,
+    input   alu_operation               ALUControl,
     input   logic [DATA_WIDTH-1:0]      SrcA,
     input   logic [DATA_WIDTH-1:0]      SrcB,
     output  logic [DATA_WIDTH-1:0]      ALUResult,

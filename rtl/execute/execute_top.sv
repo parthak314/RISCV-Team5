@@ -2,86 +2,132 @@ module execute_top #(
     parameter DATA_WIDTH = 32
 ) (
     input logic                     clk,
-    input logic                     RegWriteE,
-    input logic [1:0]               ResultsSrcE,
-    input logic                     MemWriteE,
-    input logic                     JumpE,
-    input logic [2:0]               BranchE,
-    input logic [3:0]               ALUControlE,
-    input logic                     ALUSrcE,
-    input logic [DATA_WIDTH-1:0]    RD1E,
-    input logic [DATA_WIDTH-1:0]    RD2E,
-    input logic [DATA_WIDTH-1:0]    PCE,
-    input logic [4:0]               RdE,
-    input logic [DATA_WIDTH-1:0]    ImmExtE,
-    input logic [DATA_WIDTH-1:0]    PCPlus4E,
+    input interfaceE                BusInput,
+    input logic                     RegWriteW,  // for hazard unit
+    input logic [4:0]               RdW,        // ^^^
+    input logic [DATA_WIDTH-1:0]    ResultW,    // ^^^
 
-    output logic                    RegWriteM,
-    output logic [1:0]              ResultsSrcM,
-    output logic                    MemWriteM,
-    output logic [DATA_WIDTH-1:0]   ALUResultM,
-    output logic [DATA_WIDTH-1:0]   WriteDataM,
-    output logic [4:0]              RdM,    
-    output logic [DATA_WIDTH-1:0]   PCPlus4M,
-
-    output logic [DATA_WIDTH-1:0]   PCTargetE,  // not pipelined
-    output logic                    PCSrcE     // not pipelined
+    output interfaceM               BusOutput,
+    output logic [DATA_WIDTH-1:0]   PCTargetE,  // not pipelined, feeds back to fetch stage
+    output logic                    PCSrcE      // ^^^
 
 );
 
-    wire                            zero_wire;
-    wire                            negative_wire;
-    wire [DATA_WIDTH-1:0]           srcB_wire;
-    wire [DATA_WIDTH-1:0]           aluResult_wire;
+    wire [1:0]                      ForwardA_Wire; // from haz unit
+    wire [1:0]                      ForwardB_Wire; // ^^^
+    wire [DATA_WIDTH-1:0]           RD1_Wire;
+    wire [DATA_WIDTH-1:0]           RD2_Wire;
+    wire [DATA_WIDTH-1:0]           ALU_SrcA_Wire;
+    wire [DATA_WIDTH-1:0]           ALU_SrcB_Wire;
+    wire [DATA_WIDTH-1:0]           ALUResult_Wire;
+    wire                            Zero_Wire;
+    wire                            Negative_Wire;
+    wire [DATA_WIDTH-1:0]           PCAdder_SrcA_Wire;
+    wire                            PCSrc_Override_Wire;
 
-    alu alu_mod (
-        .ALUControl(ALUControlE),
-        .SrcA(RD1E),
-        .SrcB(srcB_wire),
-        .ALUResult(aluResult_wire),
-        .ZeroFlag(zero_wire),
-        .NegativeFlag(negative_wire)
+    mux3 forwardA_hazard (
+        .in0(BusInput.RD1E),
+        .in1(ResultW),
+        .in2(BusOutput.ALUResultM),
+        .sel(ForwardA_Wire),
+        .out(RD1_Wire)
+    );
+
+    mux3 forwardB_hazard (
+        .in0(BusInput.RD2E),
+        .in1(ResultW),
+        .in2(BusOutput.ALUResultM),
+        .sel(ForwardB_Wire),
+        .out(RD2_Wire)
+    );
+
+    mux3 upper_operation_mux (
+        .in0(RD1_Wire),
+        .in1(0),
+        .in2(BusInput.PCE),
+        .sel(BusInput.UpperOpE),
+        .out(ALU_SrcA_Wire)
     );
 
     mux mux_SrcB (
-        .in0(RD2E),
-        .in1(ImmExtE),
-        .sel(ALUSrcE),
-        .out(srcB_wire)
+        .in0(RD2_Wire),
+        .in1(BusInput.ImmExtE),
+        .sel(BusInput.ALUSrcE),
+        .out(ALU_SrcB_Wire)
+    );
+
+    alu alu_mod (
+        .ALUControl(BusInput.ALUControlE),
+        .SrcA(ALU_SrcA_Wire),
+        .SrcB(ALU_SrcB_Wire),
+        .ALUResult(ALUResult_Wire),
+        .ZeroFlag(Zero_Wire),
+        .NegativeFlag(Negative_Wire)
+    );
+
+
+
+    mux mux_jalr (
+        .in0(BusInput.PCE),
+        .in1(RD1_Wire),
+        .sel(BusInput.JalrFlagE),
+        .out(PCAdder_SrcA_Wire)
     );
 
     adder adder_PC (
-        .in0(PCE),
-        .in1(ImmExtE),
+        .in0(PCAdder_SrcA_Wire),
+        .in1(BusInput.ImmExtE),
         .out(PCTargetE)
     );
 
     branch_logic branch_logic_mod (
-        .branch(BranchE),
-        .jump(JumpE),
-        .zero(zero_wire),
-        .negative(negative_wire),
+        .Branch(BusInput.BranchE),
+        .Jump(BusInput.JumpE),
+        .Zero(Zero_Wire),
+        .Negative(Negative_Wire),
+        .PCSrcOverride(PCSrc_Override_Wire),
         .PCSrc(PCSrcE)
     );
 
     execute_pipeline_regfile execute_pipeline_reg (
         .clk(clk),
+        .flush(PCSrc_Override_Wire),
 
-        .RegWrite_i(RegWriteE),
-        .ResultsSrc_i(ResultsSrcE),
-        .MemWrite_i(MemWriteE),
-        .ALUResult_i(aluResult_wire),
-        .WriteData_i(RD2E),
-        .Rd_i(RdE),
-        .PCPlus4_i(PCPlus4E),
+        .RegWrite_i(BusInput.RegWriteE),
+        .ResultSrc_i(BusInput.ResultSrcE),
+        .MemWrite_i(BusInput.MemWriteE),
+        .MemoryOp_i(BusInput.MemoryOpE),
+        .ALUResult_i(ALUResult_Wire),
+        .WriteData_i(BusInput.RD2E),
+        .Rd_i(BusInput.RdE),
+        .PCPlus4_i(BusInput.PCPlus4E),
 
-        .RegWrite_o(RegWriteM),
-        .ResultsSrc_o(ResultsSrcM),
-        .MemWrite_o(MemWriteM),
-        .ALUResult_o(ALUResultM),
-        .WriteData_o(WriteDataM),
-        .Rd_o(RdM),
+        .RegWrite_o(BusOutput.RegWriteM),
+        .ResultSrc_o(BusOutput.ResultSrcM),
+        .MemWrite_o(BusOutput.MemWriteM),
+        .MemoryOp_o(BusOutput.MemoryOpM),
+        .ALUResult_o(BusOutput.ALUResultM),
+        .WriteData_o(BusOutput.WriteDataM),
+        .Rd_o(BusOutput.RdM),
         .PCPlus4_o(PCPlus4M)
+    );
+
+    hazard_unit hazard_unit_mod (
+        .clk(clk),
+        .PCSrc(PCSrcE),
+        .PCSrcOverride(PCSrc_Override_Wire),
+        
+        .Rs1E(BusInput.Rs1E),
+        .Rs2E(BusInput.Rs2E),
+        
+        .RegWriteM(BusOutput.RegWriteM),
+        .RegWriteW(RegWriteW),
+        .RdM(BusOutput.RdM),
+        .RdW(RdW),
+        
+        .ForwardAE(ForwardA_Wire),
+        .ForwardBE(ForwardB_Wire)
+
     );
 
 endmodule

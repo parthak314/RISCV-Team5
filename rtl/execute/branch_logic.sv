@@ -2,34 +2,34 @@ typedef enum logic [2:0] {
     NONE    = 3'b000,
     BEQ     = 3'b001,
     BNE     = 3'b010,
-                        // 3'b011 unused
-    BLT     = 3'b100,
-    BGE     = 3'b101,
-    BLTU    = 3'b110,
-    BGEU    = 3'b111
+    BLT     = 3'b011,
+    BGE     = 3'b100,
+    BLTU    = 3'b101,
+    BGEU    = 3'b110
 } branch_operation;
 
 module branch_logic (
-    input branch_operation branch,
-    input logic jump,
-    input logic zero,
-    input logic negative,
+    input branch_operation  Branch,
+    input logic [1:0]       Jump,
+    input logic             Zero,
+    input logic             Negative,
+    input logic             PCSrcOverride,
 
-    output logic PCSrc
+    output logic            PCSrc
 );
 
     always_comb begin
-        case(branch)
+        case(Branch)
             NONE:   PCSrc = 0;
-            BEQ:    PCSrc = zero;
-            BNE:    PCSrc = ~zero;
-            BLT:    PCSrc = negative;
-            BGE:    PCSrc = ~negative;
+            BEQ:    PCSrc = Zero;
+            BNE:    PCSrc = ~Zero;
+            BLT:    PCSrc = Negative;
+            BGE:    PCSrc = ~Negative;
     
             default: PCSrc = 0;
         endcase
 
-        PCSrc = PCSrc | jump;
+        PCSrc = (PCSrc | (Jump != 2'b00)) & ~PCSrcOverride; // if PCSrcOverride = 1, PCSrc = 0
     end
 
 endmodule
