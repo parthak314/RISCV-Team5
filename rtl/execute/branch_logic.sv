@@ -2,10 +2,11 @@ typedef enum logic [2:0] {
     NONE    = 3'b000,
     BEQ     = 3'b001,
     BNE     = 3'b010,
-    BLT     = 3'b011,
-    BGE     = 3'b100,
-    BLTU    = 3'b101,
-    BGEU    = 3'b110
+                        // 3'b011 unused
+    BLT     = 3'b100,
+    BGE     = 3'b101,
+    BLTU    = 3'b110,
+    BGEU    = 3'b111
 } branch_operation;
 
 module branch_logic (

@@ -21,7 +21,7 @@ for file in "$folder_path"/*.sv; do
     fi
 
     echo -e "${YELLOW}Checking file: $file${RESET}"
-    verilator --lint-only "$file" -y "$folder_path" -y "../rtl/general-purpose"
+    verilator --lint-only "$file" -y "$folder_path" -y "../rtl/general-purpose" -y "../rtl/top-module-interfaces"
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}Syntax check passed for $file${RESET}"
     else
