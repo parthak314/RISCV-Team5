@@ -1,4 +1,4 @@
-interface data_execute #(
+interface interfaceE #(
     parameter   DATA_WIDTH = 32,
                 ADDR_WIDTH = 5
     );

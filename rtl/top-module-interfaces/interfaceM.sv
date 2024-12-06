@@ -1,4 +1,4 @@
-interface execute_memwrite #(
+interface interfaceM #(
     parameter   DATA_WIDTH = 32,
                 ADDR_WIDTH = 5
     );

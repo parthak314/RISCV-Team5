@@ -1,4 +1,4 @@
-interface memwrite_fetch #(
+interface interfaceW #(
     parameter   DATA_WIDTH = 32,
                 ADDR_WIDTH = 5
     );
