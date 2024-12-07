@@ -1,108 +1,213 @@
-module control_unit #(
-) (
-    input   logic   [6:0]   op,
-    input   logic   [2:0]   funct3, 
-    input   logic           funct7, 
-    input   logic           trigger,
+module control_unit (
+    input logic [6:0]   op,
+    input logic [2:0]   func3,
+    input logic         func7,          // bit 30 of ins
 
-    output  logic   [1:0]   ResultSrc,
-    output  logic           MemWrite,
-    output  logic   [3:0]   ALUControl,
-    output  logic           ALUSrc,
-    output  logic   [2:0]   ImmSrc,
-    output  logic           RegWrite,
-    output  logic   [1:0]   Jump,
-    output  logic   [2:0]   Branch
+    output logic        RegWriteD,      // enable reg write
+    output logic [1:0]  ResultSrcD,     // choose reg value written back (final mux at the end)
+    output logic        MemWriteD,      // enable memory write
+    output logic [1:0]  JumpD,          // enable jump
+    output logic [2:0]  BranchD,        // make 3 bit
+    output logic [3:0]  ALUControlD,    // ALU control, expanded to 4 bits
+    output logic        ALUSrcD,        // ALU reg or imm source
+    output logic [1:0]  UpperOpD,
+    output logic [2:0]  MemoryOpD,      // control how to parse word depending on load operation
+    output logic [2:0]  ImmSrcD         // which imm to use when extending, as RISBU ins have different immediates
 );
 
-    task get_ALU_control(
-        input   logic [6:0] op_code,
-        input   logic [2:0] funct_3,
-        input   logic       funct_7,
-        output  logic [3:0] ALU_control
-    );
-        begin
-            case (funct_3)
-                3'd0: if (op_code == 7'b0010011) ALU_control = 4'b0000;
-                      else                       ALU_control = funct_7 ? 4'b0001 : 4'b0000; // add | addi (funct7 = 0) or sub (funct7 = 1)
-                3'd1: ALU_control = 4'b0101; // sll | slli
-                3'd2: ALU_control = 4'b1000; // slt | slti
-                3'd3: ALU_control = 4'b1001; // sltu | sltiu
-                3'd4: ALU_control = 4'b0100; // xor | xori
-                3'd5: ALU_control = funct_7 ? 4'b0110 : 4'b0111; // srl | slri (funct7 = 0) or sra | srai (funct7 = 1)
-                3'd6: ALU_control = 4'b0011; // or | ori
-                3'd7: ALU_control = 4'b0010; // and | andi
-                default: ALU_control = 4'b0000; // undefined
-            endcase
-        end
-    endtask
-
     always_comb begin
-        // if trigger, stall by setting all writes to 0
-        // then set PCSrc 2'b11 so that PCNext = PC
-        if (trigger) begin
-            RegWrite = 1'b0; ImmSrc = 3'b000; MemWrite = 1'b0; ResultSrc = 2'b00; Branch = 3'b000; Jump = 2'b11; ALUSrc = 1'b0; ALUControl = 4'b0000;
-        end else begin
+        case(op)
+            7'b0110011: begin   // Register-Type ins
+                RegWriteD   = 1;
+                ResultSrcD  = 2'b00;
+                MemWriteD   = 0;
+                JumpD       = 2'b00;
+                BranchD     = 3'b000;
+                ALUSrcD     = 0;
+                UpperOpD    = 2'b00;
+                MemoryOpD   = 3'b000;
+                ImmSrcD     = 3'b000;
+                // writing to desintation reg, select alu result as writeback val, no mem write, no jump/branch, select reg for alusrc, not using imm
+                case (func3)
+                    3'd0: begin
+                        if (func7 == 0) ALUControlD = 4'b0000; // add
+                        if (func7 == 1) ALUControlD = 4'b0001; // sub
+                    end
+                    3'd4:               ALUControlD = 4'b0100; // xor
+                    3'd6:               ALUControlD = 4'b0011; // or
+                    3'd7:               ALUControlD = 4'b0010; // and
+                    3'd1:               ALUControlD = 4'b0101; // sll
+                    3'd5: begin
+                        if (func7 == 0) ALUControlD = 4'b0110; // srl
+                        if (func7 == 1) ALUControlD = 4'b0111; // sra
+                    end                    
+                    3'd2:               ALUControlD = 4'b1000; // slt
+                    3'd3:               ALUControlD = 4'b1001; // sltu
 
-            RegWrite = 1'b0; ImmSrc = 3'b000; MemWrite = 1'b0; ResultSrc = 2'b00; Branch = 3'b000; Jump = 2'b00; ALUSrc = 1'b0; ALUControl = 4'b0000;
-            
-            case (op)
-                // R-type
-                7'b0110011: begin 
-                    RegWrite = 1'b1; ALUSrc = 1'b0; MemWrite = 1'b0; ResultSrc = 2'b00; Branch = 3'b000; Jump = 2'b00;
-                    get_ALU_control(op, funct3, funct7, ALUControl);
-                end
+                    default:            ALUControlD = 4'b0000;
+                endcase
+            end
 
-                // I-type (ALU instructions)
-                7'b0010011: begin 
-                    RegWrite = 1'b1; ImmSrc = 3'b000; MemWrite = 1'b0; ResultSrc = 2'b00; ALUSrc = 1'b1; Branch = 3'b000; Jump = 2'b00; 
-                    get_ALU_control(op, funct3, funct7, ALUControl);
-                end
+            7'b0010011: begin // I-Type arithmetic ins
+                RegWriteD   = 1;
+                ResultSrcD  = 2'b00;
+                MemWriteD   = 0;
+                JumpD       = 2'b00;
+                BranchD     = 3'b000;
+                ALUSrcD     = 1;
+                UpperOpD    = 2'b00;
+                MemoryOpD   = 3'b000;
+                ImmSrcD     = 3'b000;
+                // same as R-type instructions but ALUSrcD = 1 and ImmSrcD = 3'b000 (relevant here)
+                case (func3)
+                    3'd0:               ALUControlD = 4'b0000; // add imm
+                    
+                    3'd4:               ALUControlD = 4'b0100; // xor imm
+                    3'd6:               ALUControlD = 4'b0011; // or imm
+                    3'd7:               ALUControlD = 4'b0010; // and imm
+                    3'd1:               ALUControlD = 4'b0101; // sll imm
+                    3'd5: begin
+                        if (func7 == 0) ALUControlD = 4'b0110; // srl imm
+                        if (func7 == 1) ALUControlD = 4'b0111; // sra imm
+                    end
+                    3'd2:               ALUControlD = 4'b1000; // slt imm
+                    3'd3:               ALUControlD = 4'b1001; // sltu imm
 
-                // I-type (loading)
-                7'b0000011: begin
-                    RegWrite = 1'b1; ImmSrc = 3'b000; MemWrite = 1'b0; ALUSrc = 1'b1; ALUControl = 4'b0000; ResultSrc = 2'b01; Branch = 3'b000; Jump = 2'b00;
-                end
+                    default:            ALUControlD = 4'b0000;
+                endcase
 
-                // I-type (jalr)
-                7'b1100111: begin
-                    RegWrite = 1'b1; MemWrite = 1'b0; ImmSrc = 3'b000; ResultSrc = 2'b00; Branch = 3'b000; Jump = 2'b10; ALUControl = 4'b0000; ALUSrc = 1;
-                end
+            end
 
-                // S-type
-                7'b0100011: begin 
-                    RegWrite = 1'b0; ImmSrc = 3'b001; ALUSrc = 1'b1; ALUControl = 4'b0000; MemWrite = 1'b1; Branch = 3'b000; Jump = 2'b00;
-                end
+            7'b0000011: begin // I-type load ins
+                RegWriteD   = 1;
+                ResultSrcD  = 2'b01;
+                MemWriteD   = 0;
+                JumpD       = 2'b00;
+                BranchD     = 3'b000;
+                ALUControlD = 4'b0001;
+                ALUSrcD     = 1;
+                UpperOpD    = 2'b00;
+                ImmSrcD     = 3'b000;
 
-                // B-type
-                7'b1100011: begin 
-                    RegWrite = 1'b0; ImmSrc = 3'b010; ALUSrc = 1'b0; ALUControl = 4'b0001; MemWrite = 1'b0; Jump = 2'b00;
-                    case (funct3)
-                        3'b000: Branch = 3'b001;       // beq 
-                        3'b001: Branch = 3'b010;       // bne 
-                        3'b100: Branch = 3'b100;       // blt 
-                        3'b101: Branch = 3'b101;       // bge 
-                        3'b110: Branch = 3'b110;       // bltu
-                        3'b111: Branch = 3'b111;       // bgeu
-                        default: Branch = 3'b000; // Default case
-                    endcase
-                end
+                case(func3)
+                    3'd0: MemoryOpD = 3'b000; // load byte
+                    3'd1: MemoryOpD = 3'b001; // load half
+                    3'd2: MemoryOpD = 3'b010; // load word
+                    3'd4: MemoryOpD = 3'b011; // load byte (unsigned)
+                    3'd5: MemoryOpD = 3'b100; // load half (unsigned)
 
-                // U-type (lui)
-                7'b0110111: begin 
-                    RegWrite = 1'b1; ImmSrc = 3'b011; MemWrite = 1'b0; ResultSrc = 2'b11; Branch = 3'b000; Jump = 2'b00;
-                end
+                    default: MemoryOpD = 3'b000;
+                endcase
+            end
 
-                // J-type (jal)
-                7'b1101111: begin 
-                    RegWrite = 1'b1; ImmSrc = 3'b100; MemWrite = 1'b0; ResultSrc = 2'b10; Branch = 3'b000; Jump = 2'b01;
-                end
+            7'b0100011: begin // S-Type ins
+                RegWriteD   = 0;
+                ResultSrcD  = 2'b00;
+                MemWriteD   = 1;
+                JumpD       = 2'b00;
+                BranchD     = 3'b000;
+                ALUControlD = 4'b0001;
+                ALUSrcD     = 1;
+                UpperOpD    = 2'b00;
+                ImmSrcD     = 3'b000;
 
-                default: begin
-                    // Set initially
-                end
-            endcase
-        end
+                case(func3)
+                    3'd0: MemoryOpD = 3'b000; // store byte
+                    3'd1: MemoryOpD = 3'b001; // store half
+                    3'd2: MemoryOpD = 3'b010; // store word
+
+                    default: MemoryOpD = 3'b000;
+                endcase
+            end
+
+            7'b1100011: begin // B-Type ins
+                RegWriteD   = 0; // no reg write-back for branching
+                ResultSrcD  = 2'b00; // don't care as no write-back
+                MemWriteD   = 0;
+                JumpD       = 2'b00;
+                ALUControlD = 4'b0001; // always subtraction for comparison
+                ALUSrcD     = 0; // ALU src B always another register
+                UpperOpD    = 2'b00;
+                MemoryOpD   = 3'b000;
+                ImmSrcD     = 3'b010; // sign extent imm using branch setting
+
+                case(func3)
+                    3'd0: BranchD = 3'b001; // beq
+                    3'd1: BranchD = 3'b010; // bne
+                    3'd4: BranchD = 3'b011; // blt
+                    3'd5: BranchD = 3'b100; // bge
+                    3'd6: BranchD = 3'b101; // bltu
+                    3'd7: BranchD = 3'b110; // bgeu
+
+                    default: BranchD = 3'b000;
+                endcase
+            end
+
+            7'b1101111: begin // JAL
+                RegWriteD   = 1;
+                ResultSrcD  = 2'b10;
+                MemWriteD   = 0;
+                JumpD       = 2'b01;
+                BranchD     = 3'b000;   // irrelevant if JumpD enabled
+                ALUControlD = 4'b0000;  // irrelevant
+                ALUSrcD     = 0;        // irrelevant
+                UpperOpD    = 2'b00;
+                MemoryOpD   = 3'b000;   // irrelevant
+                ImmSrcD     = 3'b000;
+            end
+
+            7'b1100111: begin // JALR
+                RegWriteD   = 1;
+                ResultSrcD  = 2'b10;
+                MemWriteD   = 0;
+                JumpD       = 2'b10;
+                BranchD     = 3'b000;   // irrelevant if JumpD enabled
+                ALUControlD = 4'b0000;  // irrelevant
+                ALUSrcD     = 0;        // irrelevant
+                UpperOpD    = 2'b00;
+                MemoryOpD   = 3'b000;   // irrelevant
+                ImmSrcD     = 3'b000;
+            end
+
+            7'b0110111: begin // LUI
+                RegWriteD   = 1;
+                ResultSrcD  = 2'b00; // writeback alu result of 0 + Imm << 12
+                MemWriteD   = 0;
+                JumpD       = 2'b00;
+                BranchD     = 3'b000;
+                ALUControlD = 4'b0000; // addition
+                ALUSrcD     = 1;
+                UpperOpD    = 2'b01; // selects 0 as srcA into ALU
+                MemoryOpD   = 3'b000;
+                ImmSrcD     = 3'b011; // upper-type IMM
+            end
+
+            7'b0010111: begin // AUIPC
+                RegWriteD   = 1;
+                ResultSrcD  = 2'b00; // writeback alu result of PC + Imm << 12
+                MemWriteD   = 0;
+                JumpD       = 2'b00;
+                BranchD     = 3'b000;
+                ALUControlD = 4'b0000; // addition
+                ALUSrcD     = 1;
+                UpperOpD    = 2'b10; // selects PC as srcA into ALU
+                MemoryOpD   = 3'b000;
+                ImmSrcD     = 3'b011; // upper-type IMM
+            end
+
+            default: begin
+                RegWriteD   = 0;
+                ResultSrcD  = 0;
+                MemWriteD   = 0;
+                JumpD       = 0;
+                BranchD     = 0;
+                ALUControlD = 0;
+                ALUSrcD     = 0;
+                UpperOpD    = 0;
+                MemoryOpD   = 0;
+                ImmSrcD     = 0;
+            end
+        endcase
     end
 
 endmodule

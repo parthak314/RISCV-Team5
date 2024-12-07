@@ -1,132 +1,126 @@
 module decode_top #(
-    parameter DATA_WIDTH = 32,
-              ADDR_WIDTH = 5
-)(
-    // General inputs
-    input   logic                   rst,
-    input   logic                   clk,
+    parameter DATA_WIDTH = 32
+) (
+    input logic                     clk,
+    input logic [DATA_WIDTH-1:0]    InstrD,
+    input logic [DATA_WIDTH-1:0]    PCD,
+    input logic [DATA_WIDTH-1:0]    PCPlus4D,
 
-    // System inputs
-    input   logic                   trigger,
-    input   logic [DATA_WIDTH-1:0]  PCD,
-    input   logic [DATA_WIDTH-1:0]  instrD,
-    input   logic [DATA_WIDTH-1:0]  PCPlus4D,
-    input   logic [DATA_WIDTH-1:0]  resultW,
+    input logic                     RegWriteW,
+    input logic [DATA_WIDTH-1:0]    ResultW,
+    input logic [4:0]               RdW,
 
-    // Hazard unit inputs
-    input   logic                   FlushE,
+    input logic                     PCSrcE,
+    // used to drive the flush. if PCSrc = 1 then the next instr is invalid bc jump was taken
 
-    // System outputs
-    output  logic [DATA_WIDTH-1:0]  a0,  
+    output logic                    RegWriteE,
+    output logic [1:0]              ResultSrcE,
+    output logic                    MemWriteE,
+    output logic [1:0]              JumpE,
+    output logic [2:0]              BranchE,
+    output logic [3:0]              ALUControlE,
+    output logic                    ALUSrcE,
+    output logic [1:0]              UpperOpE,
+    output logic [2:0]              MemoryOpE,
+    output logic [DATA_WIDTH-1:0]   RD1E,
+    output logic [DATA_WIDTH-1:0]   RD2E,
+    output logic [DATA_WIDTH-1:0]   PCE,
+    output logic [4:0]              Rs1E,
+    output logic [4:0]              Rs2E,
+    output logic [4:0]              RdE,
+    output logic [DATA_WIDTH-1:0]   ImmExtE,
+    output logic [DATA_WIDTH-1:0]   PCPlus4E
 
-    // Hazard unit outputs
-    output  logic [ADDR_WIDTH-1:0]  Rs1D,
-    output  logic [ADDR_WIDTH-1:0]  Rs2D,
-
-    // Control unit outputs
-    output  logic                   RegWriteE,
-    output  logic [1:0]             ResultSrcE, // Ensure 2 bits for consistency
-    output  logic                   MemWriteE,
-    output  logic [1:0]             JumpE,      // Match sizes
-    output  logic [2:0]             BranchE,
-    output  logic [3:0]             ALUControlE,
-    output  logic                   ALUSrcE,
-
-    // Pipeline register outputs
-    output  logic [DATA_WIDTH-1:0]  Rd1E,
-    output  logic [DATA_WIDTH-1:0]  Rd2E,
-    output  logic [DATA_WIDTH-1:0]  PCE,
-    output  logic [ADDR_WIDTH-1:0]  Rs1E,
-    output  logic [ADDR_WIDTH-1:0]  Rs2E,
-    output  logic [ADDR_WIDTH-1:0]  RdE,
-    output  logic [DATA_WIDTH-1:0]  ImmExtE,
-    output  logic [DATA_WIDTH-1:0]  PCPlus4E
 );
 
-    // Internal signals
-    logic   [2:0]            ImmSrc;
-    logic   [DATA_WIDTH-1:0] ImmExtD;
-    logic                    RegWriteD;
-    logic   [1:0]            ResultSrcD; // Updated to match width of ResultSrcE
-    logic                    MemWriteD;
-    logic   [1:0]            JumpD;      // Updated to match width of JumpE
-    logic   [2:0]            BranchD;
-    logic   [3:0]            ALUControlD;
-    logic                    ALUSrcD;
-    logic   [DATA_WIDTH-1:0] Rd1D;
-    logic   [DATA_WIDTH-1:0] Rd2D;
+    wire                    RegWrite_Wire;
+    wire [1:0]              ResultSrc_Wire;
+    wire                    MemWrite_Wire;
+    wire [1:0]              Jump_Wire;
+    wire [2:0]              Branch_Wire;
+    wire [3:0]              ALUControl_Wire;
+    wire                    ALUSrc_Wire;
+    wire [2:0]              MemoryOp_Wire;
+    wire [1:0]              UpperOp_Wire;
+    wire [2:0]              ImmSrc_Wire;
+    wire [DATA_WIDTH-1:0]   RD1_Wire;
+    wire [DATA_WIDTH-1:0]   RD2_Wire;
+    wire [DATA_WIDTH-1:0]   ImmExt_Wire;
 
-    // Control Unit Instantiation
-    control_unit control_unit_mod (
-        .op             (instrD[6:0]),
-        .funct3         (instrD[14:12]),
-        .funct7         (instrD[30]),
-        .trigger        (trigger),
-        .ResultSrc      (ResultSrcD),
-        .MemWrite       (MemWriteD),
-        .ALUControl     (ALUControlD),
-        .ALUSrc         (ALUSrcD),
-        .ImmSrc         (ImmSrc),
-        .RegWrite       (RegWriteD),
-        .Jump           (JumpD),
-        .Branch         (BranchD)
-    );
+control_unit control_unit_mod (
+    .op(InstrD[6:0]),
+    .func3(InstrD[14:12]),
+    .func7(InstrD[30]),
 
-    // Register File Instantiation
-    reg_file register_file (
-        .clk            (clk),
-        .reset          (rst),
-        .write_enable   (RegWriteE), // Use pipeline-registered RegWrite
-        .read_addr1     (instrD[19:15]),
-        .read_addr2     (instrD[24:20]),
-        .write_addr     (instrD[11:7]),
-        .write_data     (resultW),
-        .read_data1     (Rd1D),
-        .read_data2     (Rd2D),
-        .a0             (a0)
-    );
+    .RegWriteD(RegWrite_Wire),
+    .ResultSrcD(ResultSrc_Wire),
+    .MemWriteD(MemWrite_Wire),
+    .JumpD(Jump_Wire),
+    .BranchD(Branch_Wire),
+    .ALUControlD(ALUControl_Wire),
+    .ALUSrcD(ALUSrc_Wire),
+    .UpperOpD(UpperOp_Wire),
+    .MemoryOpD(MemoryOp_Wire),
+    .ImmSrcD(ImmSrc_Wire)
+);
 
-    // Sign Extension Instantiation
-    sign_extend sign_extension (
-        .instr          (instrD),
-        .ImmSrc         (ImmSrc),
-        .ImmOp          (ImmExtD)
-    );
+register_file register_file_mod (
+    .clk(clk),
+    .A1(InstrD[19:15]),
+    .A2(InstrD[24:20]),
+    .A3(RdW),
+    .WE3(RegWriteW),
+    .WD3(ResultW),
 
-    // Decode Pipeline Register Instantiation
-    decode_pipeline_regfile decode_pipeline_reg (
-        .clk            (clk),
-        .clr            (rst || FlushE), // Clear signal derived from rst or FlushE
-        .RegWriteD      (RegWriteD),
-        .ResultSrcD     (ResultSrcD),
-        .MemWriteD      (MemWriteD),
-        .JumpD          (JumpD),
-        .BranchD        (BranchD),
-        .ALUControlD    (ALUControlD),
-        .ALUSrcD        (ALUSrcD),
-        .Rd1D           (Rd1D),
-        .Rd2D           (Rd2D),
-        .PCD            (PCD),
-        .Rs1D           (instrD[19:15]), // Assign directly from instruction
-        .Rs2D           (instrD[24:20]),
-        .RdD            (instrD[11:7]),
-        .ImmExtD        (ImmExtD),
-        .PCPlus4D       (PCPlus4D),
-        .RegWriteE      (RegWriteE),
-        .ResultSrcE     (ResultSrcE),
-        .MemWriteE      (MemWriteE),
-        .JumpE          (JumpE),
-        .BranchE        (BranchE),
-        .ALUControlE    (ALUControlE),
-        .ALUSrcE        (ALUSrcE),
-        .Rd1E           (Rd1E),
-        .Rd2E           (Rd2E),
-        .PCE            (PCE),
-        .Rs1E           (Rs1E),
-        .Rs2E           (Rs2E),
-        .RdE            (RdE),
-        .ImmExtE        (ImmExtE),
-        .PCPlus4E       (PCPlus4E)
-    );
+    .RD1(RD1_Wire),
+    .RD2(RD2_Wire)
+);
+
+sign_ext sign_ext_mod (
+    .raw_instruction(InstrD[31:7]),
+    .ImmSrc(ImmSrc_Wire),
+    .ImmExt(ImmExt_Wire)
+);
+
+decode_pipeline_regfile decode_pipeline_reg (
+    .clk(clk),
+    .flush(PCSrcE),
+
+    .RegWrite_i(RegWrite_Wire),
+    .ResultSrc_i(ResultSrc_Wire),
+    .MemWrite_i(MemWrite_Wire),
+    .Jump_i(Jump_Wire),
+    .Branch_i(Branch_Wire),
+    .ALUControl_i(ALUControl_Wire),
+    .ALUSrc_i(ALUSrc_Wire),
+    .MemoryOp_i(MemoryOp_Wire),
+    .UpperOp_i(UpperOp_Wire),
+    .RD1_i(RD1_Wire),
+    .RD2_i(RD2_Wire),
+    .PC_i(PCD),             // no wire, goes directly from input -> output
+    .Rs1_i(InstrD[19:15]),
+    .Rs2_i(InstrD[24:20]),
+    .Rd_i(InstrD[11:7]),    // no wire, goes directly from instruction -> output
+    .ImmExt_i(ImmExt_Wire),
+    .PCPlus4_i(PCPlus4D),   // no wire, goes directly from input -> output
+    
+    .RegWrite_o(RegWriteE),
+    .ResultSrc_o(ResultSrcE),
+    .MemWrite_o(MemWriteE),
+    .Jump_o(JumpE),
+    .Branch_o(BranchE),
+    .ALUControl_o(ALUControlE),
+    .ALUSrc_o(ALUSrcE),
+    .MemoryOp_o(MemoryOpE),
+    .UpperOp_o(UpperOpE),
+    .RD1_o(RD1E),
+    .RD2_o(RD2E),
+    .PC_o(PCE),
+    .Rs1_o(Rs1E),
+    .Rs2_o(Rs2E),
+    .Rd_o(RdE),
+    .ImmExt_o(ImmExtE),
+    .PCPlus4_o(PCPlus4E)
+);
 
 endmodule
