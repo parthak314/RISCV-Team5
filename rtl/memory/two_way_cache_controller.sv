@@ -123,6 +123,7 @@ module two_way_cache_controller #(
             new_dirty_bits[correct_way] = 1'b1; // update dirty bit
         end
 
+        // read from cache address
         if (addr_mode) begin
             case (offset)
                 2'b00:          data_out = {24'b0, new_words[correct_way][7:0]};
@@ -137,7 +138,7 @@ module two_way_cache_controller #(
     assign updated_set_data = {
         new_lru_bit,
         new_v_bits[1],
-        dirty_bits[1],
+        new_dirty_bits[1],
         new_tags[1],
         new_words[1],
         new_v_bits[0],
@@ -146,6 +147,6 @@ module two_way_cache_controller #(
         new_words[0]
     };
 
-    assign we_cache = (updated_set_data != set_data);
+    assign we_cache = (we && (updated_set_data != set_data));
 
 endmodule
