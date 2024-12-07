@@ -2,7 +2,7 @@
 module ram2port #(
     parameter   DATA_WIDTH = 32
 ) (
-    input logic                     clk, // Allows for it to be clockedz
+    input logic                     clk, // Allows for it to be clocked
     input logic [DATA_WIDTH-1:0]    w_addr, // Input write address for data 
     input logic [DATA_WIDTH-1:0]    wd, // Data to be written in
     input logic                     we, // Write enable
