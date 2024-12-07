@@ -2,8 +2,8 @@ typedef enum logic [2:0] {
     BYTE            = 3'b000,
     HALF            = 3'b001,
     WORD            = 3'b010,
-    BYTE_UNSIGNED   = 3'b100,
-    HALF_UNSIGNED   = 3'b101
+    BYTE_UNSIGNED   = 3'b011,
+    HALF_UNSIGNED   = 3'b100
 } memory_operation;
 
 module loadstore_parsing_unit #(

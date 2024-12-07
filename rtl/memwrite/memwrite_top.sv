@@ -14,6 +14,8 @@ module memwrite_top #(
     input logic [4:0]               RdM,
     input logic [DATA_WIDTH-1:0]    PCPlus4M,
 
+    output logic [DATA_WIDTH-1:0]   ReadDataM, // to feed back into execute stage for data hazard forwarding
+
     output logic                    RegWriteW,
     output logic [4:0]              RdW,
     output logic [DATA_WIDTH-1:0]   ResultW
@@ -26,6 +28,8 @@ module memwrite_top #(
     wire [DATA_WIDTH-1:0]   PCPlus4W_Wire;
     wire [DATA_WIDTH-1:0]   ParseUnit_DataOut_Wire;
     wire [DATA_WIDTH-1:0]   ReadDataW_Wire;
+
+    assign ReadDataM = ParseUnit_DataOut_Wire;
 
     data_ram ram (
         .clk(clk),

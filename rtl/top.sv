@@ -15,6 +15,7 @@ module top #(
     
     wire                    PCSrcE_wire;
     wire [DATA_WIDTH-1:0]   PCTargetE_wire;
+    wire [DATA_WIDTH-1:0]   ReadDataM_wire; // for data forwarding from memory stage
 
     fetch_top fetch (
         .clk(clk),
@@ -89,6 +90,7 @@ module top #(
         .RegWriteW(intfW.RegWriteW),
         .RdW(intfW.RdW),
         .ResultW(intfW.ResultW),
+        .ReadDataM(ReadDataM_wire),
 
         .RegWriteM(intfM.RegWriteM),
         .ResultSrcM(intfM.ResultSrcM),
@@ -115,6 +117,9 @@ module top #(
         .WriteDataM(intfM.WriteDataM),
         .RdM(intfM.RdM),
         .PCPlus4M(intfM.PCPlus4M),
+
+        .ReadDataM(ReadDataM_wire),
+
         .RegWriteW(intfW.RegWriteW),
         .RdW(intfW.RdW),
         .ResultW(intfW.ResultW)

@@ -27,6 +27,7 @@ module execute_top #(
     input logic                     RegWriteW,  // for hazard unit
     input logic [4:0]               RdW,        // ^^^
     input logic [DATA_WIDTH-1:0]    ResultW,    // ^^^
+    input logic [DATA_WIDTH-1:0]    ReadDataM,  // ^^^ (fed back from memory top)
 
     output logic                    RegWriteM,
     output logic [1:0]              ResultSrcM,
@@ -42,8 +43,9 @@ module execute_top #(
 
 );
 
-    wire [1:0]                      ForwardA_Wire; // from haz unit
-    wire [1:0]                      ForwardB_Wire; // ^^^
+    wire [1:0]                      ForwardA_Mux_Wire; // from haz unit
+    wire [1:0]                      ForwardB_Mux_Wire; // ^^^
+    wire [DATA_WIDTH-1:0]           Forward_MemStage_Data_Wire;
     wire [DATA_WIDTH-1:0]           RD1_Wire;
     wire [DATA_WIDTH-1:0]           RD2_Wire;
     wire [DATA_WIDTH-1:0]           ALU_SrcA_Wire;
@@ -56,16 +58,16 @@ module execute_top #(
     mux3 forwardA_hazard (
         .in0(RD1E),
         .in1(ResultW),
-        .in2(ALUResultM),
-        .sel(ForwardA_Wire),
+        .in2(Forward_MemStage_Data_Wire),
+        .sel(ForwardA_Mux_Wire),
         .out(RD1_Wire)
     );
 
     mux3 forwardB_hazard (
         .in0(RD2E),
         .in1(ResultW),
-        .in2(ALUResultM),
-        .sel(ForwardB_Wire),
+        .in2(Forward_MemStage_Data_Wire),
+        .sel(ForwardB_Mux_Wire),
         .out(RD2_Wire)
     );
 
@@ -124,7 +126,7 @@ module execute_top #(
         .MemWrite_i(MemWriteE),
         .MemoryOp_i(MemoryOpE),
         .ALUResult_i(ALUResult_Wire),
-        .WriteData_i(RD2E),
+        .WriteData_i(RD2_Wire),
         .Rd_i(RdE),
         .PCPlus4_i(PCPlus4E),
 
@@ -138,6 +140,20 @@ module execute_top #(
         .PCPlus4_o(PCPlus4M)
     );
 
+    /* 
+    when forwarding data from the memory stage (not writeback stage)
+    need mux to determine the data source being forwarded 
+    i.e. what would have been written back had it reached the write-back stage
+    it could be ALUResultM RAM_Output or PCPlus4M, depending on the value ResultSrc
+    */
+    mux3 mux_mem_stage_forward_data_source (
+        .in0(ALUResultM),
+        .in1(ReadDataM),
+        .in2(PCPlus4M),
+        .sel(ResultSrcM),
+        .out(Forward_MemStage_Data_Wire)
+    );
+
     hazard_unit hazard_unit_mod (        
         .Rs1E(Rs1E),
         .Rs2E(Rs2E),
@@ -147,8 +163,8 @@ module execute_top #(
         .RdM(RdM),
         .RdW(RdW),
         
-        .ForwardAE(ForwardA_Wire),
-        .ForwardBE(ForwardB_Wire)
+        .ForwardAE(ForwardA_Mux_Wire),
+        .ForwardBE(ForwardB_Mux_Wire)
 
     );
 

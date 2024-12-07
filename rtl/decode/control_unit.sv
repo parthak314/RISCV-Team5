@@ -84,7 +84,7 @@ module control_unit (
                 MemWriteD   = 0;
                 JumpD       = 2'b00;
                 BranchD     = 3'b000;
-                ALUControlD = 4'b0001;
+                ALUControlD = 4'b0000;      // addition to calculate rs1 + imm offset
                 ALUSrcD     = 1;
                 UpperOpD    = 2'b00;
                 ImmSrcD     = 3'b000;
@@ -106,10 +106,10 @@ module control_unit (
                 MemWriteD   = 1;
                 JumpD       = 2'b00;
                 BranchD     = 3'b000;
-                ALUControlD = 4'b0001;
+                ALUControlD = 4'b0000;      // addition to calculate rs1 + imm offset
                 ALUSrcD     = 1;
                 UpperOpD    = 2'b00;
-                ImmSrcD     = 3'b000;
+                ImmSrcD     = 3'b001;       // S-Type immediate
 
                 case(func3)
                     3'd0: MemoryOpD = 3'b000; // store byte
