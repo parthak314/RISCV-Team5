@@ -3,6 +3,9 @@ module execute_top #(
                 ADDR_WIDTH = 5
 ) (
     input logic                     clk,
+    input logic                     stall,
+    input logic                     reset,
+
     input logic                     RegWriteE,
     input logic [1:0]               ResultSrcE,
     input logic                     MemWriteE,
@@ -112,7 +115,9 @@ module execute_top #(
     );
 
     execute_pipeline_regfile execute_pipeline_reg (
+        .en(~stall),
         .clk(clk),
+        .clear(reset),
 
         .RegWrite_i(RegWriteE),
         .ResultSrc_i(ResultSrcE),

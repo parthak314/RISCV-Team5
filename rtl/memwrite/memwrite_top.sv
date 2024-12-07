@@ -2,6 +2,9 @@ module memwrite_top #(
     parameter DATA_WIDTH = 32
 ) (
     input logic                     clk,
+    input logic                     stall,
+    input logic                     reset,
+
     input logic                     RegWriteM,
     input logic [1:0]               ResultsSrcM,
     input logic                     MemWriteM,
@@ -41,7 +44,10 @@ module memwrite_top #(
     );
 
     memwrite_pipeline_regfile memwrite_pipeline_reg (
+        .en(~stall),
         .clk(clk),
+        .clear(reset),
+        
         .RegWrite_i(RegWriteM),
         .ResultSrc_i(ResultsSrcM),
         .ALUResult_i(ALUResultM),

@@ -2,6 +2,9 @@ module decode_top #(
     parameter DATA_WIDTH = 32
 ) (
     input logic                     clk,
+    input logic                     stall,
+    input logic                     reset,
+
     input logic [DATA_WIDTH-1:0]    InstrD,
     input logic [DATA_WIDTH-1:0]    PCD,
     input logic [DATA_WIDTH-1:0]    PCPlus4D,
@@ -29,7 +32,9 @@ module decode_top #(
     output logic [4:0]              Rs2E,
     output logic [4:0]              RdE,
     output logic [DATA_WIDTH-1:0]   ImmExtE,
-    output logic [DATA_WIDTH-1:0]   PCPlus4E
+    output logic [DATA_WIDTH-1:0]   PCPlus4E,
+
+    output logic [DATA_WIDTH-1:0]   a0
 
 );
 
@@ -73,7 +78,8 @@ register_file register_file_mod (
     .WD3(ResultW),
 
     .RD1(RD1_Wire),
-    .RD2(RD2_Wire)
+    .RD2(RD2_Wire),
+    .a0(a0)
 );
 
 sign_ext sign_ext_mod (
@@ -83,8 +89,9 @@ sign_ext sign_ext_mod (
 );
 
 decode_pipeline_regfile decode_pipeline_reg (
+    .en(~stall),
     .clk(clk),
-    .flush(PCSrcE),
+    .clear(PCSrcE | reset),
 
     .RegWrite_i(RegWrite_Wire),
     .ResultSrc_i(ResultSrc_Wire),

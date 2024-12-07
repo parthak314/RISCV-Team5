@@ -2,6 +2,9 @@ module fetch_top #(
     parameter DATA_WIDTH = 32
 ) (
     input logic                     clk,
+    input logic                     stall,
+    input logic                     reset,
+
     input logic                     PCSrc,
     input logic [DATA_WIDTH-1:0]    PCTarget,
 
@@ -30,7 +33,10 @@ module fetch_top #(
     );
 
     pc_register pc_register_mod (
+        .en(~stall),
         .clk(clk),
+        .clear(reset),
+        
         .PCin(PC_Reg_In),
         .PCout(PC_Reg_Out)
     );
@@ -41,7 +47,9 @@ module fetch_top #(
     );
 
     fetch_pipeline_regfile fetch_pipeline_reg (
+        .en(~stall),
         .clk(clk),
+        .clear(reset),
 
         .Instr_i(Instr_Wire),
         .PC_i(PC_Reg_Out),

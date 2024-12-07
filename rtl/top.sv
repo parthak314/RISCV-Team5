@@ -1,7 +1,11 @@
 module top #(
     parameter DATA_WIDTH = 32
 ) (
-    input logic clk
+    input logic                     clk,
+    input logic                     trigger,
+    input logic                     rst,
+
+    output logic [DATA_WIDTH-1:0]   a0
 );
 
     interfaceD intfD();
@@ -14,6 +18,9 @@ module top #(
 
     fetch_top fetch (
         .clk(clk),
+        .stall(trigger),
+        .reset(rst),
+
         .PCSrc(PCSrcE_wire),
         .PCTarget(PCTargetE_wire),
 
@@ -24,6 +31,9 @@ module top #(
 
     decode_top decode (
         .clk(clk),
+        .stall(trigger),
+        .reset(rst),
+
         .InstrD(intfD.InstrD),
         .PCD(intfD.PCD),
         .PCPlus4D(intfD.PCPlus4D),
@@ -49,11 +59,15 @@ module top #(
         .Rs2E(intfE.Rs2E),
         .RdE(intfE.RdE),
         .ImmExtE(intfE.ImmExtE),
-        .PCPlus4E(intfE.PCPlus4E)
+        .PCPlus4E(intfE.PCPlus4E),
+        .a0(a0)
     );
 
     execute_top execute (
         .clk(clk),
+        .stall(trigger),
+        .reset(rst),
+
         .RegWriteE(intfE.RegWriteE),
         .ResultSrcE(intfE.ResultSrcE),
         .MemWriteE(intfE.MemWriteE),
@@ -90,6 +104,9 @@ module top #(
 
     memwrite_top memory_write (
         .clk(clk),
+        .stall(trigger),
+        .reset(rst),
+        
         .RegWriteM(intfM.RegWriteM),
         .ResultsSrcM(intfM.ResultSrcM),
         .MemWriteM(intfM.MemWriteM),

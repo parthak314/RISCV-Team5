@@ -2,8 +2,9 @@ module decode_pipeline_regfile #(
     parameter   DATA_WIDTH = 32,
                 ADDR_WIDTH = 5
 ) (
+    input logic                     en,
     input logic                     clk,
-    input logic                     flush,
+    input logic                     clear,
 
     input logic                     RegWrite_i,
     input logic [1:0]               ResultSrc_i,
@@ -45,27 +46,7 @@ module decode_pipeline_regfile #(
 
     always_ff @ (negedge clk) begin
 
-        if (flush == 1) begin
-            RegWrite_o      <= 0;
-            ResultSrc_o     <= 0;
-            MemWrite_o      <= 0;
-            Jump_o          <= 0;
-            Branch_o        <= 0;
-            ALUControl_o    <= 0;
-            ALUSrc_o        <= 0;
-            UpperOp_o       <= 0;
-            MemoryOp_o      <= 0;
-            RD1_o           <= 0;
-            RD2_o           <= 0;
-            PC_o            <= 0;
-            Rs1_o           <= 0;
-            Rs2_o           <= 0;
-            Rd_o            <= 0;
-            ImmExt_o        <= 0;
-            PCPlus4_o       <= 0;
-        end
-        
-        else if (flush == 0) begin
+        if (en & !clear) begin
             RegWrite_o      <= RegWrite_i;
             ResultSrc_o     <= ResultSrc_i;
             MemWrite_o      <= MemWrite_i;
@@ -84,6 +65,27 @@ module decode_pipeline_regfile #(
             ImmExt_o        <= ImmExt_i;
             PCPlus4_o       <= PCPlus4_i;        
         end
+
+        else if (clear) begin
+            RegWrite_o      <= 0;
+            ResultSrc_o     <= 0;
+            MemWrite_o      <= 0;
+            Jump_o          <= 0;
+            Branch_o        <= 0;
+            ALUControl_o    <= 0;
+            ALUSrc_o        <= 0;
+            UpperOp_o       <= 0;
+            MemoryOp_o      <= 0;
+            RD1_o           <= 0;
+            RD2_o           <= 0;
+            PC_o            <= 0;
+            Rs1_o           <= 0;
+            Rs2_o           <= 0;
+            Rd_o            <= 0;
+            ImmExt_o        <= 0;
+            PCPlus4_o       <= 0;
+        end
+
     end
 
 endmodule

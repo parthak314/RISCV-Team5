@@ -10,7 +10,9 @@ module register_file #(
     input logic [DATA_WIDTH-1:0]        WD3, // data to write to address 3
 
     output logic [DATA_WIDTH-1:0]       RD1,
-    output logic [DATA_WIDTH-1:0]       RD2
+    output logic [DATA_WIDTH-1:0]       RD2,
+
+    output logic [DATA_WIDTH-1:0]       a0
 );
     
     logic [DATA_WIDTH-1:0] reg_file [2**ADDRESS_WIDTH-1:0] /* verilator public_flat */;
@@ -18,6 +20,7 @@ module register_file #(
     always_comb begin
         RD1 = reg_file[A1];
         RD2 = reg_file[A2];
+        a0  = reg_file[10];
     end
     
     always @ (posedge clk) begin
