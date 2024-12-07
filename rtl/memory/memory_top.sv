@@ -6,6 +6,7 @@ module memory_top #(
                 RAM_ADDR_WIDTH = 32 // though we only use 17 bits of this
 ) (
     input logic                     clk,
+    input logic                     AddrMode, // address mode: 0 for word, 1 for byte
     input logic [1:0]               ResultSrc, // Connects to control unit
     input logic                     MemWrite, // Connects to control unit
     input logic [DATA_WIDTH-1:0]    PCPlus4,
@@ -32,7 +33,8 @@ two_way_cache_top cache_top_mod (
     .rd_from_ram(RAMReadData),
     .wd_to_ram(RAMWriteData),
     .we_to_ram(RAMWriteEnable),
-    .w_addr_to_ram(RAMWriteAddr)
+    .w_addr_to_ram(RAMWriteAddr),
+    .addr_mode(A)
 );
 
 // if evicted, write to RAM
