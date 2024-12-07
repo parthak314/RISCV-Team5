@@ -47,6 +47,7 @@ ram2port ram_mod (
     .wd(RAMWriteData),
     .we(RAMWriteEnable),
     .r_addr(ALUResult),
+    .addr_mode(AddrMode),
     .rd(RAMReadData)
 );
 

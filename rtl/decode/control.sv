@@ -38,6 +38,22 @@ module control #(
         end
     endtask
 
+    task get_addressing_mode(
+        input    logic [2:0] funct_3,
+        output   logic [2:0] addr_mode
+    );
+        begin
+            case (funct_3)
+                3'h0: addr_mode = 3'b001; // lb | sb
+                3'h1: addr_mode = 3'b010; // lh | sh
+                3'h2: addr_mode = 3'b011; // lw | sw
+                3'h4: addr_mode = 3'b101; // lbu
+                3'h5: addr_mode = 3'b110; // lhu
+                default: addr_mode = 3'b000;
+            endcase
+        end
+    endtask
+
     always_comb begin
         // if trigger, stall by setting all writes to 0
         // then set PCSrc 2'b11 so that PCNext = PC
@@ -76,12 +92,7 @@ module control #(
                 // I-type (loading)
                 7'b0000011: begin
                     RegWrite = 1'b1; ImmSrc = 3'b000; MemWrite = 1'b0; ALUSrc = 1'b1; ALUControl = 4'b0000; ResultSrc = 2'b01; PCSrc = 2'b0;
-                    case (funct3)
-                        3'b010: AddrMode = 1'b0;    // LW
-                        3'b100: AddrMode = 1'b1;    // LBU
-                        // TODO: add more functions - SH and non unsigned load
-                        default: AddrMode = 1'b0;
-                    endcase
+                    get_addressing_mode(funct3, AddrMode);
                 end
 
                 // I-type (jalr)
@@ -92,12 +103,7 @@ module control #(
                 // S-type
                 7'b0100011: begin 
                     RegWrite = 1'b0; ImmSrc = 3'b001; ALUSrc = 1'b1; ALUControl = 4'b0000; MemWrite = 1'b1; PCSrc = 2'b0;
-                    case (funct3)
-                        3'b000: AddrMode = 1'b1;    // SB
-                        3'b010: AddrMode = 1'b0;    // SW
-                        // TODO add SH
-                        default: AddrMode = 1'b0;
-                    endcase
+                    get_addressing_mode(funct3, AddrMode);
                 end
 
                 // B-type
@@ -111,6 +117,7 @@ module control #(
                         3'b110: PCSrc = negative ? 2'b01 : 2'b0;   // bltu
                         3'b111: PCSrc = ~negative ? 2'b01 : 2'b0;  // bgeu
                         default: PCSrc = 2'b0; // Default case
+                        // TODO: test all branching types
                     endcase
                 end
 
