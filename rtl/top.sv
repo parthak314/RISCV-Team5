@@ -17,10 +17,11 @@ logic [1:0] PCSrc;
 logic [DATA_WIDTH-1:0] Instr;
 logic [DATA_WIDTH-1:0] PCPlus4;
 
-// Data Wires
+// Decode Wires
 logic Zero, Negative; // negative, zero flags
 logic MemWrite;
 logic ALUSrc;
+logic AddrMode;
 logic [1:0] ResultSrc;
 logic [3:0] ALUControl;
 logic [DATA_WIDTH-1:0] Result;
@@ -53,6 +54,7 @@ decode_top decode_top_mod (
     .MemWrite(MemWrite),
     .ALUControl(ALUControl),
     .ALUSrc(ALUSrc),
+    .AddrMode(AddrMode),
     .rd1(RD1),
     .rd2(RD2),
     .ImmExt(ImmExt),
@@ -72,6 +74,7 @@ execute_top execute_top_mod (
 
 memory_top memory_top_mod (
     .clk(clk),
+    .AddrMode(AddrMode),
     .ResultSrc(ResultSrc),
     .MemWrite(MemWrite),
     .PCPlus4(PCPlus4),

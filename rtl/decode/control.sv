@@ -12,7 +12,8 @@ module control #(
     output  logic   [3:0]   ALUControl, // controls the operation to perform in the ALU
     output  logic           ALUSrc, // immediate vs register operand for ALU
     output  logic   [2:0]   ImmSrc, // Type of sign extend performed based on instr type
-    output  logic           RegWrite // enable for when to write to a register
+    output  logic           RegWrite, // enable for when to write to a register
+    output  logic           AddrMode // whether it is byte addressing or word addressing (0: byte, word: 1)
 );
 
     task get_ALU_control(
@@ -57,6 +58,7 @@ module control #(
             PCSrc = 2'b0;
             ALUSrc = 1'b0;
             ALUControl = 4'b0000;
+            AddrMode = 1'b0;
 
             case (op)
                 // R-type
@@ -74,6 +76,12 @@ module control #(
                 // I-type (loading)
                 7'b0000011: begin
                     RegWrite = 1'b1; ImmSrc = 3'b000; MemWrite = 1'b0; ALUSrc = 1'b1; ALUControl = 4'b0000; ResultSrc = 2'b01; PCSrc = 2'b0;
+                    case (funct3)
+                        3'b010: AddrMode = 1'b0;    // LW
+                        3'b100: AddrMode = 1'b1;    // LBU
+                        // TODO: add more functions - SH and non unsigned load
+                        default: AddrMode = 1'b0;
+                    endcase
                 end
 
                 // I-type (jalr)
@@ -84,6 +92,12 @@ module control #(
                 // S-type
                 7'b0100011: begin 
                     RegWrite = 1'b0; ImmSrc = 3'b001; ALUSrc = 1'b1; ALUControl = 4'b0000; MemWrite = 1'b1; PCSrc = 2'b0;
+                    case (funct3)
+                        3'b000: AddrMode = 1'b1;    // SB
+                        3'b010: AddrMode = 1'b0;    // SW
+                        // TODO add SH
+                        default: AddrMode = 1'b0;
+                    endcase
                 end
 
                 // B-type

@@ -17,6 +17,7 @@ module decode_top #(
     output  logic                     MemWrite,
     output  logic   [3:0]             ALUControl,
     output  logic                     ALUSrc,
+    output  logic                     AddrMode,
     output  logic   [DATA_WIDTH-1:0]  rd1,
     output  logic   [DATA_WIDTH-1:0]  rd2,
     output  logic   [DATA_WIDTH-1:0]  ImmExt, 
@@ -39,7 +40,8 @@ control control_unit (
     .ALUControl     (ALUControl),
     .ALUSrc         (ALUSrc),
     .ImmSrc         (ImmSrc),
-    .RegWrite       (RegWrite)
+    .RegWrite       (RegWrite),
+    .AddrMode       (AddrMode)
 );
 
 reg_file register_file (

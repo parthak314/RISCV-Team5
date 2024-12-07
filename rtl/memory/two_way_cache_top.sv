@@ -6,16 +6,17 @@ module two_way_cache_top #(
                 NUM_WORDS = 1024, // number of data words stored in total. ie num_sets * 2 (since 2 way)
                 RAM_ADDR_WIDTH = 32
 ) (
-    input   logic                    clk,
-    input   logic [DATA_WIDTH-1:0]   wd, // Data to be written in
-    input   logic                    we, // Write enable
-    input   logic [DATA_WIDTH-1:0]   addr, // target address for read data
-    input  logic [DATA_WIDTH-1:0]    rd_from_ram, // read from ram if miss
+    input   logic                       clk,
+    input   logic                       addr_mode, // byte or word addressing, see memory_top
+    input   logic [DATA_WIDTH-1:0]      wd, // Data to be written in
+    input   logic                       we, // Write enable
+    input   logic [DATA_WIDTH-1:0]      addr, // target address for read data
+    input   logic [DATA_WIDTH-1:0]      rd_from_ram, // read from ram if miss
 
-    output  logic [DATA_WIDTH-1:0]   rd, // data that is output from reading
-    output  logic [DATA_WIDTH-1:0]  wd_to_ram, // word that is being evicted
-    output  logic                   we_to_ram, // boolean if evicted or not
-    output  logic [RAM_ADDR_WIDTH-1:0] w_addr_to_ram // evicted word address in ram
+    output  logic [DATA_WIDTH-1:0]      rd, // data that is output from reading
+    output  logic [DATA_WIDTH-1:0]      wd_to_ram, // word that is being evicted
+    output  logic                       we_to_ram, // boolean if evicted or not
+    output  logic [RAM_ADDR_WIDTH-1:0]  w_addr_to_ram // evicted word address in ram
 );
     // each set has 1 v bit and dirty bit per data block
     // ie 2-way cache will have 2 v bits and 2 dity bits per set (1 for each data block)
@@ -52,11 +53,12 @@ module two_way_cache_top #(
     assign offset = addr[BYTE_OFFSET-1:0]; // for reading from other byte positions in the set
 
     two_way_cache_controller cache_controller_mod (
+        .addr_mode(addr_mode),
         .we(we),
         .wd(wd),
-        .offset(offset),
         .target_set(target_set), // RAM address we are trying to retrieve
         .target_tag(target_tag),
+        .offset(offset),
         .set_data(set_data),
         .rd_from_ram(rd_from_ram),
         .data_out(rd),

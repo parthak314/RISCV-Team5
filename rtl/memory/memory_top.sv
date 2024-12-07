@@ -6,6 +6,7 @@ module memory_top #(
                 RAM_ADDR_WIDTH = 32 // though we only use 17 bits of this
 ) (
     input logic                     clk,
+    input logic                     AddrMode, // address mode: 0 for word, 1 for byte
     input logic [1:0]               ResultSrc, // Connects to control unit
     input logic                     MemWrite, // Connects to control unit
     input logic [DATA_WIDTH-1:0]    PCPlus4,
@@ -25,6 +26,7 @@ logic [DATA_WIDTH-1:0]  RAMReadData;
 
 two_way_cache_top cache_top_mod (
     .clk(clk),
+    .addr_mode(AddrMode),
     .wd(WriteData),
     .we(MemWrite),
     .addr(ALUResult),
@@ -36,6 +38,8 @@ two_way_cache_top cache_top_mod (
 );
 
 // if evicted, write to RAM
+// note we don't need addr_mode for ram as we are handling it all in cache controller
+// always read and write 32-bit word to ram
 // TODO: potentially add a read enable to prevent reading when no miss
 ram2port ram_mod (
     .clk(clk),
