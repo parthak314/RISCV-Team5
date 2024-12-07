@@ -24,7 +24,7 @@ module register_file #(
     end
     
     always @ (posedge clk) begin
-        if (WE3) begin
+        if (WE3 & A3 != 5'b0) begin
             reg_file[A3] <= WD3;
         end
     end   

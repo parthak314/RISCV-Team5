@@ -17,12 +17,14 @@ int main(int argc, char **argv, char **env)
     top->trace(tfp.get(), 99);
     tfp->open("riscv.vcd");
 
-    top->clk = 0;
-    // VlUnpacked<IData/*31:0*/, 32>& reg_file = top->rootp->riscv_top__DOT__data__DOT__register_file_mod__DOT__reg_file;
-    // uint32_t& A0 = reg_file[10];
-    // uint32_t& T1 = reg_file[6];
+    top->clk = 1;
+    top->trigger = 0;
+    top->rst = 0;
+    
+    VlUnpacked<IData/*31:0*/, 32>& reg_file = top->rootp->top__DOT__decode__DOT__register_file_mod__DOT__reg_file;
+    uint32_t& T1 = reg_file[6];
 
-    for (simcyc = 0; simcyc <= 50; simcyc++)
+    for (simcyc = 0; simcyc <= 1200; simcyc++)
     {
         for (tick = 0; tick < 2; tick++)
         {
@@ -37,7 +39,7 @@ int main(int argc, char **argv, char **env)
             exit(0);
     }
 
-    // std::cout << "A0: " << A0 << std::endl;
+    std::cout << "a0: " << top->a0 << std::endl;
 
     tfp->close();
     exit(0);
