@@ -29,6 +29,8 @@ cd $SCRIPT_DIR
 # Wipe previous test output
 rm -rf test_out/*
 
+find ../rtl -type f -name "*.sv" > filelist.f
+
 # Iterate through files
 for file in "${files[@]}"; do
     name=$(basename "$file" _tb.cpp | cut -f1 -d\-)
@@ -39,10 +41,9 @@ for file in "${files[@]}"; do
     fi
 
     # Translate Verilog -> C++ including testbench
-    verilator   -Wall --trace \
-                -cc ${RTL_FOLDER}/${name}.sv \
+    verilator   -Wall --trace -cc \
                 --exe ${file} \
-                -y ${RTL_FOLDER} \
+                -f filelist.f \
                 --prefix "Vdut" \
                 -o Vdut \
                 -LDFLAGS "-lgtest -lgtest_main -lpthread"

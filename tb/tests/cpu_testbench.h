@@ -41,7 +41,7 @@ public:
         tfp_->open(("test_out/" + name_ + "/waveform.vcd").c_str());
 
         // Initialise inputs
-        top_->clk = 1;
+        top_->clk = 0;
         top_->rst = 1;
         top_->trigger = 0;
         runSimulation(10);  // Process reset

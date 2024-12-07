@@ -2,5 +2,6 @@ obj_dir/
 .vscode/
 *.bin
 *.vcd
+*.f
 data.hex
 program.hex
