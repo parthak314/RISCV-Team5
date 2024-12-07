@@ -13,7 +13,6 @@ module branch_logic (
     input logic [1:0]       Jump,
     input logic             Zero,
     input logic             Negative,
-    input logic             PCSrcOverride,
 
     output logic            PCSrc
 );
@@ -29,7 +28,7 @@ module branch_logic (
             default: PCSrc = 0;
         endcase
 
-        PCSrc = (PCSrc | (Jump != 2'b00)) & ~PCSrcOverride; // if PCSrcOverride = 1, PCSrc = 0
+        PCSrc = PCSrc | (Jump != 2'b00);
     end
 
 endmodule
