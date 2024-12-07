@@ -45,13 +45,16 @@ module two_way_cache_top #(
 
     logic [CACHE_ADDR_WIDTH-1:0]        target_set;
     logic [TAG_SIZE-1:0]                target_tag;
+    logic [BYTE_OFFSET-1:0]             offset;
 
     assign target_set = addr[(CACHE_ADDR_WIDTH + BYTE_OFFSET - 1):BYTE_OFFSET];
     assign target_tag = addr[RAM_ADDR_WIDTH-1:(CACHE_ADDR_WIDTH + BYTE_OFFSET)];
+    assign offset = addr[BYTE_OFFSET-1:0]; // for reading from other byte positions in the set
 
     two_way_cache_controller cache_controller_mod (
         .we(we),
         .wd(wd),
+        .offset(offset),
         .target_set(target_set), // RAM address we are trying to retrieve
         .target_tag(target_tag),
         .set_data(set_data),

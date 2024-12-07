@@ -7,33 +7,34 @@ module two_way_cache_controller #(
                 RAM_ADDR_WIDTH = 32
 ) (
     // read or write inputs
-    input   logic                       we,
-    input   logic [DATA_WIDTH-1:0]      wd,
-    input   logic [CACHE_ADDR_WIDTH-1:0]  target_set,
-    input   logic [TAG_SIZE-1:0]          target_tag,
+    input   logic                           we,
+    input   logic [DATA_WIDTH-1:0]          wd,
+    input   logic [CACHE_ADDR_WIDTH-1:0]    target_set,
+    input   logic [TAG_SIZE-1:0]            target_tag,
+    input   logic [BYTE_OFFSET-1:0]         offset,
 
     // cache set of the correct set index
-    input   logic [SET_SIZE-1:0]        set_data,
+    input   logic [SET_SIZE-1:0]            set_data,
 
-    input   logic [DATA_WIDTH-1:0]      rd_from_ram, // TODO: set a mux to only read when miss
+    input   logic [DATA_WIDTH-1:0]          rd_from_ram, // TODO: set a mux to only read when miss
     
 
     // output to write
-    output  logic [DATA_WIDTH-1:0]      data_out,
+    output  logic [DATA_WIDTH-1:0]          data_out,
 
     // writing back to cache
-    output  logic [SET_SIZE-1:0]        updated_set_data,
-    output  logic                       we_cache,
+    output  logic [SET_SIZE-1:0]            updated_set_data,
+    output  logic                           we_cache,
 
     // update lru way to evict
-    output  logic [DATA_WIDTH-1:0]      evicted_word,
-    output  logic [RAM_ADDR_WIDTH-1:0]  evicted_ram_addr,
-    output  logic                       we_to_ram // determine if evicted need to write back to ram
+    output  logic [DATA_WIDTH-1:0]          evicted_word,
+    output  logic [RAM_ADDR_WIDTH-1:0]      evicted_ram_addr,
+    output  logic                           we_to_ram // determine if evicted need to write back to ram
 );
-    logic                               lru_bit;
-    logic [1:0]                         v_bits, dirty_bits;
-    logic [DATA_WIDTH-1:0]              words [1:0];
-    logic [TAG_SIZE-1:0]                tags [1:0];
+    logic                                   lru_bit;
+    logic [1:0]                             v_bits, dirty_bits;
+    logic [DATA_WIDTH-1:0]                  words [1:0];
+    logic [TAG_SIZE-1:0]                    tags [1:0];
 
     assign lru_bit = set_data[110];
     assign v_bits = {set_data[109], set_data[54]};
