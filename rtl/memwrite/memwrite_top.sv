@@ -1,57 +1,68 @@
 module memwrite_top #(
-    parameter DATA_WIDTH = 32     
+    parameter DATA_WIDTH = 32
 ) (
     input logic                     clk,
     input logic                     RegWriteM,
-    input logic                     RdM,
-    input logic [DATA_WIDTH-1:0]    PCPlus4M,
-    input logic [1:0]               ResultSrcM,
+    input logic [1:0]               ResultsSrcM,
+    input logic                     MemWriteM,
+    input logic [2:0]               MemoryOpM,
     input logic [DATA_WIDTH-1:0]    ALUResultM,
     input logic [DATA_WIDTH-1:0]    WriteDataM,
-    input logic                     MemWriteM,
+    input logic [4:0]               RdM,
+    input logic [DATA_WIDTH-1:0]    PCPlus4M,
+
     output logic                    RegWriteW,
-    output logic                    RdW,
+    output logic [4:0]              RdW,
     output logic [DATA_WIDTH-1:0]   ResultW
 );
 
-logic [DATA_WIDTH-1:0]   ALUresultW;
-logic [DATA_WIDTH-1:0]   ReadDataW;
-logic [DATA_WIDTH-1:0]   PCPlus4W;
-logic [1:0]              ResultSrcW;
-logic [DATA_WIDTH-1:0]   ReadData;
+    wire [DATA_WIDTH-1:0]   ALUResultW_Wire;
+    wire [DATA_WIDTH-1:0]   RAM_Input_Wire;
+    wire [DATA_WIDTH-1:0]   RAM_Output_Wire;
+    wire [1:0]              ResultSrcW_Wire;
+    wire [DATA_WIDTH-1:0]   PCPlus4W_Wire;
+    wire [DATA_WIDTH-1:0]   ParseUnit_DataOut_Wire;
+    wire [DATA_WIDTH-1:0]   ReadDataW_Wire;
 
-data_ram ram (
-    .a(ALUResultM),
-    .wd(WriteDataM),
-    .clk(clk),
-    .we(MemWriteM),
-    .rd(ReadData)
-);
+    data_ram ram (
+        .clk(clk),
+        .A(ALUResultM),
+        .WD(RAM_Input_Wire),
+        .WE(MemWriteM),
+        .RD(RAM_Output_Wire)
+    );
 
-memwrite_pipeline_regfile memwrite_pipeline_reg (
-    .clk(clk),
-    .RegWriteM(RegWriteM),
-    .RdM(RdM),
-    .PCPlus4M(PCPlus4M),
-    .ResultSrcM(ResultSrcM),
-    .ALUResultM(ALUResultM),
-    .ReadDataM(ReadData),
-    .ALUresultW(ALUresultW),
-    .ReadDataW(ReadDataW),
-    .PCPlus4W(PCPlus4W),
-    .ResultSrcW(ResultSrcW),
-    .RegWriteW(RegWriteW),
-    .RdW(RdW)
-);
+    loadstore_parsing_unit parsing_unit (
+        .MemoryOp(MemoryOpM),
+        .RAM_Out(RAM_Output_Wire),
+        .WriteData(WriteDataM),
+        .RAM_In(RAM_Input_Wire),
+        .ReadData(ParseUnit_DataOut_Wire)
+    );
 
-mux4 result_mux (
-    .in0(ALUresultW),
-    .in1(ReadDataW),
-    .in2(PCPlus4W),
-    .in3(0),
-    .sel(ResultSrcW),
-    .out(ResultW)
-);
+    memwrite_pipeline_regfile memwrite_pipeline_reg (
+        .clk(clk),
+        .RegWrite_i(RegWriteM),
+        .ResultSrc_i(ResultsSrcM),
+        .ALUResult_i(ALUResultM),
+        .ReadData_i(ParseUnit_DataOut_Wire),
+        .Rd_i(RdM),
+        .PCPlus4_i(PCPlus4M),
 
+        .RegWrite_o(RegWriteW),
+        .ResultSrc_o(ResultSrcW_Wire),
+        .ALUResult_o(ALUResultW_Wire),
+        .ReadData_o(ReadDataW_Wire),
+        .Rd_o(RdW),
+        .PCPlus4_o(PCPlus4W_Wire)
+    );
+
+    mux3 result_writeback_mux (
+        .in0(ALUResultW_Wire),
+        .in1(ReadDataW_Wire),
+        .in2(PCPlus4W_Wire),
+        .sel(ResultSrcW_Wire),
+        .out(ResultW)
+    );
 
 endmodule

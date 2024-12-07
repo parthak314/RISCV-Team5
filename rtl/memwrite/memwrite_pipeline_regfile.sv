@@ -15,8 +15,6 @@ module memwrite_pipeline_regfile #(
     output logic [DATA_WIDTH-1:0]   ReadData_o,
     output logic [4:0]              Rd_o,
     output logic [DATA_WIDTH-1:0]   PCPlus4_o
-
-
 );
 
     always_ff @ (negedge clk) begin
