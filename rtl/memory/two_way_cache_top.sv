@@ -40,9 +40,9 @@ module two_way_cache_top #(
     | LRU bit | V bits | Dirty Bits | Tags | Words
     */
 
-    logic [SET_SIZE-1:0]            set_data;
-    logic [SET_SIZE-1:0]            updated_set_data;
-    logic                           we_cache;
+    logic [SET_SIZE-1:0]                set_data;
+    logic [SET_SIZE-1:0]                updated_set_data;
+    logic                               we_cache;
 
     logic [CACHE_ADDR_WIDTH-1:0]        target_set;
     logic [TAG_SIZE-1:0]                target_tag;

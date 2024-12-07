@@ -56,7 +56,6 @@ module two_way_cache_controller #(
     // after checking hit and retrieving if miss, 
     // which block 0 or 1 is the correct block to read/write to.
     logic                               correct_way; // which way has the right data at the end of it
-    logic                               hit_way; // which way was a hit
     logic [TAG_SIZE-1:0]                evicted_tag;
     logic                               evicted_way; // whether to evict way 0 or way 1
 
@@ -65,31 +64,23 @@ module two_way_cache_controller #(
     logic [1:0]                         new_v_bits;
     logic [DATA_WIDTH-1:0]              new_words [1:0];
     logic [1:0]                         new_dirty_bits;
-    logic                               we_to_cache;
 
     always_comb begin
-        hit_way = 1'b0;
-        correct_way = 1'b0;
         evicted_way = 1'b0;
-
         evicted_tag = {TAG_SIZE{1'b0}};
         we_to_ram = 1'b0;
-        evicted_word = '0;
-        evicted_ram_addr = '0;
+        evicted_word = {DATA_WIDTH{1'0}};
+        evicted_ram_addr = {RAM_ADDR_WIDTH{1'0}};
         
         new_lru_bit = lru_bit;
         new_tags = tags;
         new_words = words;
         new_v_bits = v_bits;
         new_dirty_bits = dirty_bits;
-        we_to_cache = 1'b0;
 
-        if (hits[0] || hits[1]) begin
-            hit_way = hits[1];
-            correct_way = hit_way;
-        end else begin
-
-            evicted_way = ~v_bits[1] || lru_bit;
+        if (hits[0] || hits[1]) correct_way = hits[1]; // if hit
+        else begin
+            evicted_way = (~v_bits[1] || lru_bit);
 
             if (v_bits[evicted_way]) begin
                 // prepare to write evicted way back to RAM
@@ -104,6 +95,7 @@ module two_way_cache_controller #(
             new_words[evicted_way] = rd_from_ram;
             new_tags[evicted_way] = target_tag;
             new_v_bits[evicted_way] = 1'b1;
+            new_dirty_bits[evicted_way] = 1'b0;
             correct_way = evicted_way;
         end
 
