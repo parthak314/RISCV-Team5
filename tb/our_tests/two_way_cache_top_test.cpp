@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "Vtwo_way_cache_top.h"
+#include "Vdut.h"
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 #include <memory>
@@ -9,13 +9,13 @@
 
 class TwoWayCacheTest : public ::testing::Test {
 protected:
-    Vtwo_way_cache_top* dut;
+    Vdut* dut;
     VerilatedVcdC* trace;
     vluint64_t sim_time;
 
     void SetUp() override {
         Verilated::traceEverOn(true);
-        dut = new Vtwo_way_cache_top;
+        dut = new Vdut;
         trace = new VerilatedVcdC;
         dut->trace(trace, 99);
         trace->open("two_way_cache_top.vcd");

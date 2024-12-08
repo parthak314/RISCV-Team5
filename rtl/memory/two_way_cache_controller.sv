@@ -139,6 +139,6 @@ module two_way_cache_controller #(
         new_words[0]
     };
 
-    assign we_cache = (we && (updated_set_data != set_data));
+    assign we_cache = (updated_set_data != set_data);
 
 endmodule

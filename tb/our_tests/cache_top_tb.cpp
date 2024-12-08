@@ -61,12 +61,6 @@ TEST_F(TestDut, WriteWordTest)
     top->we = 1;
     top->wd = 30;
     runSimulation();
-    top->we = 0;
-    top->addr = 0x0004;
-    top->eval();
-    EXPECT_EQ(top->rd, 20);
-    runSimulation();
-
     // kick out the word at address 0x0004
     top->addr = 0x1804;
     top->wd = 55;
@@ -76,6 +70,10 @@ TEST_F(TestDut, WriteWordTest)
     // check that we are correctly reading the kicked out word
     top->we = 0;
     top->addr = 0x0004;
+    top->eval();
+    EXPECT_EQ(top->rd, 100);
+    runSimulation();
+    top->addr = 0x0804;
     top->eval();
     EXPECT_EQ(top->rd, 100);
     runSimulation();

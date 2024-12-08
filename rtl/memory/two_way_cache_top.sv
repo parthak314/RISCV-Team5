@@ -1,7 +1,5 @@
-// `include "./memory/two_way_cache_controller.sv"
-// `include "./memory/sram.sv"
-`include "two_way_cache_controller.sv"
-`include "sram.sv"
+`include "./memory/two_way_cache_controller.sv"
+`include "./memory/sram.sv"
 
 module two_way_cache_top #(
     parameter   DATA_WIDTH = 32, // 32 bit data stored in each ram address
@@ -36,10 +34,10 @@ module two_way_cache_top #(
 
     /*
     overhead for each word (word = 32 bit data stored in memory):
-     V bit | Dirty bit | tag | Word
+     V bit | Dirty bit | Tag | Word
     two_way cache set format:
     TODO: make this more readable
-    | LRU bit | V bits | Dirty Bits | Tags | Words
+    | LRU bit | Overhead for Word 1 | Word 1 | Overhead for Word 0 | Word 0
     */
 
     logic [SET_SIZE-1:0]                set_data;

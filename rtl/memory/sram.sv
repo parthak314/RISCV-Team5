@@ -17,7 +17,7 @@ module sram #(
         rd = set_array[addr];
     end
 
-    always @(posedge clk) begin
+    always @(negedge clk) begin
         if (we) //Checks if we can write 
             set_array[addr] <= wd; //Assigns value of read data to be assigned at address a
     end
