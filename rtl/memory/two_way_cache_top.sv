@@ -1,5 +1,7 @@
-`include "./memory/two_way_cache_controller.sv"
-`include "./memory/sram.sv"
+// `include "./memory/two_way_cache_controller.sv"
+// `include "./memory/sram.sv"
+`include "two_way_cache_controller.sv"
+`include "sram.sv"
 
 module two_way_cache_top #(
     parameter   DATA_WIDTH = 32, // 32 bit data stored in each ram address

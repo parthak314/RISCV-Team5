@@ -26,6 +26,7 @@ logic [DATA_WIDTH-1:0]  RAMReadData;
 
 two_way_cache_top cache_top_mod (
     .clk(clk),
+    .addr_mode(AddrMode),
     .wd(WriteData),
     .we(MemWrite),
     .addr(ALUResult),
@@ -33,8 +34,7 @@ two_way_cache_top cache_top_mod (
     .rd_from_ram(RAMReadData),
     .wd_to_ram(RAMWriteData),
     .we_to_ram(RAMWriteEnable),
-    .w_addr_to_ram(RAMWriteAddr),
-    .addr_mode(A)
+    .w_addr_to_ram(RAMWriteAddr)
 );
 
 // if evicted, write to RAM
