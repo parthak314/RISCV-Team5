@@ -6,9 +6,9 @@ rm -f *.vcd
 
 # Translate Verilog -> C++ including testbench
 verilator   -Wall --trace \
-            -cc ../rtl/memory/two_way_cache_top.sv \
-            --exe ./our_tests/two_way_cache_top_test.cpp \
-            -y ../rtl/ \
+            -cc ../../rtl/memory/two_way_cache_top.sv \
+            --exe ../our_tests/two_way_cache_top_test.cpp \
+            -y ../../rtl/ \
             --prefix "Vdut" \
             -o Vdut \
             -CFLAGS "-isystem /opt/homebrew/Cellar/googletest/1.15.2/include"\
