@@ -12,6 +12,7 @@ protected:
     Vdut* dut;
     VerilatedVcdC* trace;
     vluint64_t sim_time;
+    unsigned int ticks = 0;
 
     void SetUp() override {
         Verilated::traceEverOn(true);
@@ -44,6 +45,23 @@ protected:
         dut->eval();
         trace->dump(sim_time++);
     }
+
+        // Runs the simulation for a clock cycle, evaluates the DUT, dumps waveform.
+    void runSimulation()
+    {
+        for (int clk = 0; clk < 2; clk++)
+        {
+            dut->eval();
+            trace->dump(2 * ticks + clk);
+            dut->clk = !dut->clk;
+        }
+        ticks++;
+
+        if (Verilated::gotFinish())
+        {
+            exit(0);
+        }
+    }
 };
 
 TEST_F(TwoWayCacheTest, CacheReadHit) {
@@ -53,7 +71,7 @@ TEST_F(TwoWayCacheTest, CacheReadHit) {
         dut->wd = 0xA5A5A5A5 + i;      
         dut->we = 1;                  
         dut->addr_mode = 0;            
-        tick();                       
+        runSimulation();             
     }
 
     // Read back the data to verify cache hit behavior
@@ -61,11 +79,12 @@ TEST_F(TwoWayCacheTest, CacheReadHit) {
         dut->addr = j << 2;            
         dut->we = 0;                   
         dut->addr_mode = 0;            
-        tick();                        
+        dut->eval();                       
         
         EXPECT_EQ(dut->rd, 0xA5A5A5A5 + j) << "Cache read failed at address " << j;
         
         EXPECT_FALSE(dut->we_to_ram) << "Unexpected write-back on cache hit at address " << j;
+        runSimulation();
     }
 }
 

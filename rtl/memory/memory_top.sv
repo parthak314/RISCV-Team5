@@ -44,7 +44,7 @@ ram2port ram_mod (
     .w_addr(RAMWriteAddr),
     .wd(RAMWriteData),
     .we(RAMWriteEnable),
-    .r_addr(ALUResult),
+    .r_addr({ALUResult[31:2], 2'b0}), // always read from ram in 32 bit word blocks (byte addressing handled in cache only)
     .rd(RAMReadData)
 );
 

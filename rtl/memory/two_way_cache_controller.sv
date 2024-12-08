@@ -84,7 +84,7 @@ module two_way_cache_controller #(
 
             if (v_bits[evicted_way]) begin
                 // prepare to write evicted way back to RAM
-                we_to_ram = dirty_bits[evicted_way];
+                we_to_ram = 1'b1;
                 evicted_word = words[evicted_way];
                 evicted_tag = tags[evicted_way];
                 evicted_ram_addr = {evicted_tag, target_set, 2'b0};
