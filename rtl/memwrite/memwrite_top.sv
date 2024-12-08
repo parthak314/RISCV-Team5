@@ -31,7 +31,7 @@ module memwrite_top #(
 
     assign ReadDataM = ParseUnit_DataOut_Wire;
 
-    data_ram ram (
+    data_mem mem (
         .clk(clk),
         .A(ALUResultM),
         .WD(RAM_Input_Wire),
