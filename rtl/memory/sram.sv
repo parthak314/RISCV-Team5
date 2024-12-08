@@ -7,14 +7,14 @@ module sram #(
     input   logic [CACHE_ADDR_WIDTH-1:0]        addr, // Input address for data
     input   logic [SET_SIZE-1:0]                wd, // Data to be written in
     input   logic                               we, // Write enable
+    input   logic                               re, // read enable
     output  logic [SET_SIZE-1:0]                rd //Read Data 
 );
     logic [SET_SIZE-1:0] set_array [2**CACHE_ADDR_WIDTH-1:0];
-
-    // TODO: add reset for the sram?
     
     always_comb begin
-        rd = set_array[addr];
+        if (re) rd = set_array[addr];
+        else rd = {SET_SIZE{1'b0}}; // only read when read enable is HIGH
     end
 
     always @(posedge clk) begin

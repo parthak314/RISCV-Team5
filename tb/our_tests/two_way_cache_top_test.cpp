@@ -82,7 +82,7 @@ TEST_F(TwoWayCacheTest, CacheReadHit_Single_Word) {
     dut->addr = 0x0004;
     dut->addr_mode = 0; 
     dut->we = 0;        
-    tick();
+    dut->eval();
 
     EXPECT_EQ(dut->rd, 0xFACEFACE) << "Cache read hit failed to retrieve correct data";
     EXPECT_FALSE(dut->we_to_ram) << "Write to RAM should not occur on a cache hit";

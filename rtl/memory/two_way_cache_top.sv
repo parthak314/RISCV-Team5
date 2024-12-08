@@ -7,16 +7,20 @@ module two_way_cache_top #(
                 RAM_ADDR_WIDTH = 32
 ) (
     input   logic                       clk,
+    input   logic                       en, // access enable for cache (we include this to prevent unnecessary evictions)
     input   logic                       addr_mode, // byte or word addressing, see memory_top
     input   logic [DATA_WIDTH-1:0]      wd, // Data to be written in
     input   logic                       we, // Write enable
     input   logic [DATA_WIDTH-1:0]      addr, // target address for read data
-    input   logic [DATA_WIDTH-1:0]      rd_from_ram, // read from ram if miss
 
-    output  logic [DATA_WIDTH-1:0]      rd, // data that is output from reading
+    input   logic [DATA_WIDTH-1:0]      rd_from_ram, // read from ram if miss
+    output  logic                       re_from_ram, // only read from ram if miss (to get rd_from_ram)
+
     output  logic [DATA_WIDTH-1:0]      wd_to_ram, // word that is being evicted
     output  logic                       we_to_ram, // boolean if evicted or not
-    output  logic [RAM_ADDR_WIDTH-1:0]  w_addr_to_ram // evicted word address in ram
+    output  logic [RAM_ADDR_WIDTH-1:0]  w_addr_to_ram, // evicted word address in ram
+
+    output  logic [DATA_WIDTH-1:0]      rd // data that is output from reading cache
 );
     // each set has 1 v bit and dirty bit per data block
     // ie 2-way cache will have 2 v bits and 2 dity bits per set (1 for each data block)
@@ -33,16 +37,22 @@ module two_way_cache_top #(
     localparam SET_SIZE = (DATA_WIDTH + V_BIT_SIZE + DIRTY_BIT_SIZE + TAG_SIZE) * 2 + LRU_BIT_SIZE; // 111 bits!
 
     /*
+    cache_addr_width is 9 bits because we are storing 512 sets. [log2(512)]
+
     overhead for each word (word = 32 bit data stored in memory):
-     V bit | Dirty bit | Tag | Word
+    bits ->  |   1   |   1       | 21  | 32         total = 1 + 1 + 21 + 32 (55)
+    -----------------------------------------
+              V bit | Dirty bit | Tag | Word
+
     two_way cache set format:
-    TODO: make this more readable
-    | LRU bit | Overhead for Word 1 | Word 1 | Overhead for Word 0 | Word 0
+    bits ->  |   1     |            55                |             55                          total = 1 + 55 + 55 (111)
+    ---------------------------------------------------------------------------------  
+            | LRU bit | Overhead for Word 1 | Word 1 | Overhead for Word 0 | Word 0
     */
 
     logic [SET_SIZE-1:0]                set_data;
     logic [SET_SIZE-1:0]                updated_set_data;
-    logic                               we_cache;
+    logic                               we_to_cache;
 
     logic [CACHE_ADDR_WIDTH-1:0]        target_set;
     logic [TAG_SIZE-1:0]                target_tag;
@@ -53,6 +63,7 @@ module two_way_cache_top #(
     assign offset = addr[BYTE_OFFSET-1:0]; // for reading from other byte positions in the set
 
     two_way_cache_controller cache_controller_mod (
+        .en(en), // read enable for cache
         .addr_mode(addr_mode),
         .we(we),
         .wd(wd),
@@ -60,10 +71,11 @@ module two_way_cache_top #(
         .target_tag(target_tag),
         .offset(offset),
         .set_data(set_data),
+        .re_from_ram(re_from_ram),
         .rd_from_ram(rd_from_ram),
         .data_out(rd),
         .updated_set_data(updated_set_data),
-        .we_cache(we_cache),
+        .we_to_cache(we_to_cache),
         .evicted_word(wd_to_ram),
         .evicted_ram_addr(w_addr_to_ram),
         .we_to_ram(we_to_ram)
@@ -73,7 +85,8 @@ module two_way_cache_top #(
         .clk(clk),
         .addr(target_set),
         .wd(updated_set_data),
-        .we(we_cache),
+        .we(we_to_cache),
+        .re(en), // we convert en to re, because it is impossible for we to be HIGH when en is LOW, so write doesn't need an en check
         .rd(set_data)
     );
 

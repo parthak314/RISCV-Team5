@@ -95,7 +95,6 @@ module control #(
                     case (funct3)
                         3'b000: AddrMode = 1'b1;    // SB
                         3'b010: AddrMode = 1'b0;    // SW
-                        // TODO add SH
                         default: AddrMode = 1'b0;
                     endcase
                 end
