@@ -15,7 +15,7 @@ module data_mem #(
 
     initial begin
         $readmemh("data.hex", mem_array, 32'h00010000); 
-        $display("DATA MEMORY loaded");
+        // $display("\033[33mDATA MEMORY Load Success\033[0m");
     end;
 
     always_ff @ (posedge clk) begin

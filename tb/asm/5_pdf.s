@@ -18,7 +18,6 @@ _loop1:                         # repeat
     ADDI    a1, a1, -1          #     decrement a1
     SB      zero, base_pdf(a1)  #     mem[base_pdf+a1) = 0
     BNE     a1, zero, _loop1    # until a1 = 0
-    LI      t6, 1               # DEBUGGING
     RET
 
 build:      # function to build prob dist func (pdf)
@@ -35,7 +34,6 @@ _loop2:                         # repeat
     SB      t1, 0(a6)           #     update bin count
     ADDI    a2, a2, 1           #     point to next data in array
     BNE     t1, a4, _loop2      # until bin count reaches max
-    LI      t6, 2               # DEBUGGING
     RET
 
 display:    # function send PDF array value to a0 for display
@@ -47,11 +45,10 @@ _loop3:                         # repeat
     ADD     s1, s1, a0          #   s1 += mem[base_pdf+a1)
     ADDI    a1, a1, 1           #   incr
     BNE     a1, a2, _loop3      # until end of pdf array
-    LI      t6, 3               # DEBUGGING
     RET
 
 finish:     # function to set the return value then wait
     ADDI    a0, s1, 0           # a0 = sum of pdf values (expected = 15363)
-    LI      t6, 69              # DEBUGGING
 _wait:
     BNE     a0, zero, _wait     # loop forever
+    

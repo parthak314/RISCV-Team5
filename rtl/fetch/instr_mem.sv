@@ -11,9 +11,8 @@ module instr_mem #(
 logic [ROM_WIDTH-1:0] rom_array [32'h00000FFF:0] /* verilator public_flat */; 
 
 initial begin
-    // $display("Loading rom.");
     $readmemh("program.hex", rom_array); 
-    $display("ROM Loaded.");
+    // $display("\033[33mINSTRUCTION ROM Load Success\033[0m");
 
 end;
 
