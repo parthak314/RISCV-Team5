@@ -34,7 +34,7 @@ two_way_cache_top cache_top_mod (
     .wd_to_ram(RAMWriteData),
     .we_to_ram(RAMWriteEnable),
     .w_addr_to_ram(RAMWriteAddr),
-    .addr_mode(A)
+    .addr_mode(AddrMode)
 );
 
 // if evicted, write to RAM
