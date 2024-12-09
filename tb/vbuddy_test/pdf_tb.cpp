@@ -8,7 +8,8 @@
 #include "../tests/cpu_testbench.h"
 #include "vbuddy.cpp"     // include vbuddy code
 
-#define MAX_SIM_CYC 1e10
+#define MAX_SIM_CYC 1e9
+#define MAX_FUNC_CYC 1000650 // script needs time to generate the pdf function
 const std::string distribution = "gaussian"; // set the distribution type here
 
 // remove hex files on ctrl + c
