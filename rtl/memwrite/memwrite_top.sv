@@ -21,31 +21,59 @@ module memwrite_top #(
     output logic [DATA_WIDTH-1:0]   ResultW
 );
 
-    wire [DATA_WIDTH-1:0]   ALUResultW_Wire;
-    wire [DATA_WIDTH-1:0]   RAM_Input_Wire;
-    wire [DATA_WIDTH-1:0]   RAM_Output_Wire;
+    wire                    RAM_WriteEnable_Wire;
+    wire [DATA_WIDTH-1:0]   RAM_WriteAddr_Wire;
+    wire [DATA_WIDTH-1:0]   RAM_WriteDataIn_Wire;
+
+    wire [DATA_WIDTH-1:0]   RAM_ReadDataOut_Wire;
+    wire [DATA_WIDTH-1:0]   ReadDataM_Wire;
+
     wire [1:0]              ResultSrcW_Wire;
-    wire [DATA_WIDTH-1:0]   PCPlus4W_Wire;
-    wire [DATA_WIDTH-1:0]   ParseUnit_DataOut_Wire;
+    wire [DATA_WIDTH-1:0]   ALUResultW_Wire;
     wire [DATA_WIDTH-1:0]   ReadDataW_Wire;
+    wire [DATA_WIDTH-1:0]   PCPlus4W_Wire;
 
-    assign ReadDataM = ParseUnit_DataOut_Wire;
+    assign ReadDataM = ReadDataM_Wire;
 
-    data_mem mem (
+    two_way_cache_top cache_top_mod (
         .clk(clk),
-        .A(ALUResultM),
-        .WD(RAM_Input_Wire),
-        .WE(MemWriteM),
-        .RD(RAM_Output_Wire)
+        .addr_mode(MemoryOpM == 3'b000 | MemoryOpM == 3'b011), // addr+mode = 1 if byte or byte unsigned operation
+        .wd(WriteDataM),
+        .we(MemWriteM),
+        .addr(ALUResultM),
+        .rd_from_ram(RAM_ReadDataOut_Wire),
+
+        .rd(ReadDataM_Wire),
+        .wd_to_ram(RAM_WriteDataIn_Wire),
+        .we_to_ram(RAM_WriteEnable_Wire),
+        .w_addr_to_ram(RAM_WriteAddr_Wire)
     );
 
-    loadstore_parsing_unit parsing_unit (
-        .MemoryOp(MemoryOpM),
-        .RAM_Out(RAM_Output_Wire),
-        .WriteData(WriteDataM),
-        .RAM_In(RAM_Input_Wire),
-        .ReadData(ParseUnit_DataOut_Wire)
+    ram2port ram_mod (
+        .clk(clk),
+        .w_addr(RAM_WriteAddr_Wire),
+        .wd(RAM_WriteDataIn_Wire),
+        .we(RAM_WriteEnable_Wire),
+        .r_addr(ALUResultM), // always read from ram in 32 bit word blocks (byte addressing handled in cache only)
+        
+        .rd(RAM_ReadDataOut_Wire)
     );
+    
+    // data_mem mem (
+    //     .clk(clk),
+    //     .A(ALUResultM),
+    //     .WD(RAM_WriteDataIn_Wire),
+    //     .WE(MemWriteM),
+    //     .RD(RAM_ReadDataOut_Wire)
+    // );
+
+    // loadstore_parsing_unit parsing_unit (
+    //     .MemoryOp(MemoryOpM),
+    //     .RAM_Out(RAM_ReadDataOut_Wire),
+    //     .WriteData(WriteDataM),
+    //     .RAM_In(RAM_WriteDataIn_Wire),
+    //     .ReadData(ReadDataM_Wire)
+    // );
 
     memwrite_pipeline_regfile memwrite_pipeline_reg (
         .en(~stall),
@@ -55,7 +83,7 @@ module memwrite_top #(
         .RegWrite_i(RegWriteM),
         .ResultSrc_i(ResultsSrcM),
         .ALUResult_i(ALUResultM),
-        .ReadData_i(ParseUnit_DataOut_Wire),
+        .ReadData_i(ReadDataM_Wire),
         .Rd_i(RdM),
         .PCPlus4_i(PCPlus4M),
 

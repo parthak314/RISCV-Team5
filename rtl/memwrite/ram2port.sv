@@ -1,4 +1,3 @@
-/* verilator lint_off UNUSED */
 module ram2port #(
     parameter   DATA_WIDTH = 32,
                 BYTE_WIDTH = 8

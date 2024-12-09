@@ -1,6 +1,3 @@
-`include "./memory/two_way_cache_controller.sv"
-`include "./memory/sram.sv"
-
 module two_way_cache_top #(
     parameter   DATA_WIDTH = 32, // 32 bit data stored in each ram address
                 NUM_WORDS = 1024, // number of data words stored in total. ie num_sets * 2 (since 2 way)
