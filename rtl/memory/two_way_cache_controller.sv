@@ -75,6 +75,8 @@ module two_way_cache_controller #(
         new_v_bits = v_bits;
         new_dirty_bits = dirty_bits;
 
+        data_out = {DATA_WIDTH{1'b0}}; // prevent latch error
+
         if (en) begin // only do operations when en is HIGH
             if (hits[0] || hits[1]) correct_way = hits[1]; // if hit
             else begin // if miss

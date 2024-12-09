@@ -1,4 +1,3 @@
-/* verilator lint_off UNUSED */
 module sram #(
     parameter   CACHE_ADDR_WIDTH = 9,
                 SET_SIZE = 111 // see how its calculated in cache_controller.sv
