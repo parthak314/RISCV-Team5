@@ -21,6 +21,7 @@ module memwrite_top #(
     output logic [DATA_WIDTH-1:0]   ResultW
 );
 
+    wire                    RAM_ReadEnable_Wire;
     wire                    RAM_WriteEnable_Wire;
     wire [DATA_WIDTH-1:0]   RAM_WriteAddr_Wire;
     wire [DATA_WIDTH-1:0]   RAM_WriteDataIn_Wire;
@@ -33,16 +34,23 @@ module memwrite_top #(
     wire [DATA_WIDTH-1:0]   ReadDataW_Wire;
     wire [DATA_WIDTH-1:0]   PCPlus4W_Wire;
 
+    // only access cache when we are reading or writing to memory (prevent unnecessary evictions)
+    logic                   CacheAccessEnable; 
+
+    assign CacheAccessEnable = (ResultsSrcM == 2'b01 || MemWriteM);
+
     assign ReadDataM = ReadDataM_Wire;
+
 
     two_way_cache_top cache_top_mod (
         .clk(clk),
+        .en(CacheAccessEnable),
         .addr_mode(MemoryOpM == 3'b000 | MemoryOpM == 3'b011), // addr+mode = 1 if byte or byte unsigned operation
         .wd(WriteDataM),
         .we(MemWriteM),
         .addr(ALUResultM),
         .rd_from_ram(RAM_ReadDataOut_Wire),
-
+        .re_from_ram(RAM_ReadEnable_Wire),
         .rd(ReadDataM_Wire),
         .wd_to_ram(RAM_WriteDataIn_Wire),
         .we_to_ram(RAM_WriteEnable_Wire),
@@ -54,26 +62,10 @@ module memwrite_top #(
         .w_addr(RAM_WriteAddr_Wire),
         .wd(RAM_WriteDataIn_Wire),
         .we(RAM_WriteEnable_Wire),
-        .r_addr(ALUResultM), // always read from ram in 32 bit word blocks (byte addressing handled in cache only)
-        
+        .r_addr({ALUResultM[31:2], 2'b0}), // always read from ram in 32 bit word blocks (byte addressing handled in cache only)
+        .re(RAM_ReadEnable_Wire),
         .rd(RAM_ReadDataOut_Wire)
-    );
-    
-    // data_mem mem (
-    //     .clk(clk),
-    //     .A(ALUResultM),
-    //     .WD(RAM_WriteDataIn_Wire),
-    //     .WE(MemWriteM),
-    //     .RD(RAM_ReadDataOut_Wire)
-    // );
-
-    // loadstore_parsing_unit parsing_unit (
-    //     .MemoryOp(MemoryOpM),
-    //     .RAM_Out(RAM_ReadDataOut_Wire),
-    //     .WriteData(WriteDataM),
-    //     .RAM_In(RAM_WriteDataIn_Wire),
-    //     .ReadData(ReadDataM_Wire)
-    // );
+    );  
 
     memwrite_pipeline_regfile memwrite_pipeline_reg (
         .en(~stall),
