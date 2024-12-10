@@ -170,22 +170,21 @@ Tasks:
 
 ## Superscalar Model Implementation
 ![](images/superscalar-model.png)
-
 ### Hardware
 Structural design modifications:
 - <span style="color:#eaa19f">Fetch</span>: No change from previous model, output is now `dataA` and `dataB` - selecting consecutive instructions from the Out-Of-Order Processor.
 - <span style="color:#e9b76e">Decode</span>: Doubled inputs for each block
 - <span style="color:red">Execute</span>: Replicated models for ALU
-- <span style="color:#a9caf2">Writeback</span>: Doubled inputs for Data Memory with Load store separate to the data memory to reflect changes in the pipelining section. This is the load store parsing unit. A separate mux for ResultSrc. 
+- <span style="color:#a9caf2">Writeback</span>: Doubled inputs for Data Memory with Load store separate to the data memory to reflect changes in the pipelining section. This is the load store parsing unit. A separate mux for `ResultSrc`. 
 Given the time available, this model implements the instructions for `R-type`, `I-type (imm)`
 
 ### Out-of-order Processor
-The key change here is the Out-Of-Order Processor. It is simply called in the main bash script.
+The key change here is the Out-Of-Order Processor which is a python script. It is simply called in the main bash script.
 The High level requirements for this file are to:
 - Break down the instruction set into 
 - Reorder the instructions such that the same register is not accessed in consecutive instructions
 - Reassemble this into the instruction set
 This then follows the same procedure to assemble the instruction set (by `assemble.sh` via the `riscv gnu toolchain`) before inputting this into instruction memory, as shown above.
 
-Further details can be seen in `ParthaKhanna.md` (==Add link here==)
+Further details can be seen in individual reports.
 
