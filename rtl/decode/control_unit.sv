@@ -153,7 +153,7 @@ module control_unit (
                 ALUSrcD     = 0;        // irrelevant
                 UpperOpD    = 2'b00;
                 MemoryOpD   = 3'b000;   // irrelevant
-                ImmSrcD     = 3'b000;
+                ImmSrcD     = 3'b100;
             end
 
             7'b1100111: begin // JALR
