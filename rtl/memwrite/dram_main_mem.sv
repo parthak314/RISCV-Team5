@@ -1,14 +1,14 @@
-module ram2port #(
+module dram_main_mem #(
     parameter   DATA_WIDTH = 32,
                 BYTE_WIDTH = 8
 ) (
-    input logic                     clk, // Allows for it to be clocked
-    input logic [DATA_WIDTH-1:0]    w_addr, // Input write address for data 
-    input logic [DATA_WIDTH-1:0]    wd, // Data to be written in
-    input logic                     we, // Write enable
-    input logic [DATA_WIDTH-1:0]    r_addr, // Input address for read data 
-    input logic                     re, // read enable (read only when miss)
-    output logic [DATA_WIDTH-1:0]   rd //Read Data 
+    input logic                     clk,
+    input logic [DATA_WIDTH-1:0]    w_addr, // write address for data 
+    input logic [DATA_WIDTH-1:0]    wd,     // data to be written in
+    input logic                     we,     // write enable
+    input logic [DATA_WIDTH-1:0]    r_addr, // address for read data 
+    input logic                     re,     // read enable (only read when cache miss)
+    output logic [DATA_WIDTH-1:0]   rd      // read data 
 );
 
     logic [BYTE_WIDTH-1:0] ram_array [32'h0001FFFF:0]; // technically 32 bits, but we are only concerned with this block
@@ -18,7 +18,7 @@ module ram2port #(
     end;
 
     always_comb begin
-        // if not meant to read from ram, just send a '0 signal.
+        // if not meant to read from ram, just send a 32'b0 signal.
         if (re) begin
             rd = {
                 ram_array[r_addr+3], 
@@ -30,7 +30,7 @@ module ram2port #(
     end
 
     always @(posedge clk) begin
-        if (we) begin //Checks if we can write 
+        if (we) begin
             ram_array[w_addr+3] <= wd[31:24];
             ram_array[w_addr+2] <= wd[23:16];
             ram_array[w_addr+1] <= wd[15:8];

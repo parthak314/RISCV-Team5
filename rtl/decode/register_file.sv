@@ -5,9 +5,9 @@ module register_file #(
     input logic                         clk,
     input logic [ADDRESS_WIDTH-1:0]     A1, 
     input logic [ADDRESS_WIDTH-1:0]     A2, 
-    input logic [ADDRESS_WIDTH-1:0]     A3, // address 3 for writing to
-    input logic                         WE3, // write enable
-    input logic [DATA_WIDTH-1:0]        WD3, // data to write to address 3
+    input logic [ADDRESS_WIDTH-1:0]     A3,     // address 3 for writing to
+    input logic                         WE3,    // write enable
+    input logic [DATA_WIDTH-1:0]        WD3,    // data to write to address 3
 
     output logic [DATA_WIDTH-1:0]       RD1,
     output logic [DATA_WIDTH-1:0]       RD2,

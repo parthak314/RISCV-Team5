@@ -35,29 +35,30 @@ module memwrite_top #(
     wire [DATA_WIDTH-1:0]   PCPlus4W_Wire;
 
     // only access cache when we are reading or writing to memory (prevent unnecessary evictions)
-    logic                   CacheAccessEnable; 
+    logic   CacheAccessEnable; 
+    assign  CacheAccessEnable = (ResultsSrcM == 2'b01 || MemWriteM);
 
-    assign CacheAccessEnable = (ResultsSrcM == 2'b01 || MemWriteM);
+    assign  ReadDataM = ReadDataM_Wire;
 
-    assign ReadDataM = ReadDataM_Wire;
-
-
-    two_way_cache_top cache_top_mod (
+    two_way_cache_top cache_top (
         .clk(clk),
         .en(CacheAccessEnable),
-        .addr_mode(MemoryOpM == 3'b000 | MemoryOpM == 3'b011), // addr+mode = 1 if byte or byte unsigned operation
+        .addr_mode(MemoryOpM == 3'b000 | MemoryOpM == 3'b011), // addr_mode = 1 if byte or byte unsigned operation
         .wd(WriteDataM),
         .we(MemWriteM),
         .addr(ALUResultM),
+
         .rd_from_ram(RAM_ReadDataOut_Wire),
         .re_from_ram(RAM_ReadEnable_Wire),
-        .rd(ReadDataM_Wire),
+
         .wd_to_ram(RAM_WriteDataIn_Wire),
         .we_to_ram(RAM_WriteEnable_Wire),
-        .w_addr_to_ram(RAM_WriteAddr_Wire)
+        .w_addr_to_ram(RAM_WriteAddr_Wire),
+
+        .rd(ReadDataM_Wire)
     );
 
-    ram2port ram_mod (
+    dram_main_mem main_memory_ram (
         .clk(clk),
         .w_addr(RAM_WriteAddr_Wire),
         .wd(RAM_WriteDataIn_Wire),

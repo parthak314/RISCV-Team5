@@ -121,15 +121,15 @@ module control_unit (
             end
 
             7'b1100011: begin // B-Type ins
-                RegWriteD   = 0; // no reg write-back for branching
-                ResultSrcD  = 2'b00; // don't care as no write-back
+                RegWriteD   = 0;        // no reg write-back for branching
+                ResultSrcD  = 2'b00;    // don't care as no write-back
                 MemWriteD   = 0;
                 JumpD       = 2'b00;
-                ALUControlD = 4'b0001; // always subtraction for comparison
-                ALUSrcD     = 0; // ALU src B always another register
+                ALUControlD = 4'b0001;  // always subtraction for comparison
+                ALUSrcD     = 0;        // ALU src B always another register
                 UpperOpD    = 2'b00;
                 MemoryOpD   = 3'b000;
-                ImmSrcD     = 3'b010; // sign extent imm using branch setting
+                ImmSrcD     = 3'b010;   // sign extent imm using branch setting
 
                 case(func3)
                     3'd0: BranchD = 3'b001; // beq
@@ -171,28 +171,28 @@ module control_unit (
 
             7'b0110111: begin // LUI
                 RegWriteD   = 1;
-                ResultSrcD  = 2'b00; // writeback alu result of 0 + Imm << 12
+                ResultSrcD  = 2'b00;    // writeback alu result of 0 + Imm << 12
                 MemWriteD   = 0;
                 JumpD       = 2'b00;
                 BranchD     = 3'b000;
-                ALUControlD = 4'b0000; // addition
+                ALUControlD = 4'b0000;  // addition
                 ALUSrcD     = 1;
-                UpperOpD    = 2'b01; // selects 0 as srcA into ALU
+                UpperOpD    = 2'b01;    // selects 0 as srcA into ALU
                 MemoryOpD   = 3'b000;
-                ImmSrcD     = 3'b011; // upper-type IMM
+                ImmSrcD     = 3'b011;   // upper-type IMM
             end
 
             7'b0010111: begin // AUIPC
                 RegWriteD   = 1;
-                ResultSrcD  = 2'b00; // writeback alu result of PC + Imm << 12
+                ResultSrcD  = 2'b00;    // writeback alu result of PC + Imm << 12
                 MemWriteD   = 0;
                 JumpD       = 2'b00;
                 BranchD     = 3'b000;
-                ALUControlD = 4'b0000; // addition
+                ALUControlD = 4'b0000;  // addition
                 ALUSrcD     = 1;
-                UpperOpD    = 2'b10; // selects PC as srcA into ALU
+                UpperOpD    = 2'b10;    // selects PC as srcA into ALU
                 MemoryOpD   = 3'b000;
-                ImmSrcD     = 3'b011; // upper-type IMM
+                ImmSrcD     = 3'b011;   // upper-type IMM
             end
 
             default: begin
