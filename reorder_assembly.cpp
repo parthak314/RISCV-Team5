@@ -1,0 +1,207 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <algorithm>
+#include <queue>
+#include <unordered_set>
+#include <stdexcept>
+
+class InstructionGraph {
+public:
+    class InstructionNode {
+    public:
+        std::string cmd_line;
+        std::string cmd;
+        std::string dest;
+        std::vector<std::string> src;
+        std::unordered_set<InstructionNode*> dependents;
+        std::unordered_set<InstructionNode*> depends_on;
+
+        InstructionNode(const std::string& cmd_line) : cmd_line(cmd_line) {
+            split_cmd_line(cmd_line);
+        }
+
+        bool operator<(const InstructionNode& other) const {
+            return dependents.size() < other.dependents.size();
+        }
+
+    private:
+        void split_cmd_line(const std::string& cmd_line) {
+            std::istringstream iss(cmd_line);
+            iss >> cmd >> dest;
+            std::string source;
+            while (iss >> source) {
+                src.push_back(source);
+            }
+        }
+    };
+
+    // add new instruction to the InstructionGraph
+    void add_instr(const std::string& command_line) {
+        auto* node = new InstructionNode(command_line);
+        add_dependency(node);
+    }
+
+    // generate optimised out of order assembly
+    // go through the current head and add instructions
+    // then add new instructions to head
+    std::vector<std::string> create_optimised_asm() {
+        std::vector<std::string> new_asm_lst;
+        std::make_heap(head.begin(), head.end(), Compare());
+
+        while (!head.empty()) {
+            InstructionNode* instr1 = extract_max();
+            InstructionNode* instr2 = (head.empty()) ? nullptr : extract_max();
+
+            new_asm_lst.push_back(instr1->cmd_line);
+            add_next_instrs(instr1);
+            
+            // NOP when there is no other instr with no dependency
+            if (instr2 == nullptr) {
+                new_asm_lst.push_back("nop");
+            } else {
+                new_asm_lst.push_back(instr2->cmd_line);
+                add_next_instrs(instr2);
+            }
+        }
+
+        return new_asm_lst;
+    }
+
+private:
+
+    // in the heap, compare priorities using the length of dependents
+    // ie longer dependent list is higher priority (greedy approach)
+    struct Compare {
+        bool operator()(InstructionNode* a, InstructionNode* b) {
+            return *a < *b;
+        }
+    };
+
+    std::vector<InstructionNode*> nodes;
+    std::vector<InstructionNode*> head;
+
+
+    // update graph dependencies when adding a new instruction node
+    void add_dependency(InstructionNode* new_instr) {
+        bool no_dependency = true;
+
+        for (auto* old_instr : nodes) {
+            if (std::any_of(new_instr->src.begin(), new_instr->src.end(),
+                            [&old_instr](const std::string& src) { return src == old_instr->dest; }) ||
+                new_instr->dest == old_instr->dest) {
+                old_instr->dependents.insert(new_instr);
+                new_instr->depends_on.insert(old_instr);
+                no_dependency = false;
+            }
+        }
+
+        nodes.push_back(new_instr);
+
+        if (no_dependency) {
+            head.push_back(new_instr);
+        }
+    }
+
+    // function to get highest priority (max dependencies) in head heap
+    InstructionNode* extract_max() {
+        std::pop_heap(head.begin(), head.end(), Compare());
+        InstructionNode* max = head.back();
+        head.pop_back();
+        return max;
+    }
+
+    void add_next_instrs(InstructionNode* completed_instr) {
+        std::vector<InstructionNode*> next_instrs = get_next_instrs(completed_instr);
+        for (auto* next_instr : next_instrs) {
+            head.push_back(next_instr);
+            std::push_heap(head.begin(), head.end(), Compare());
+        }
+    }
+
+    std::vector<InstructionNode*> get_next_instrs(InstructionNode* completed_instr) {
+        std::vector<InstructionNode*> next_instrs;
+        for (auto* instr : completed_instr->dependents) {
+            instr->depends_on.erase(completed_instr);
+            if (instr->depends_on.empty()) {
+                next_instrs.push_back(instr);
+            }
+        }
+        return next_instrs;
+    }
+};
+
+bool verify_filenames(const std::string& filename) {
+    auto pos = filename.rfind('.');
+    if (pos == std::string::npos) return false;
+    return filename.substr(pos + 1) == "s";
+}
+
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        std::cerr << "Usage: " << argv[0] << " <input_file> [-o <output_file>]" << std::endl;
+        return 1;
+    }
+
+    std::string input_file = argv[1];
+    std::string output_file;
+
+    if (argc == 4 && std::string(argv[2]) == "-o") {
+        output_file = argv[3];
+    }
+
+    if (!verify_filenames(input_file)) {
+        throw std::invalid_argument("Invalid input filename. Ensure that the file is an assembly file (.s).");
+    }
+
+    auto filename = input_file.substr(0, input_file.rfind('.'));
+    std::string default_output = filename + "_reordered.s";
+
+    if (output_file.empty()) {
+        output_file = default_output;
+    }
+
+    if (!verify_filenames(output_file)) {
+        output_file = default_output;
+        std::cerr << "Invalid output filename. Defaulting to default output" << std::endl;
+    }
+
+    InstructionGraph instr_graph;
+
+    std::ifstream source_file(input_file);
+    if (!source_file.is_open()) {
+        std::cerr << "Failed to open input file" << std::endl;
+        return 1;
+    }
+
+    std::string line;
+    while (std::getline(source_file, line)) {
+        auto pos = line.find('#');
+        if (pos != std::string::npos) {
+            line = line.substr(0, pos);
+        }
+        if (!line.empty()) {
+            instr_graph.add_instr(line);
+        }
+    }
+
+    source_file.close();
+
+    auto optimised_asm = instr_graph.create_optimised_asm();
+
+    std::ofstream destination_file(output_file);
+    if (!destination_file.is_open()) {
+        std::cerr << "Failed to open output file" << std::endl;
+        return 1;
+    }
+
+    for (const auto& asm_line : optimised_asm) {
+        destination_file << asm_line << '\n';
+    }
+
+    destination_file.close();
+
+    return 0;
+}

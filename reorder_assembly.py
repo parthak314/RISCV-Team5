@@ -11,8 +11,8 @@ class InstructionGraph:
             self.depends_on = set()
 
         def __lt__(self, other):
-            # return biggest in heap not smallest (hence negative)
-            return -len(self.dependents) < -len(other.dependents)
+            # return biggest dependency list in heap (priority queue)
+            return len(self.dependents) > len(other.dependents)
 
         def split_cmd_line(self, cmd_line: str) -> tuple[str, str, str]:
             split_cmd = cmd_line.split()
