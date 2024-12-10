@@ -80,7 +80,7 @@ module two_way_cache_controller #(
         if (en) begin // only do operations when en is HIGH
             if (hits[0] || hits[1]) begin 
                 correct_way = hits[1];          // if hit
-                data_out = words[correct_way];
+                data_out = words[hits[1]];
             end
             else begin // if miss
                 evicted_way = (~v_bits[1] || lru_bit);
