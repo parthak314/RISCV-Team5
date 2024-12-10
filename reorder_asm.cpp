@@ -94,11 +94,28 @@ private:
     // update graph dependencies when adding a new instruction node
     void add_dependency(InstructionNode* new_instr) {
         bool no_dependency = true;
-
         for (auto* old_instr : nodes) {
-            if (std::any_of(new_instr->srcs.begin(), new_instr->srcs.end(),
-                            [&old_instr](const std::string& src) { return src == old_instr->dest; }) ||
-                new_instr->dest == old_instr->dest) {
+            bool raw_d = false; // check for Read-After-Write (RAW) dependency
+            for (const std::string& src : new_instr->srcs) {
+                // Check if the source register matches the destination register of the old instruction
+                if (src == old_instr->dest) {
+                    raw_d = true;
+                    break;
+                }
+            }
+
+            bool war_d = false; // check for Write-After-Read (WAR) dependency
+            for (const std::string& src : old_instr->srcs) {
+                if (src == new_instr->dest) {
+                    war_d = true;
+                    break;
+                }
+            }
+
+            // check for Write-After-Write (WAW) dependency
+            bool waw_d = (new_instr->dest == old_instr->dest);
+
+            if (raw_d || war_d || waw_d) {
                 old_instr->dependents.insert(new_instr);
                 new_instr->depends_on.insert(old_instr);
                 no_dependency = false;

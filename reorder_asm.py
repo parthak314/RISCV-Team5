@@ -62,8 +62,11 @@ class InstructionGraph:
     def _add_dependency(self, new_instr: InstructionNode) -> None:
         no_dependency = True
         for old_instr in self.nodes:
-            if (any(src == old_instr.dest for src in new_instr.srcs) or # check for Read-After-Write (RAW) dependency
-            new_instr.dest == old_instr.dest): # check for Write-After-Write (WAW) dependency
+            raw_d = any(src == old_instr.dest for src in new_instr.srcs) # check for Read-After-Write (RAW) dependency
+            war_d = any(src == new_instr.dest for src in old_instr.srcs) # check for Write-After-Read (WAR) dependency
+            waw_d = (new_instr.dest == old_instr.dest) # check for Write-After-Write (WAW) dependency
+
+            if raw_d or war_d or waw_d: 
                 old_instr.dependents.add(new_instr)
                 new_instr.depends_on.add(old_instr)
                 no_dependency = False
