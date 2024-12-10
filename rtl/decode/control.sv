@@ -1,18 +1,22 @@
 module control #(
 ) (
-    input   logic   [6:0]   op, // opcode to define instruction type, last 7 bits of instr
-    input   logic   [2:0]   funct3, // instruction defined under instr type
-    input   logic           funct7, // 2nd MSB of instr
-    input   logic           zero, // flag for when 2 entities are equal
-    input   logic           negative, // flag for when a value is negative
-    input   logic           trigger, // external trigger input (trigger HIGH = stall)
-    output  logic   [1:0]   PCSrc, // pc mux sel line: 0 = pc + 4, 1 = branch (pc + imm), 2 = jump (from aluresult), 3 = pc (stall)
-    output  logic   [1:0]   ResultSrc, // data to store in register file, ALU result/data memory
-    output  logic           MemWrite, // write enable to data mem
-    output  logic   [3:0]   ALUControl, // controls the operation to perform in the ALU
-    output  logic           ALUSrc, // immediate vs register operand for ALU
-    output  logic   [2:0]   ImmSrc, // Type of sign extend performed based on instr type
-    output  logic           RegWrite // enable for when to write to a register
+    input   logic   [6:0]   opA, 
+    input   logic   [2:0]   funct3A,
+    input   logic           funct7A,
+    input   logic   [6:0]   opB, 
+    input   logic   [2:0]   funct3B,
+    input   logic           funct7B,
+    // input   logic           zero, 
+    // input   logic           negative, 
+    input   logic           trigger,
+    output  logic           IncrSrc 
+    output  logic   [1:0]   PCSrc, 
+    output  logic   [1:0]   ResultSrc, 
+    output  logic   [1:0]   MemWrite, 
+    output  logic   [7:0]   ALUControl,
+    output  logic   [1:0]   ALUSrc, 
+    output  logic   [5:0]   ImmSrc, 
+    output  logic   [1:0]   RegWrite
 );
 
     task get_ALU_control(
@@ -39,75 +43,60 @@ module control #(
 
     always_comb begin
         // if trigger, stall by setting all writes to 0
-        // then set PCSrc 2'b11 so that PCNext = PC
+        // then set PCSrc 2'b11 so that PCNext = PC        
         if (trigger) begin
-            RegWrite = 1'b0; // Put here to prevent a latch error
-            ImmSrc = 3'b000;
-            MemWrite = 1'b0;
+            IncrSrc = 1'b1; 
+            PCSrc = 1'b1;
             ResultSrc = 2'b00;
-            PCSrc = 2'b11; // 
-            ALUSrc = 1'b0;
-            ALUControl = 4'b0000;
-
+            MemWrite = 2'b0;
+            ALUControl = 8'b0;
+            ALUSrc = 2'b0;
+            ImmSrc = 6'b0;
+            RegWrite = 2'b0;
         end else begin
-            RegWrite = 1'b0; // Put here to prevent a latch error
-            ImmSrc = 3'b000;
-            MemWrite = 1'b0;
+            IncrSrc = 1'b1; 
+            PCSrc = 1'b1;
             ResultSrc = 2'b00;
-            PCSrc = 2'b0;
-            ALUSrc = 1'b0;
-            ALUControl = 4'b0000;
+            MemWrite = 2'b0;
+            ALUControl = 8'b0;
+            ALUSrc = 2'b0;
+            ImmSrc = 6'b0;
+            RegWrite = 2'b0;
 
             case (op)
                 // R-type
                 7'b0110011: begin 
-                    RegWrite = 1'b1; ALUSrc = 1'b0; MemWrite = 1'b0; ResultSrc = 2'b00; PCSrc = 2'b0;
-                    get_ALU_control(op, funct3, funct7, ALUControl);
+                    // General
+                    IncrSrc = 1'b1; 
+                    PCSrc = 1'b1;
+
+                    // A
+                    get_ALU_control(opA, funct3A, funct7A, ALUControl[7:4])
+                    RegWrite[1] = 1'b1;
+
+                    // B
+                    get_ALU_control(opB, funct3B, funct7B, ALUControl[3:0])
+                    RegWrite[0] = 1'b1;
                 end
 
                 // I-type (ALU instructions)
                 7'b0010011: begin 
-                    RegWrite = 1'b1; ImmSrc = 3'b000; MemWrite = 1'b0; ResultSrc = 2'b00; ALUSrc = 1'b1; PCSrc = 2'b0; 
-                    get_ALU_control(op, funct3, funct7, ALUControl);
-                end
+                    // General
+                    IncrSrc = 1'b1; 
+                    PCSrc = 1'b1;
 
-                // I-type (loading)
-                7'b0000011: begin
-                    RegWrite = 1'b1; ImmSrc = 3'b000; MemWrite = 1'b0; ALUSrc = 1'b1; ALUControl = 4'b0000; ResultSrc = 2'b01; PCSrc = 2'b0;
-                end
+                    // A
+                    get_ALU_control(opA, funct3A, funct7A, ALUControl[7:4])
+                    ALUSrc[1] = 1'b1;
+                    ImmSrc[5:3] = 3'b0;
+                    RegWrite[1] = 1'b1;
 
-                // I-type (jalr)
-                7'b1100111: begin
-                    RegWrite = 1'b1; MemWrite = 1'b0; ImmSrc = 3'b000; ResultSrc = 2'b00; PCSrc = 2'b10; ALUControl = 4'b0000; ALUSrc = 1;
-                end
+                    // B
+                    get_ALU_control(opB, funct3B, funct7B, ALUControl[3:0])
+                    ALUSrc[0] = 1'b1;
+                    ImmSrc[2:0] = 3'b0;
+                    RegWrite[0] = 1'b1;
 
-                // S-type
-                7'b0100011: begin 
-                    RegWrite = 1'b0; ImmSrc = 3'b001; ALUSrc = 1'b1; ALUControl = 4'b0000; MemWrite = 1'b1; PCSrc = 2'b0;
-                end
-
-                // B-type
-                7'b1100011: begin 
-                    RegWrite = 1'b0; ImmSrc = 3'b010; ALUSrc = 1'b0; ALUControl = 4'b0001; MemWrite = 1'b0;
-                    case (funct3)
-                        3'b000: PCSrc = zero ? 2'b01 : 2'b0;       // beq
-                        3'b001: PCSrc = ~zero ? 2'b01 : 2'b0;      // bne
-                        3'b100: PCSrc = negative ? 2'b01 : 2'b0;   // blt 
-                        3'b101: PCSrc = ~negative ? 2'b01 : 2'b0;  // bge
-                        3'b110: PCSrc = negative ? 2'b01 : 2'b0;   // bltu
-                        3'b111: PCSrc = ~negative ? 2'b01 : 2'b0;  // bgeu
-                        default: PCSrc = 2'b0; // Default case
-                    endcase
-                end
-
-                // U-type (lui)
-                7'b0110111: begin 
-                    RegWrite = 1'b1; ImmSrc = 3'b011; MemWrite = 1'b0; ResultSrc = 2'b11; PCSrc = 2'b0;
-                end
-
-                // J-type (jal)
-                7'b1101111: begin 
-                    RegWrite = 1'b1; ImmSrc = 3'b100; MemWrite = 1'b0; ResultSrc = 2'b10; PCSrc = 2'b01;
                 end
 
                 default: begin

@@ -2,23 +2,31 @@ module reg_file #(
     parameter DATA_WIDTH = 32,
     parameter ADDR_WIDTH = 5
 )(
-    input logic                  clk,        // clock
-    input logic                  reset,      // reset
-    input logic                  write_enable, // WE3 write enable signal (regwrite from cu)
-    input logic [ADDR_WIDTH-1:0] read_addr1, // A1 address for read port 1
-    input logic [ADDR_WIDTH-1:0] read_addr2, // A2 Address for read port 2
-    input logic [ADDR_WIDTH-1:0] write_addr, // A3 Address for write port
-    input logic [DATA_WIDTH-1:0] write_data, // Data to write
-    output logic [DATA_WIDTH-1:0] read_data1, // Output from read port 1
-    output logic [DATA_WIDTH-1:0] read_data2,  // Output from read port 2
+    input logic                  clk,        
+    input logic                  reset,      
+    input logic [1:0]            write_enable,
+    input logic [ADDR_WIDTH-1:0] raddr1A, 
+    input logic [ADDR_WIDTH-1:0] raddr2A, 
+    input logic [ADDR_WIDTH-1:0] waddrA, 
+    input logic [DATA_WIDTH-1:0] wdataA, 
+    input logic [ADDR_WIDTH-1:0] raddr1B, 
+    input logic [ADDR_WIDTH-1:0] raddr2B, 
+    input logic [ADDR_WIDTH-1:0] waddrB, 
+    input logic [DATA_WIDTH-1:0] wdataB, 
+    output logic [DATA_WIDTH-1:0] rdata1A, 
+    output logic [DATA_WIDTH-1:0] rdata2A, 
+    output logic [DATA_WIDTH-1:0] rdata1B, 
+    output logic [DATA_WIDTH-1:0] rdata2B, 
     output logic [DATA_WIDTH-1:0] a0
 );
 
     logic [DATA_WIDTH-1:0] registers [2**ADDR_WIDTH-1:0];
 
     // Read operation (asynchronous reads)
-    assign read_data1 = registers[read_addr1];
-    assign read_data2 = registers[read_addr2];
+    assign rdata1A = registers[raddr1A];
+    assign rdata2A = registers[raddr2A];
+    assign rdata1B = registers[raddr1B];
+    assign rdata2B = registers[raddr2B];
 
     // Write operation (synchronous write)
     always_ff @(posedge clk) begin
@@ -28,9 +36,14 @@ module reg_file #(
                 registers[i] <= 0;
             end
         end
-        else if (write_enable && write_addr != 5'b0) begin
-            // Don't write to register 0
-            registers[write_addr] <= write_data;
+        else begin
+            if (write_enable[1] && waddrA != 5'b0) begin
+                // Don't write to register 0
+                registers[waddrA] <= wdataA;
+            end
+            if (write_enable[0] && waddrB != 5'b0) begin
+                registers[waddrB] <= wdataB;
+            end
         end
     end
 

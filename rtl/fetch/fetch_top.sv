@@ -6,34 +6,33 @@ module fetch_top # (
 ) (
     input logic clk,
     input logic rst,
-    input logic [1:0] PCSrc, // mux sel line: 0 = pc + 4, 1 = branch (pc + imm), 2 = jump (from aluresult), 3 = pc (stall)
-    input logic [DATA_WIDTH-1:0] Result, // result from ALU
-    input logic [DATA_WIDTH-1:0] ImmExt, // output of extended imm
-    output logic [DATA_WIDTH-1:0] Instr, // output instruction from instr_mem
-    output logic [DATA_WIDTH-1:0] PCPlus4
+    input logic PCSrc, // mux sel line: 0 = pcIncr, 1 = PC (stall)
+    input logic IncrSrc
+    output logic [DATA_WIDTH-1:0] InstrA, // output instruction from instr_mem
+    output logic [DATA_WIDTH-1:0] InstrB
 );
 
-    logic [DATA_WIDTH-1:0] PCTarget, PCNext, PC;
+    logic [DATA_WIDTH-1:0] PCincr, PCNext, PC;
+    wire  [DATA_WIDTH-1:0] IncrVal;
 
-    mux_4x2 mux_pc (
-        .in0 (PCPlus4),
-        .in1 (PCTarget),
-        .in2 (Result),
-        .in3(PC),
+    mux mux_pc (
+        .in0 (PCincr),
+        .in1 (PC),
         .sel (PCSrc),
         .out (PCNext)
     );
 
-    adder adder_branch_pc (
-        .in0 (PC),
-        .in1 (ImmExt),
-        .out (PCTarget)
+    mux mux_pc_increment (
+        .in0 (4),
+        .in1 (8),
+        .sel (IncrSrc),
+        .out (IncrVal)
     );
 
-    adder adder_pcplus4 (
+    adder adder_nextInstruction (
         .in0 (PC),
-        .in1 (4),
-        .out (PCPlus4)
+        .in1 (IncrVal),
+        .out (PCincr)
     );
 
     pc_register pc_reg (
@@ -45,7 +44,8 @@ module fetch_top # (
 
     instr_mem instr_mem_mod (
         .addr(PC),
-        .instr(Instr)
+        .instrA (InstrA),
+        .instrB (InstrB)
     );
 
 endmodule

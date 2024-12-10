@@ -9,76 +9,88 @@ module top #(
     input logic clk,
     input logic rst,
     input logic trigger,
-    output logic [31:0] a0
+    output logic [DATA_WIDTH-1:0] a0
 );
 
 // Fetch Wires
-logic [1:0] PCSrc;
-logic [DATA_WIDTH-1:0] Instr;
-logic [DATA_WIDTH-1:0] PCPlus4;
+logic PCSrc;
+logic [DATA_WIDTH-1:0] InstrA;
+logic [DATA_WIDTH-1:0] InstrB;
+logic [DATA_WIDTH-1:0] IncrSrc;
 
 // Data Wires
-logic Zero, Negative; // negative, zero flags
-logic MemWrite;
-logic ALUSrc;
+// logic Zero, Negative; // negative, zero flags
+logic [1:0] MemWrite;
+logic [1:0] ALUSrc;
 logic [1:0] ResultSrc;
-logic [3:0] ALUControl;
-logic [DATA_WIDTH-1:0] Result;
-logic [DATA_WIDTH-1:0] RD1, RD2;
-logic [DATA_WIDTH-1:0] ImmExt;
+logic [7:0] ALUControl;
+logic       IncrSrc;
+logic [DATA_WIDTH-1:0] ResultA, ResultB;
+logic [DATA_WIDTH-1:0] RD1A, RD2A, RD1B, RD2B;
+logic [DATA_WIDTH-1:0] ImmExtA, ImmExtB;
 
 // Execute Wires
-logic [DATA_WIDTH-1:0] ALUResult;
+logic [DATA_WIDTH-1:0] ALUResultA, ALUResultB;
 
 fetch_top fetch_top_mod (
-    .clk(clk),
-    .rst(rst),
-    .Result(Result),
-    .PCSrc(PCSrc),
-    .ImmExt(ImmExt),
-    .Instr(Instr),
-    .PCPlus4(PCPlus4)
+    .clk            (clk),
+    .rst            (rst),
+    .PCSrc          (PCSrc),
+    .IncrSrc        (IncrSrc),
+    .InstrA         (InstrA),
+    .InstrB         (InstrB)
 );
 
 decode_top decode_top_mod (
-    .clk(clk),
-    .rst(rst),
-    .trigger(trigger),
-    .instr(Instr),
-    .result(Result),
-    .zero(Zero),
-    .negative(Negative),
-    .PCSrc(PCSrc),
-    .ResultSrc(ResultSrc),
-    .MemWrite(MemWrite),
-    .ALUControl(ALUControl),
-    .ALUSrc(ALUSrc),
-    .rd1(RD1),
-    .rd2(RD2),
-    .ImmExt(ImmExt),
-    .a0(a0)
+    .rst            (rst),
+    .clk            (clk),
+    .trigger        (trigger),
+    .instrA         (InstrA),
+    .instrB         (InstrB),
+    .resultA        (ResultA),
+    .resultB        (ResultB),
+    // .zero           (Zero),
+    // .negative       (Negative),
+    .IncrSrc        (IncrSrc),
+    .PCSrc          (PCSrc),
+    .ResultSrc      (ResultSrc),
+    .MemWrite       (MemWrite),
+    .ALUControl     (ALUControl),
+    .ALUSrc         (ALUSrc),
+    .rd1A           (RD1A),
+    .rd2A           (RD2A),
+    .rd1B           (RD1B),
+    .rd2B           (RD2B),
+    .ImmExtA        (ImmExtA),
+    .ImmExtB        (ImmExtB),
+    .a0             (a0)
 );
 
 execute_top execute_top_mod (
-    .ALUControl(ALUControl),
-    .ALUSrc(ALUSrc),
-    .RD1(RD1),
-    .RD2(RD2),
-    .ImmExt(ImmExt),
-    .ALUResult(ALUResult),
-    .Zero(Zero),
-    .Negative(Negative)
+    .ALUControl     (ALUControl),
+    .ALUSrc         (ALUSrc),
+    .RD1A           (RD1A),
+    .RD2A           (RD2A),
+    .RD1B           (RD1B),
+    .RD2B           (RD2B),
+    .ImmExtA        (ImmExtA),
+    .ImmExtB        (ImmExtB),
+    .ALUResultA     (ALUResultA),
+    .ALUResultB     (ALUResultB),
+    // .Zero(Zero),
+    // .Negative(Negative)
 );
 
 memory_top memory_top_mod (
-    .clk(clk),
-    .ResultSrc(ResultSrc),
-    .MemWrite(MemWrite),
-    .PCPlus4(PCPlus4),
-    .ImmExt(ImmExt),
-    .ALUResult(ALUResult),
-    .WriteData(RD2),
-    .Result(Result)
+    .clk            (clk),
+    .ResultSrc      (ResultSrc),
+    .MemWrite       (MemWrite),
+    .ALUResultA     (ALUResultA),
+    .ALUResultB     (ALUResultB),
+    .wdataA         (RD2A),
+    .wdataB         (RD2B),
+    .ResultA        (ResultA),
+    .ResultB        (ResultB),
 );
 
 endmodule
