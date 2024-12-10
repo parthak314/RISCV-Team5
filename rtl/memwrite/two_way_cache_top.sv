@@ -5,7 +5,7 @@ module two_way_cache_top #(
 ) (
     input   logic                       clk,
     input   logic                       en,             // access enable for cache (include this to prevent unnecessary evictions)
-    input   logic                       addr_mode,      // byte or word addressing, see memory_top
+    // input   logic                       addr_mode,      // byte or word addressing, see memory_top
     input   logic [DATA_WIDTH-1:0]      wd,             // data to be written in
     input   logic                       we,             // write enable
     input   logic [DATA_WIDTH-1:0]      addr,           // target address for read data
@@ -17,6 +17,7 @@ module two_way_cache_top #(
     output  logic                       we_to_ram,      // write-enable = 1 if evicted
     output  logic [RAM_ADDR_WIDTH-1:0]  w_addr_to_ram,  // evicted word address in ram
 
+    output  logic [BYTE_OFFSET-1:0]     offset,
     output  logic [DATA_WIDTH-1:0]      rd              // data that is output from reading cache
 );
     // each set has 1 v bit and dirty bit per data block
@@ -58,7 +59,6 @@ module two_way_cache_top #(
 
     logic [CACHE_ADDR_WIDTH-1:0]        target_set;
     logic [TAG_SIZE-1:0]                target_tag;
-    logic [BYTE_OFFSET-1:0]             offset;
 
     assign target_set   = addr[(CACHE_ADDR_WIDTH + BYTE_OFFSET - 1):BYTE_OFFSET];  // [10:2] INDEX - identify the set
     assign target_tag   = addr[RAM_ADDR_WIDTH-1:(CACHE_ADDR_WIDTH + BYTE_OFFSET)]; // [31:11] TAG - identify unique RAM address
@@ -66,12 +66,12 @@ module two_way_cache_top #(
 
     two_way_cache_controller cache_controller_mod (
         .en(en),                    // read enable for cache
-        .addr_mode(addr_mode),
+        // .addr_mode(addr_mode),
         .we(we),
         .wd(wd),
         .target_set(target_set),    // INDEX taken from RAM address we are trying to retrieve
         .target_tag(target_tag),    // TAG taken from RAM address we are trying to retrieve
-        .offset(offset),
+        // .offset(offset),
         .set_data(set_data),
         .re_from_ram(re_from_ram),
         .rd_from_ram(rd_from_ram),
@@ -85,11 +85,11 @@ module two_way_cache_top #(
 
     sram_cache cache (
         .clk(clk),
-        .addr(target_set),
+        .addr(target_set),          // INDEX used to locate the relevant cache set
         .wd(updated_set_data),
         .we(we_to_cache),
         .re(en), // we convert en to re, because it is impossible for we to be HIGH when en is LOW, so write doesn't need an en check
-        .rd(set_data)
+        .rd(set_data)               // relevant cache set data fed back to cache controller to process metadata (lru, v & dirty bit)
     );
 
 endmodule

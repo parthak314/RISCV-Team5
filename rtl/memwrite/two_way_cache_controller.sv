@@ -3,17 +3,17 @@ module two_way_cache_controller #(
                 DATA_WIDTH = 32,
                 TAG_SIZE = 21,
                 CACHE_ADDR_WIDTH = 9,
-                BYTE_OFFSET = 2,
+                // BYTE_OFFSET = 2,
                 RAM_ADDR_WIDTH = 32
 ) (
     // control inputs from memory_top
     input   logic                           en, // access en signal to prevent unncessary evictions
-    input   logic                           addr_mode,
+    // input   logic                           addr_mode,
     input   logic                           we,
     input   logic [DATA_WIDTH-1:0]          wd,
     input   logic [CACHE_ADDR_WIDTH-1:0]    target_set,
     input   logic [TAG_SIZE-1:0]            target_tag,
-    input   logic [BYTE_OFFSET-1:0]         offset,
+    // input   logic [BYTE_OFFSET-1:0]         offset,
 
     // set input from cache
     input   logic [SET_SIZE-1:0]            set_data,
@@ -78,7 +78,10 @@ module two_way_cache_controller #(
         data_out = {DATA_WIDTH{1'b0}};
 
         if (en) begin // only do operations when en is HIGH
-            if (hits[0] || hits[1]) correct_way = hits[1]; // if hit
+            if (hits[0] || hits[1]) begin 
+                correct_way = hits[1];          // if hit
+                data_out = words[correct_way];
+            end
             else begin // if miss
                 evicted_way = (~v_bits[1] || lru_bit);
 
@@ -99,34 +102,16 @@ module two_way_cache_controller #(
                 new_v_bits[evicted_way] = 1'b1;
                 new_dirty_bits[evicted_way] = 1'b0;
                 correct_way = evicted_way;
+
+                data_out = rd_from_ram;
             end
 
             new_lru_bit = ~correct_way; // update LRU as the other way in set (not used this cycle)
 
             if (we) begin // write to cache
-                if (addr_mode) begin
-                    case (offset) // handle different offsets for SB
-                        2'b00:      new_words[correct_way] = {new_words[correct_way][31:8], wd[7:0]};
-                        2'b01:      new_words[correct_way] = {new_words[correct_way][31:16], wd[7:0], new_words[correct_way][7:0]};
-                        2'b10:      new_words[correct_way] = {new_words[correct_way][31:24], wd[7:0], new_words[correct_way][15:0]};
-                        2'b11:      new_words[correct_way] = {wd[7:0], new_words[correct_way][23:0]};
-                        default:    new_words[correct_way] = {new_words[correct_way][31:8], wd[7:0]};
-                    endcase
-                end else new_words[correct_way] = wd;
-
+                new_words[correct_way] = wd;
                 new_dirty_bits[correct_way] = 1'b1; // update dirty bit
             end
-
-            // read from cache address
-            if (addr_mode) begin
-                case (offset)
-                    2'b00:          data_out = {24'b0, new_words[correct_way][7:0]};
-                    2'b01:          data_out = {24'b0, new_words[correct_way][15:8]};
-                    2'b10:          data_out = {24'b0, new_words[correct_way][23:16]};
-                    2'b11:          data_out = {24'b0, new_words[correct_way][31:24]};
-                    default:        data_out = {24'b0, new_words[correct_way][7:0]};
-                endcase
-            end else                data_out = new_words[correct_way];
         end
     end
 

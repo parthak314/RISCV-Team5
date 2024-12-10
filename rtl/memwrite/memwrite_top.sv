@@ -29,10 +29,15 @@ module memwrite_top #(
     wire [DATA_WIDTH-1:0]   RAM_ReadDataOut_Wire;
     wire [DATA_WIDTH-1:0]   ReadDataM_Wire;
 
+    wire [DATA_WIDTH-1:0]   Parse_ReadData_Wire;
+    wire [DATA_WIDTH-1:0]   Parse_WriteData_Wire;
+    wire [1:0]              ByteOffset_Wire;
+
     wire [1:0]              ResultSrcW_Wire;
     wire [DATA_WIDTH-1:0]   ALUResultW_Wire;
     wire [DATA_WIDTH-1:0]   ReadDataW_Wire;
     wire [DATA_WIDTH-1:0]   PCPlus4W_Wire;
+
 
     // only access cache when we are reading or writing to memory (prevent unnecessary evictions)
     logic   CacheAccessEnable; 
@@ -43,8 +48,8 @@ module memwrite_top #(
     two_way_cache_top cache_top (
         .clk(clk),
         .en(CacheAccessEnable),
-        .addr_mode(MemoryOpM == 3'b000 | MemoryOpM == 3'b011), // addr_mode = 1 if byte or byte unsigned operation
-        .wd(WriteDataM),
+        // .addr_mode(MemoryOpM == 3'b000 | MemoryOpM == 3'b011), // addr_mode = 1 if byte or byte unsigned operation
+        .wd(Parse_WriteData_Wire),
         .we(MemWriteM),
         .addr(ALUResultM),
 
@@ -55,7 +60,17 @@ module memwrite_top #(
         .we_to_ram(RAM_WriteEnable_Wire),
         .w_addr_to_ram(RAM_WriteAddr_Wire),
 
-        .rd(ReadDataM_Wire)
+        .offset(ByteOffset_Wire),
+        .rd(Parse_ReadData_Wire)
+    );
+
+    loadstore_parsing_unit parse_unit (
+        .MemoryOp(MemoryOpM),
+        .ByteOffset(ByteOffset_Wire),
+        .MemReadOutData(Parse_ReadData_Wire),
+        .WriteData(WriteDataM),
+        .MemWriteInData(Parse_WriteData_Wire),
+        .ReadData(ReadDataM_Wire)
     );
 
     dram_main_mem main_memory_ram (
@@ -66,7 +81,7 @@ module memwrite_top #(
         .r_addr({ALUResultM[31:2], 2'b0}), // always read from ram in 32 bit word blocks (byte addressing handled in cache only)
         .re(RAM_ReadEnable_Wire),
         .rd(RAM_ReadDataOut_Wire)
-    );  
+    );
 
     memwrite_pipeline_regfile memwrite_pipeline_reg (
         .en(~stall),
