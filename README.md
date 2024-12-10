@@ -14,11 +14,11 @@
 
 | Section               | Clarke | Joel | Kevin | Partha |
 | --------------------- | ------ | ---- | ----- | ------ |
-| Single cycle          | `X`    | `X`  | `X`   | `X`    |
-| Pipelining            | `X`    | `*`  | `X`   | `*`    |
-| Cache                 |        | `X`  |       | `X`    |
-| Integration           | `X`    | `X`  |       | `*`    |
-| Superscalar Processor |        | `X`  |       | `X`    |
+| Single cycle          |        |      |       |        |
+| Pipelining            |        |      |       |        |
+| Cache                 |        |      |       |        |
+| Integration           |        |      |       |        |
+| Superscalar Processor |        |      |       |        |
 
 ## Team members and Statements:
 
@@ -39,16 +39,16 @@ This single cycle implementation covers the basic requirements for most CPU oper
 
 | Module                       | Clarke | Joel | Kevin | Partha |
 | ---------------------------- | ------ | ---- | ----- | ------ |
-| alu                          | `X`    |      |       |        |
-| instr_mem                    |        | `X`  |       |        |
-| pc_register                  |        | `X`  |       |        |
-| datamem                      |        |      | `X`   |        |
-| control                      |        |      |       | `X`    |
-| reg_file                     |        |      |       | `X`    |
-| signextend                   |        |      |       | `X`    |
-| top (system integration)     |        | `X`  | `*`   |        |
-| F1 Assembly.s                |        |      |       | `X`    |
-| System Testing and Debugging |        | `X`  |       | `X`    |
+| alu                          |        |      |       |        |
+| instr_mem                    |        |      |       |        |
+| pc_register                  |        |      |       |        |
+| datamem                      |        |      |       |        |
+| control                      |        |      |       |        |
+| reg_file                     |        |      |       |        |
+| signextend                   |        |      |       |        |
+| top (system integration)     |        |      |       |        |
+| F1 Assembly.s                |        |      |       |        |
+| System Testing and Debugging |        |      |       |        |
 `X` - Lead Contributor   `*` - Partial Contributor
 
 ### Pipelined CPU
@@ -177,7 +177,7 @@ Structural design modifications:
 - <span style="color:#e9b76e">Decode</span>: Doubled inputs for each block
 - <span style="color:red">Execute</span>: Replicated models for ALU
 - <span style="color:#a9caf2">Writeback</span>: Doubled inputs for Data Memory with Load store separate to the data memory to reflect changes in the pipelining section. This is the load store parsing unit. A separate mux for ResultSrc. 
-Given the time available, this model implements the instructions for `R-type`, `I-type (imm)`, `I-type (load)`, `S-type`, `beq`, `bne`, `lui`, `auipc`.
+Given the time available, this model implements the instructions for `R-type`, `I-type (imm)`
 
 ### Out-of-order Processor
 The key change here is the Out-Of-Order Processor. It is simply called in the main bash script.
