@@ -46,6 +46,30 @@ TEST_F(CpuTestbench, TestPdf)
     EXPECT_EQ(top_->a0, 15363);
 }
 
+TEST_F(CpuTestbench, Testshift)
+{
+    setupTest("6_shift");
+    initSimulation();
+    runSimulation(CYCLES);
+    EXPECT_EQ(top_->a0, 0x3C000000);
+}
+
+TEST_F(CpuTestbench, Testlogic)
+{
+    setupTest("7_logic");
+    initSimulation();
+    runSimulation(CYCLES);
+    EXPECT_EQ(top_->a0, 31);
+}
+
+TEST_F(CpuTestbench, TestLoad)
+{
+    setupTest("8_load");
+    initSimulation();
+    runSimulation(CYCLES);
+    EXPECT_EQ(top_->a0, 4294892583);
+}
+
 int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);
