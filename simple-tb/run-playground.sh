@@ -11,9 +11,8 @@ while read -r line; do
 done < "$input_file"
 mv "$temp_file" "$output_file"
 
-verilator   -Wall --trace --cc \
-            -f filelist.f \
-            --exe ./playground_tbb.cpp \
+verilator   -Wall --trace --cc ../rtl/memwrite/loadstore_parsing_unit.sv \
+            --exe ./playground_tb.cpp \
             --prefix "Vdut" \
             -o Vdut \
             # -LDFLAGS "-lgtest -lgtest_main -lpthread" \

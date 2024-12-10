@@ -15,31 +15,20 @@ int main(int argc, char **argv, char **env)
 
     Verilated::traceEverOn(true);
     top->trace(tfp.get(), 99);
-    tfp->open("riscv.vcd");
+    // tfp->open("riscv.vcd");
 
-    top->clk = 1;
-    top->trigger = 0;
-    top->rst = 0;
+    top->MemoryOp           = 0b001;
+    top->ByteOffset         = 0b01;
+    top->MemReadOutData     = 0xAB'CD'EF'69;
+    top->WriteData          = 0x12'34'56'FF;
     
-    VlUnpacked<IData/*31:0*/, 32>& reg_file = top->rootp->top__DOT__decode__DOT__register_file_mod__DOT__reg_file;
-    uint32_t& T1 = reg_file[6];
+    top->eval();
 
-    for (simcyc = 0; simcyc <= 1200; simcyc++)
-    {
-        for (tick = 0; tick < 2; tick++)
-        {
-            tfp->dump(2 * simcyc + tick);
-            top->clk = !top->clk;
-            top->eval();
-        }
+    printf("input read in: %08X\n", top->MemReadOutData);
+    printf("input write in: %08X\n", top->WriteData);
 
-        // std::cout << "T1: " << T1 << std::endl;
-
-        if (Verilated::gotFinish())
-            exit(0);
-    }
-
-    std::cout << "a0: " << top->a0 << std::endl;
+    printf("LOAD READ DATA: %08X\n", top->ReadData);
+    printf("STORE WRITE DATA: %08X\n", top->MemWriteInData);
 
     tfp->close();
     exit(0);
