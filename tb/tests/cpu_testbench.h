@@ -1,6 +1,7 @@
 #pragma once
 
 #include <utility>
+#include <fstream>
 
 #include "Vdut.h"
 #include "verilated.h"
@@ -22,6 +23,9 @@ public:
     void setupTest(const std::string &name)
     {
         name_ = name;
+        if (!checkForReorderScript()) {
+            std::ignore = system("g++ -o reorder_asm ../reorder_asm.cpp");
+        }
         // Assemble the program
         std::ignore = system(("./assemble.sh asm/" + name_ + ".s").c_str());
         // Create default empty file for data memory
@@ -96,4 +100,9 @@ protected:
     VerilatedVcdC* tfp_;
     std::string name_;
     unsigned int ticks_;
+
+    bool checkForReorderScript() {
+        std::ifstream file("reorder_asm");
+        return file.is_open();
+    }
 };

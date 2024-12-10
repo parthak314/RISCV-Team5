@@ -29,6 +29,8 @@ cd $SCRIPT_DIR
 # Wipe previous test output
 rm -rf test_out/*
 
+g++ -o reorder_asm ../reorder_asm.cpp # compile reorder_asm cpp
+
 # Iterate through files
 for file in "${files[@]}"; do
     name=$(basename "$file" _tb.cpp | cut -f1 -d\-)
@@ -64,3 +66,5 @@ done
 
 # Save obj_dir in test_out
 mv obj_dir test_out/
+
+rm reorder_asm
