@@ -2,11 +2,11 @@
 #include <fstream>
 #include <vector>
 #include <string>
-#include <sstream>
 #include <algorithm>
 #include <queue>
 #include <unordered_set>
 #include <stdexcept>
+#include <regex>
 
 class InstructionGraph {
 public:
@@ -15,7 +15,7 @@ public:
         std::string cmd_line;
         std::string cmd;
         std::string dest;
-        std::vector<std::string> src;
+        std::vector<std::string> srcs;
         std::unordered_set<InstructionNode*> dependents;
         std::unordered_set<InstructionNode*> depends_on;
 
@@ -29,11 +29,18 @@ public:
 
     private:
         void split_cmd_line(const std::string& cmd_line) {
-            std::istringstream iss(cmd_line);
-            iss >> cmd >> dest;
-            std::string source;
-            while (iss >> source) {
-                src.push_back(source);
+            // split by either comma or whitespace
+            std::regex rgx("[ ,]+");
+            std::sregex_token_iterator it(cmd_line.begin(), cmd_line.end(), rgx, -1);
+            std::sregex_token_iterator end;
+            std::vector<std::string> split_cmd(it, end);
+            cmd = split_cmd[0];
+            dest = split_cmd[1];
+            // check that first character is an alphabet (otherwise its an immediate and we don't care)
+            for (int i = 2; i < split_cmd.size(); i++) {
+                if (std::isalpha(split_cmd[i][0])) {
+                    srcs.push_back(split_cmd[i]);
+                }
             }
         }
     };
@@ -89,7 +96,7 @@ private:
         bool no_dependency = true;
 
         for (auto* old_instr : nodes) {
-            if (std::any_of(new_instr->src.begin(), new_instr->src.end(),
+            if (std::any_of(new_instr->srcs.begin(), new_instr->srcs.end(),
                             [&old_instr](const std::string& src) { return src == old_instr->dest; }) ||
                 new_instr->dest == old_instr->dest) {
                 old_instr->dependents.insert(new_instr);
@@ -120,7 +127,9 @@ private:
             std::push_heap(head.begin(), head.end(), Compare());
         }
     }
-
+    
+    // remove the completed instr from the other instructions' depends_on list
+    // now see if we have any new instructions that have no dependents (can be executed next cycle)
     std::vector<InstructionNode*> get_next_instrs(InstructionNode* completed_instr) {
         std::vector<InstructionNode*> next_instrs;
         for (auto* instr : completed_instr->dependents) {

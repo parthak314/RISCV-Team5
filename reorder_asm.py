@@ -1,12 +1,13 @@
 import argparse
 import heapq
+import re
 
 class InstructionGraph:
 
     class InstructionNode:
         def __init__(self, cmd_line):
             self.cmd_line = cmd_line
-            self.cmd, self.dest, self.src = self.split_cmd_line(cmd_line)
+            self.cmd, self.dest, self.srcs = self._split_cmd_line(cmd_line)
             self.dependents = set()
             self.depends_on = set()
 
@@ -14,12 +15,19 @@ class InstructionGraph:
             # return biggest dependency list in heap (priority queue)
             return len(self.dependents) > len(other.dependents)
 
-        def split_cmd_line(self, cmd_line: str) -> tuple[str, str, str]:
-            split_cmd = cmd_line.split()
+        def _split_cmd_line(self, cmd_line: str) -> tuple[str, str, str]:
+            split_cmd = re.split(r'[ ,]+', cmd_line)
             cmd = split_cmd[0]
             dest = split_cmd[1]
-            src = split_cmd[2:]
-            return cmd, dest, src
+
+            srcs = split_cmd[2:]
+            filtered_srcs = []
+            # check that first char is alphabet (otherwise its an imm and we don't care)
+            for src in srcs:
+                if src[0].isalpha():
+                    filtered_srcs.append(src)
+
+            return cmd, dest, filtered_srcs
 
     def __init__(self):
         self.nodes = []
@@ -54,7 +62,7 @@ class InstructionGraph:
     def _add_dependency(self, new_instr: InstructionNode) -> None:
         no_dependency = True
         for old_instr in self.nodes:
-            if (any(src == old_instr.dest for src in new_instr.src) or # check for Read-After-Write (RAW) dependency
+            if (any(src == old_instr.dest for src in new_instr.srcs) or # check for Read-After-Write (RAW) dependency
             new_instr.dest == old_instr.dest): # check for Write-After-Write (WAW) dependency
                 old_instr.dependents.add(new_instr)
                 new_instr.depends_on.add(old_instr)
