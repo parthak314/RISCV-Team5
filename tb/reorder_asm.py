@@ -25,7 +25,7 @@ class InstructionGraph:
             # check that first char is alphabet (otherwise its an imm and we don't care)
             for src in srcs:
                 # check that source is not imm or zero register
-                if src[0].isalpha() and src[0] != "z":
+                if (src and src[0].isalpha() and src[0] != "z"):
                     filtered_srcs.append(src)
 
             return cmd, dest, filtered_srcs
@@ -133,6 +133,9 @@ if __name__ == "__main__":
             if len(command_line) > 0:
                 instr_graph.add_instr(command_line)
 
+    #for node in instr_graph.nodes:
+    #    print(node.cmd_line, [n.cmd_line for n in node.dependents], [n.cmd_line for n in node.depends_on])
+    # print([node.cmd_line for node in instr_graph.head])
     optimised_asm = instr_graph.create_optimised_asm()
 
     with open(output_file, "w") as destination_file:

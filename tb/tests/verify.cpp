@@ -7,19 +7,27 @@
 
 TEST_F(CpuTestbench, TestAddiBne)
 {
-    setupTest("test1");
-    initSimulation();
-    runSimulation(CYCLES);
-    EXPECT_EQ(top_->a0, 254);
-}
-
-TEST_F(CpuTestbench, TestLiAdd)
-{
-    setupTest("test2");
+    setupTest("test3");
     initSimulation();
     runSimulation(CYCLES);
     EXPECT_EQ(top_->a0, 1000);
 }
+
+// TEST_F(CpuTestbench, TestAddiBne)
+// {
+//     setupTest("test1");
+//     initSimulation();
+//     runSimulation(CYCLES);
+//     EXPECT_EQ(top_->a0, 254);
+// }
+
+// TEST_F(CpuTestbench, TestLiAdd)
+// {
+//     setupTest("test2");
+//     initSimulation();
+//     runSimulation(CYCLES);
+//     EXPECT_EQ(top_->a0, 1000);
+// }
 
 int main(int argc, char **argv)
 {

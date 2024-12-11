@@ -38,7 +38,7 @@ public:
             dest = split_cmd[1];
             for (int i = 2; i < split_cmd.size(); i++) {
                 // check that src is a register and not an imm or zero (not a dependency if imm or zero)
-                if (std::isalpha(split_cmd[i][0] && split_cmd[i][0] != 'z')) {
+                if (!split_cmd[i].empty() && std::isalpha(split_cmd[i][0] && split_cmd[i][0] != 'z')) {
                     srcs.push_back(split_cmd[i]);
                 }
             }
@@ -63,12 +63,15 @@ public:
             InstructionNode* instr2 = (head.empty()) ? nullptr : extract_max();
 
             new_asm_lst.push_back(instr1->cmd_line);
+            std::cout << instr1->cmd_line << std::endl;
             add_next_instrs(instr1);
             
             // NOP when there is no other instr with no dependency
             if (instr2 == nullptr) {
                 new_asm_lst.push_back("nop");
+                std::cout << "nop" << std::endl;
             } else {
+                std::cout << instr2->cmd_line << std::endl;
                 new_asm_lst.push_back(instr2->cmd_line);
                 add_next_instrs(instr2);
             }
