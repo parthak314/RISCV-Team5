@@ -77,7 +77,7 @@ signextend sign_extension (
     .instrB         (instrB),
     .ImmSrc         (ImmSrc),
     .ImmOpA         (ImmExtA),
-    .ImmOpB         (ImmExtB),
+    .ImmOpB         (ImmExtB)
 );
 
 endmodule

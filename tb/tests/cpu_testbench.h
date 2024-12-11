@@ -26,8 +26,10 @@ public:
         if (!checkForReorderScript()) {
             std::ignore = system("g++ -o reorder_asm ../reorder_asm.cpp");
         }
+        // reorder the assembly
+        std::ignore = system(("./reorder_asm asm/" + name_ + ".s").c_str());
         // Assemble the program
-        std::ignore = system(("./assemble.sh asm/" + name_ + ".s").c_str());
+        std::ignore = system(("./assemble.sh asm/" + name_ + "_reordered.s").c_str());
         // Create default empty file for data memory
         std::ignore = system("touch data.hex");
     }
@@ -86,6 +88,7 @@ public:
         // Save data and program memory files to test_out directory
         std::ignore = system(("mv data.hex test_out/" + name_ + "/data.hex").c_str());
         std::ignore = system(("mv program.hex test_out/" + name_ + "/program.hex").c_str());
+        std::ignore = system(("mv asm/" + name_ + "_reordered.s test_out/" + name_ + "/").c_str()); // move the out of order assembly code to test_out
     }
 
     void setData(const std::string &data_file)

@@ -13,7 +13,7 @@ module execute_top #(
     input logic [DATA_WIDTH-1:0]    ImmExtB,
 
     output logic [DATA_WIDTH-1:0]   ALUResultA,
-    output logic [DATA_WIDTH-1:0]   ALUResultB,
+    output logic [DATA_WIDTH-1:0]   ALUResultB
     // output logic                    Zero,
     // output logic                    Negative
 );

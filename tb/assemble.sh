@@ -14,9 +14,10 @@ fi
 
 input_file=$1
 basename=$(basename "$input_file" | sed 's/\.[^.]*$//')
+stripped_basename="${basename%%_*}"
 parent=$(dirname "$input_file")
 file_extension="${input_file##*.}"
-LOG_DIR="$SCRIPT_DIR/test_out/$basename"
+LOG_DIR="$SCRIPT_DIR/test_out/$stripped_basename"
 
 # Create output directory for disassembly, hex and waveforms
 mkdir -p $LOG_DIR

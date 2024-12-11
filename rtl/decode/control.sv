@@ -9,7 +9,7 @@ module control #(
     // input   logic           zero, 
     // input   logic           negative, 
     input   logic           trigger,
-    output  logic           IncrSrc 
+    output  logic           IncrSrc, 
     output  logic   [1:0]   PCSrc, 
     output  logic   [1:0]   ResultSrc, 
     output  logic   [1:0]   MemWrite, 
@@ -46,7 +46,7 @@ module control #(
         // then set PCSrc 2'b11 so that PCNext = PC        
         if (trigger) begin
             IncrSrc = 1'b1; 
-            PCSrc = 1'b1;
+            PCSrc = 2'b1;
             ResultSrc = 2'b00;
             MemWrite = 2'b0;
             ALUControl = 8'b0;
@@ -55,7 +55,7 @@ module control #(
             RegWrite = 2'b0;
         end else begin
             IncrSrc = 1'b1; 
-            PCSrc = 1'b1;
+            PCSrc = 2'b1;
             ResultSrc = 2'b00;
             MemWrite = 2'b0;
             ALUControl = 8'b0;
@@ -63,19 +63,45 @@ module control #(
             ImmSrc = 6'b0;
             RegWrite = 2'b0;
 
-            case (op)
+            case (opA)
                 // R-type
                 7'b0110011: begin 
                     // General
                     IncrSrc = 1'b1; 
-                    PCSrc = 1'b1;
+                    PCSrc = 2'b1;
 
                     // A
-                    get_ALU_control(opA, funct3A, funct7A, ALUControl[7:4])
+                    get_ALU_control(opA, funct3A, funct7A, ALUControl[7:4]);
                     RegWrite[1] = 1'b1;
+                end
+
+                // I-type (ALU instructions)
+                7'b0010011: begin 
+                    // General
+                    IncrSrc = 1'b1; 
+                    PCSrc = 2'b1;
+
+                    // A
+                    get_ALU_control(opA, funct3A, funct7A, ALUControl[7:4]);
+                    ALUSrc[1] = 1'b1;
+                    ImmSrc[5:3] = 3'b0;
+                    RegWrite[1] = 1'b1;
+                end
+
+                default: begin
+                    // Set initially
+                end
+            endcase
+
+            case (opB)
+                // R-type
+                7'b0110011: begin 
+                    // General
+                    IncrSrc = 1'b1; 
+                    PCSrc = 2'b1;
 
                     // B
-                    get_ALU_control(opB, funct3B, funct7B, ALUControl[3:0])
+                    get_ALU_control(opB, funct3B, funct7B, ALUControl[3:0]);
                     RegWrite[0] = 1'b1;
                 end
 
@@ -83,16 +109,10 @@ module control #(
                 7'b0010011: begin 
                     // General
                     IncrSrc = 1'b1; 
-                    PCSrc = 1'b1;
-
-                    // A
-                    get_ALU_control(opA, funct3A, funct7A, ALUControl[7:4])
-                    ALUSrc[1] = 1'b1;
-                    ImmSrc[5:3] = 3'b0;
-                    RegWrite[1] = 1'b1;
+                    PCSrc = 2'b1;
 
                     // B
-                    get_ALU_control(opB, funct3B, funct7B, ALUControl[3:0])
+                    get_ALU_control(opB, funct3B, funct7B, ALUControl[3:0]);
                     ALUSrc[0] = 1'b1;
                     ImmSrc[2:0] = 3'b0;
                     RegWrite[0] = 1'b1;

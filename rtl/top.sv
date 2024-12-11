@@ -24,7 +24,6 @@ logic [1:0] MemWrite;
 logic [1:0] ALUSrc;
 logic [1:0] ResultSrc;
 logic [7:0] ALUControl;
-logic       IncrSrc;
 logic [DATA_WIDTH-1:0] ResultA, ResultB;
 logic [DATA_WIDTH-1:0] RD1A, RD2A, RD1B, RD2B;
 logic [DATA_WIDTH-1:0] ImmExtA, ImmExtB;
@@ -76,7 +75,7 @@ execute_top execute_top_mod (
     .ImmExtA        (ImmExtA),
     .ImmExtB        (ImmExtB),
     .ALUResultA     (ALUResultA),
-    .ALUResultB     (ALUResultB),
+    .ALUResultB     (ALUResultB)
     // .Zero(Zero),
     // .Negative(Negative)
 );
@@ -90,7 +89,7 @@ memory_top memory_top_mod (
     .wdataA         (RD2A),
     .wdataB         (RD2B),
     .ResultA        (ResultA),
-    .ResultB        (ResultB),
+    .ResultB        (ResultB)
 );
 
 endmodule

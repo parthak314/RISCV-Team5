@@ -7,7 +7,7 @@ module fetch_top # (
     input logic clk,
     input logic rst,
     input logic PCSrc, // mux sel line: 0 = pcIncr, 1 = PC (stall)
-    input logic IncrSrc
+    input logic IncrSrc,
     output logic [DATA_WIDTH-1:0] InstrA, // output instruction from instr_mem
     output logic [DATA_WIDTH-1:0] InstrB
 );

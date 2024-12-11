@@ -26,7 +26,7 @@ datamem data_mem_mod (
     .wdataA         (wdataA),
     .wdataB         (wdataB),
     .rdataA         (ReadDataA),
-    .rdataB         (ReadDataB),
+    .rdataB         (ReadDataB)
 );
 
 mux resultA_mux (

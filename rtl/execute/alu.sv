@@ -17,7 +17,7 @@ module alu #(
     input   control_operation           ALUControl,
     input   logic [DATA_WIDTH-1:0]      SrcA,
     input   logic [DATA_WIDTH-1:0]      SrcB,
-    output  logic [DATA_WIDTH-1:0]      ALUResult,
+    output  logic [DATA_WIDTH-1:0]      ALUResult
     // output  logic                       ZeroFlag,
     // output  logic                       NegativeFlag
 );

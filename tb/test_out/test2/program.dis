@@ -1,0 +1,18 @@
+
+a.out.reloc:     file format elf32-littleriscv
+architecture: riscv:rv32, flags 0x00000112:
+EXEC_P, HAS_SYMS, D_PAGED
+start address 0xbfc00000
+
+
+Disassembly of section .text:
+
+bfc00000 <__BSS_END__-0x1020>:
+bfc00000:	003100b3          	add	ra,sp,gp
+bfc00004:	40628233          	sub	tp,t0,t1
+bfc00008:	403100b3          	sub	ra,sp,gp
+bfc0000c:	00628233          	add	tp,t0,t1
+bfc00010:	021080b3          	mul	ra,ra,ra
+bfc00014:	02420233          	mul	tp,tp,tp
+bfc00018:	00108133          	add	sp,ra,ra
+bfc0001c:	00000013          	nop
