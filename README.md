@@ -1,6 +1,7 @@
 
 ## Table of contents:
 
+<<<<<<< HEAD
 ## Evidence 
 
 
@@ -18,6 +19,59 @@ Aubeeluck,Kevin
 
 ### Single Cycle CPU
 ![RISC-V 32I single cycle CPU implementation](images/single-cycle.jpg)
+=======
+- Single Cycle CPU Implementation
+- Pipelined CPU Implementation
+- Cached Implementation
+- Complete RISC-V
+- Superscalar Processor
+==TODO: Add links==
+## Repository Structure
+ ==TODO: Add the repo tree with branches==
+
+### Top Level Contributions
+
+| Section               | Clarke | Joel | Kevin | Partha |
+| --------------------- | ------ | ---- | ----- | ------ |
+| Single cycle          |        |      |       |        |
+| Pipelining            |        |      |       |        |
+| Cache                 |        |      |       |        |
+| Integration           |        |      |       |        |
+| Superscalar Processor |        |      |       |        |
+
+## Team members and Statements:
+
+| Team Member     | GitHub                                                | CID      | Email           | Link to Personal Statement                     |
+| --------------- | ----------------------------------------------------- | -------- | --------------- | ---------------------------------------------- |
+| Clarke Chong    | [clarkechong](https://github.com/clarkechong)         | 02395382 | cc1823@ic.ac.uk | [Clarke's Statement](statements/ClarkeChong.md)   |
+| Joel Ng         | [energy-in-joles](https://github.com/energy-in-joles) | 0219309  | zjn22@ic.ac.uk  | [Joel's Statement](statements/JoelNg.md)          |
+| Kevin Aubeeluck | [Kevinaubeeluck](https://github.com/Kevinaubeeluck)   |          |                 | [Kevin's Statement](statements/KevinAubeeluck.md) |
+| Partha Khanna   | [parthak314](https://github.com/parthak314)           | 02374670 | pk1223@ic.ac.uk | [Partha's Statement](statements/ParthaKhanna.md)  |
+## Single Cycle
+### Schematic
+
+![RISC-V 32I single cycle CPU implementation](images/single-cycle-model.png)
+
+![RISC-V 32I single cycle CPU implementation](images/single-cycle.jpg)
+### Overview
+This single cycle implementation covers the basic requirements for most CPU operations, this implements the following instructions: `R-type`, `I-type (immediate)`, `lbu`, `sb`, `beq`, `bne`, `jal`, `jalr`, `lui`.
+
+### Contributions
+
+| Module                       | Clarke | Joel | Kevin | Partha |
+| ---------------------------- | ------ | ---- | ----- | ------ |
+| alu                          |        |      |       |        |
+| instr_mem                    |        |      |       |        |
+| pc_register                  |        |      |       |        |
+| datamem                      |        |      |       |        |
+| control                      |        |      |       |        |
+| reg_file                     |        |      |       |        |
+| signextend                   |        |      |       |        |
+| top (system integration)     |        |      |       |        |
+| F1 Assembly.s                |        |      |       |        |
+| System Testing and Debugging |        |      |       |        |
+`X` - Lead Contributor   `*` - Partial Contributor
+>>>>>>> 021a7ecd4bf65e75300026c68ea595cfb00775cf
 
 ### Pipelined CPU
 ![alt text](images/pipelined-schematic.png)
@@ -131,6 +185,7 @@ Tasks:
     - if a branch is taken, clear instr in pipeline that have not been executed -> replace with nop
 
 ## Stretch Goal 2: Adding Data Memory Cache
+<<<<<<< HEAD
 ### Design:
 - Cache Parameters:
     - Capacity: 4096 Bytes; Block size: 4 words (16 bytes); Associativity: 2-way set associate; Sets: S = C/(bN) = 4096/32 = 128 sets each of 2 blocks
@@ -156,7 +211,33 @@ Tasks:
 - If a miss occurs and set is full, evict a block and replace with new data based on LRU
 - Cache hit: use the offset to select the word in a block
 - Cache controller: handles miss logic by fetching blocks frrom main memory and updating cache
+=======
+
+>>>>>>> 021a7ecd4bf65e75300026c68ea595cfb00775cf
 
    
 ## Stretch Goal 3: Full RV32I Design
 
+<<<<<<< HEAD
+=======
+## Superscalar Model Implementation
+![](images/superscalar-model.png)
+### Hardware
+Structural design modifications:
+- <span style="color:#eaa19f">Fetch</span>: No change from previous model, output is now `dataA` and `dataB` - selecting consecutive instructions from the Out-Of-Order Processor.
+- <span style="color:#e9b76e">Decode</span>: Doubled inputs for each block
+- <span style="color:red">Execute</span>: Replicated models for ALU
+- <span style="color:#a9caf2">Writeback</span>: Doubled inputs for Data Memory with Load store separate to the data memory to reflect changes in the pipelining section. This is the load store parsing unit. A separate mux for `ResultSrc`. 
+Given the time available, this model implements the instructions for `R-type`, `I-type (imm)`
+
+### Out-of-order Processor
+The key change here is the Out-Of-Order Processor which is a python script. It is simply called in the main bash script.
+The High level requirements for this file are to:
+- Break down the instruction set into 
+- Reorder the instructions such that the same register is not accessed in consecutive instructions
+- Reassemble this into the instruction set
+This then follows the same procedure to assemble the instruction set (by `assemble.sh` via the `riscv gnu toolchain`) before inputting this into instruction memory, as shown above.
+
+Further details can be seen in individual reports.
+
+>>>>>>> 021a7ecd4bf65e75300026c68ea595cfb00775cf

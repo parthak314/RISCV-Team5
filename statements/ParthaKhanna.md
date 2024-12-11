@@ -3,9 +3,13 @@
 ***Partha Khanna***
 
 ---
+<<<<<<< HEAD
 
 ## Overview
 
+=======
+## Overview
+>>>>>>> 021a7ecd4bf65e75300026c68ea595cfb00775cf
 - [[#Single Cycle RISCV-32I Design]]
 	- [[#Sign Extension Unit]]
 	- [[#Control Unit]]
@@ -14,7 +18,14 @@
 		- [[#F1 Assembly]]
 		- [[#Probability Distribution Function]]
 		- [[#System Debugging]]
+<<<<<<< HEAD
 - 
+=======
+- [[#Pipelined RISCV-32I Design]]
+	- 
+- [[#Data Memory Cache Implementation]]
+- [[#Complete RISCV-32I Design]]
+>>>>>>> 021a7ecd4bf65e75300026c68ea595cfb00775cf
 
 ---
 
@@ -325,6 +336,135 @@ jump:
 ---
 # Data Memory Cache Implementation
 
+<<<<<<< HEAD
 
 ---
 # Complete RISCV-32I Design
+=======
+### Aims
+- Using 2 way associative cache to improve processor performance
+- This will have cache read for hit/miss detection:
+	- A miss means a cache block is fetched from memory and the word is written to cache block
+	- a hit means the word is written to cache block
+- To handle cache coherency (if cache contains different data from main memory), we use **Write-back cache** - data written to cache with dirty bit associated with cache block set. It is written to main memory only when evicted from cache.
+
+## Implementation
+Before implementing, we need to identify the parameters and their bit widths.
+Since this is 2-way set associative cache, we have 2 blocks per set. In RISC-V, the cache capacity is 4096 Bytes, giving the number of sets as:
+$$
+Sets = \frac{Blocks}{associativity} = \frac{Capacity}{associtivity \cdot block size} =  \frac{4096}{2 \cdot 8} = 256 = 2^8
+$$
+And the number of cache lines as 4096/256 = 16
+The tag is used to identify the memory block for a particular set of cache, in this case we have:
+$$
+Tag = Address Width - SetBitWidth - OffsetWidth = 32 - \log_2(256) - 2 = 22
+$$
+However 
+Cache parameters:
+- `Blocks`= 2
+- `Capacity`= 4096 Bytes
+- `Number of Sets` = 256
+- `Cache lines` = 16
+- `Data Width` = 32 bits
+- `offset` = 2 bits (4 bytes per block)
+- `Tag width` = 22 bits
+
+
+---
+# Complete RISCV-32I Design
+
+
+
+---
+# Superscalar Model of RISCV-32I
+
+## Implementation
+
+
+- **Creating a Dependency Graph**:
+    
+    - Identify data dependencies between instructions, including:
+        - **RAW (Read After Write):** A later instruction reads a value written by an earlier one.
+        - **WAR (Write After Read):** A later instruction writes to a register that an earlier instruction reads.
+        - **WAW (Write After Write):** Two instructions write to the same register.
+- **Reordering Instructions**:
+    
+    - Use a graph to represent dependencies and resolve them while issuing independent instructions in parallel.
+- **Implementation Plan**:
+    
+    - Parse a set of instructions and determine dependencies.
+    - Use a `HashMap` to store dependency relationships for quick lookups.
+    - Implement a scheduling loop that checks dependencies and issues instructions.
+
+#### **1. Define the Instruction Structure**
+
+The `Instruction` struct represents each instruction with:
+
+- `name`: The type of instruction (e.g., `lw`, `add`, etc.).
+- `dest`: The destination register where the result is stored.
+- `sources`: A list of source registers that the instruction reads.
+
+For example:
+
+rust
+
+Copy code
+
+`Instruction { name: "add", dest: Some("s8"), sources: ["t1", "t2"] }`
+
+- `add` writes to `s8` (destination) and reads from `t1` and `t2` (sources).
+
+---
+
+#### **2. Build the Dependency Graph**
+
+This step identifies dependencies between instructions and constructs a **dependency graph**. This graph ensures instructions are reordered correctly without introducing hazards.
+
+**a. Initialize the Graph**
+
+- Create a `HashMap` to represent the graph.
+- Each instruction is represented by its index in the list.
+- Each node (instruction) points to the instructions that depend on it.
+
+Example: If `add` depends on the result of `lw`, the graph will have an edge from `lw` to `add`.
+
+**b. Identify Dependencies** For every pair of instructions (`instr1`, `instr2`):
+
+- **RAW (Read After Write)**: If `instr2` reads a register written by `instr1`, add an edge from `instr1` to `instr2`.
+- **WAR (Write After Read)**: If `instr2` writes to a register read by `instr1`, add an edge from `instr1` to `instr2`.
+- **WAW (Write After Write)**: If `instr2` writes to the same register as `instr1`, add an edge from `instr1` to `instr2`.
+
+**c. Track Incoming Dependencies** Count the number of dependencies (indegree) for each instruction. Instructions with no dependencies are ready to execute first.
+
+---
+
+#### **3. Prepare the Ready Queue**
+
+Instructions with no incoming dependencies are added to a **ready queue**. These instructions can be issued immediately because they don’t rely on any previous results.
+
+For example:
+
+- If `lw` doesn’t depend on anything, it is added to the ready queue.
+
+---
+
+#### **4. Reorder Instructions**
+
+**a. Process the Ready Queue** While there are instructions in the ready queue:
+
+1. Remove an instruction from the queue and mark it as "issued."
+2. Add it to the reordered list (`execution_order`).
+3. Check all dependent instructions (nodes in the graph that point to it):
+    - Decrease their dependency count (indegree).
+    - If their dependencies are resolved (indegree = 0), add them to the ready queue.
+
+**b. Continue Until All Instructions Are Issued** The algorithm continues processing the ready queue until all instructions are reordered.
+
+---
+
+#### **5. Output the Reordered Instructions**
+
+The reordered list of instructions (`execution_order`) is returned. This list is guaranteed to respect all dependencies and avoid hazards.
+
+https://gist.github.com/parthak314/32b124b0622381cd2cc28686a15ba2fe
+>>>>>>> 021a7ecd4bf65e75300026c68ea595cfb00775cf
