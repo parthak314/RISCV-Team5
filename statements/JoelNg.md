@@ -17,6 +17,9 @@
 2. Assisted in writing testbenches for cache system
 3. Completed integration of cache with single-cycle system
 
+### Pipelined + Cache (Final Version)
+1. Implemented pipelining stall for cache miss
+
 ### Extension: Superscalar Processor
 1. Designed out-of-order execution compiler extension with Partha
 2. Implemented the script in Python and C++
