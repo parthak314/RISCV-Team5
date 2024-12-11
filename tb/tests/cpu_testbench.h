@@ -24,7 +24,7 @@ public:
     {
         name_ = name;
         if (!checkForReorderScript()) {
-            std::ignore = system("g++ -o reorder_asm ../reorder_asm.cpp");
+            std::ignore = system("g++ -o reorder_asm reorder_asm.cpp");
         }
         // reorder the assembly
         std::ignore = system(("./reorder_asm asm/" + name_ + ".s").c_str());

@@ -36,9 +36,9 @@ public:
             std::vector<std::string> split_cmd(it, end);
             cmd = split_cmd[0];
             dest = split_cmd[1];
-            // check that first character is an alphabet (otherwise its an immediate and we don't care)
             for (int i = 2; i < split_cmd.size(); i++) {
-                if (std::isalpha(split_cmd[i][0])) {
+                // check that src is a register and not an imm or zero (not a dependency if imm or zero)
+                if (std::isalpha(split_cmd[i][0] && split_cmd[i][0] != 'z')) {
                     srcs.push_back(split_cmd[i]);
                 }
             }

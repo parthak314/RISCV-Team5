@@ -8,11 +8,11 @@ start address 0xbfc00000
 Disassembly of section .text:
 
 bfc00000 <__BSS_END__-0x1020>:
-bfc00000:	003100b3          	add	ra,sp,gp
-bfc00004:	40628233          	sub	tp,t0,t1
-bfc00008:	403100b3          	sub	ra,sp,gp
-bfc0000c:	00628233          	add	tp,t0,t1
-bfc00010:	021080b3          	mul	ra,ra,ra
+bfc00000:	40628233          	sub	tp,t0,t1
+bfc00004:	003100b3          	add	ra,sp,gp
+bfc00008:	00628233          	add	tp,t0,t1
+bfc0000c:	403100b3          	sub	ra,sp,gp
+bfc00010:	00108133          	add	sp,ra,ra
 bfc00014:	02420233          	mul	tp,tp,tp
-bfc00018:	00108133          	add	sp,ra,ra
+bfc00018:	021080b3          	mul	ra,ra,ra
 bfc0001c:	00000013          	nop

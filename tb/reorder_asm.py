@@ -24,7 +24,8 @@ class InstructionGraph:
             filtered_srcs = []
             # check that first char is alphabet (otherwise its an imm and we don't care)
             for src in srcs:
-                if src[0].isalpha():
+                # check that source is not imm or zero register
+                if src[0].isalpha() and src[0] != "z":
                     filtered_srcs.append(src)
 
             return cmd, dest, filtered_srcs

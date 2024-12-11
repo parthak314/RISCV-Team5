@@ -29,7 +29,7 @@ cd $SCRIPT_DIR
 # Wipe previous test output
 rm -rf test_out/*
 
-g++ -o reorder_asm ../reorder_asm.cpp # compile reorder_asm cpp
+g++ -o reorder_asm reorder_asm.cpp # compile reorder_asm cpp
 
 # Iterate through files
 for file in "${files[@]}"; do
