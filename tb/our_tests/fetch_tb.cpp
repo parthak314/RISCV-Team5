@@ -25,9 +25,9 @@ public:
     {
         top->clk = 0;
         top->rst = 0;
-        // top->trigger = 0;
         top->PCSrc = 0;
         top->ImmExt = 5; // random value that will be obviously wrong if PCSrc is not working
+        top->Result = 7;
     }
 
     void runReset()
@@ -126,31 +126,44 @@ TEST_F(TestDut, BranchTest)
     }
 }
 
-// test that the fetch module correctly stalls with trigger
-// trigger moved out of fetch
-// TEST_F(TestDut, TriggerTest)
-// {
-//     runReset();
-//     size_t length = GROUND_TRUTH.size();
-//     int j = 0;
-//     bool increment = true;
-//     for (size_t i = 0; i < length; i++) {
-//         EXPECT_EQ(top->Instr, GROUND_TRUTH[j]);
-//         if (i == 5) {
-//             top->trigger = 1;
-//             increment = false;
-//         }
-//         else if (i == 8) {
-//             top->trigger = 0;
-//             increment = true;
-//         }
+// test that the fetch module correctly jumps to Result with PCSrc = 2
+TEST_F(TestDut, JumpTest)
+{
+    std::vector<int32_t> JUMP_SEQ = {5,3,6,1,7,20,13,4};
+    size_t length = JUMP_SEQ.size();
+    runReset();
+    top->PCSrc = 2;
+    for (int i = 0; i < length; i ++) {
+        top->Result = 4 * JUMP_SEQ[i];
+        runSimulation();
+        EXPECT_EQ(top->Instr, GROUND_TRUTH[JUMP_SEQ[i]]);
+    }
+}
 
-//         if (increment) {
-//             j += 1;
-//         }
-//         runSimulation();
-//     }
-// }
+// test that the fetch module correctly stalls with PCSrc = 2
+TEST_F(TestDut, StallTest)
+{
+    runReset();
+    size_t length = GROUND_TRUTH.size();
+    int j = 0;
+    bool increment = true;
+    for (size_t i = 0; i < length; i++) {
+        EXPECT_EQ(top->Instr, GROUND_TRUTH[j]);
+        if (i == 5) {
+            top->PCSrc = 3;
+            increment = false;
+        }
+        else if (i == 8) {
+            top->PCSrc = 0;
+            increment = true;
+        }
+
+        if (increment) {
+            j += 1;
+        }
+        runSimulation();
+    }
+}
 
 // test that the fetch module resets, branches and iterates correctly
 // conditions: mix of everything 
@@ -162,13 +175,13 @@ TEST_F(TestDut, FullTest)
 
     // set immop to branch by 14 instructions, but stall with trigger
     int32_t branch = 14;
-    top->PCSrc = 1;
-    // top->trigger = 1;
-    // runSimulation();
-    // EXPECT_EQ(top->Instr, GROUND_TRUTH[0]);
+    top->PCSrc = 3;
+    runSimulation();
+    EXPECT_EQ(top->Instr, GROUND_TRUTH[0]);
 
     // branch forward by 14 instructions
     int i = branch;
+    top->PCSrc = 1;
     // top->trigger = 0;
     top->ImmExt = branch * NUM_BYTES;
     runSimulation();
@@ -187,6 +200,12 @@ TEST_F(TestDut, FullTest)
     top->ImmExt = branch * NUM_BYTES;
     runSimulation();
     EXPECT_EQ(top->Instr, GROUND_TRUTH[i]);
+
+    // jump to instruction at position 20
+    top->Result = 20;
+    top->PCSrc = 2;
+    runSimulation();
+    EXPECT_EQ(top->Instr, GROUND_TRUTH[5]);
 
     // verify again that reset works
     runReset();
