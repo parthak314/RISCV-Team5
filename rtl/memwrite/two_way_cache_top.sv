@@ -11,7 +11,8 @@ module two_way_cache_top #(
     input   logic [DATA_WIDTH-1:0]      addr,           // target address for read data
 
     input   logic [DATA_WIDTH-1:0]      rd_from_ram,    // read from ram if miss
-    output  logic                       re_from_ram,    // only read from ram if miss (to get rd_from_ram)
+    input   logic                       after_miss,
+    output  logic                       cache_miss,    // only read from ram if miss (to get rd_from_ram)
 
     output  logic [DATA_WIDTH-1:0]      wd_to_ram,      // word that is being evicted
     output  logic                       we_to_ram,      // write-enable = 1 if evicted
@@ -66,14 +67,13 @@ module two_way_cache_top #(
 
     two_way_cache_controller cache_controller_mod (
         .en(en),                    // read enable for cache
-        // .addr_mode(addr_mode),
         .we(we),
         .wd(wd),
         .target_set(target_set),    // INDEX taken from RAM address we are trying to retrieve
         .target_tag(target_tag),    // TAG taken from RAM address we are trying to retrieve
-        // .offset(offset),
         .set_data(set_data),
-        .re_from_ram(re_from_ram),
+        .after_miss(after_miss),
+        .cache_miss(cache_miss),
         .rd_from_ram(rd_from_ram),
         .data_out(rd),
         .updated_set_data(updated_set_data),

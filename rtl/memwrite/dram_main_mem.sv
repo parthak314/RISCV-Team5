@@ -17,19 +17,17 @@ module dram_main_mem #(
         $readmemh("data.hex", ram_array, 32'h00010000); 
     end;
 
-    always_comb begin
+    always @(posedge clk) begin
         // if not meant to read from ram, just send a 32'b0 signal.
         if (re) begin
-            rd = {
+            rd <= {
                 ram_array[r_addr+3], 
                 ram_array[r_addr+2], 
                 ram_array[r_addr+1], 
                 ram_array[r_addr+0]
             };
-        end else rd = {DATA_WIDTH{1'b0}};
-    end
+        end else rd <= {DATA_WIDTH{1'b0}};
 
-    always @(posedge clk) begin
         if (we) begin
             ram_array[w_addr+3] <= wd[31:24];
             ram_array[w_addr+2] <= wd[23:16];
@@ -37,5 +35,11 @@ module dram_main_mem #(
             ram_array[w_addr+0] <= wd[7:0];
         end
     end
+
+    /*
+    impossible for us to accidentally read and write to same location:
+    - we write for evicted cache blocks and read for blocks not available on cache
+    - contradictory for write and read block to be the same. Hence, should not occur in normal use
+    */
 
 endmodule

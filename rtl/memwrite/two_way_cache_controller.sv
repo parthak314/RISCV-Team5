@@ -3,24 +3,22 @@ module two_way_cache_controller #(
                 DATA_WIDTH = 32,
                 TAG_SIZE = 21,
                 CACHE_ADDR_WIDTH = 9,
-                // BYTE_OFFSET = 2,
                 RAM_ADDR_WIDTH = 32
 ) (
     // control inputs from memory_top
     input   logic                           en, // access en signal to prevent unncessary evictions
-    // input   logic                           addr_mode,
     input   logic                           we,
     input   logic [DATA_WIDTH-1:0]          wd,
     input   logic [CACHE_ADDR_WIDTH-1:0]    target_set,
     input   logic [TAG_SIZE-1:0]            target_tag,
-    // input   logic [BYTE_OFFSET-1:0]         offset,
 
     // set input from cache
     input   logic [SET_SIZE-1:0]            set_data,
 
     // input from RAM
+    input   logic                           after_miss,
     input   logic [DATA_WIDTH-1:0]          rd_from_ram,
-    output  logic                           re_from_ram, // only read from RAM on miss (then get rd_from_ram)
+    output  logic                           cache_miss, // on miss, we stall and read from ram
     // read output from cache
     output  logic [DATA_WIDTH-1:0]          data_out,
 
@@ -62,7 +60,7 @@ module two_way_cache_controller #(
     always_comb begin
         correct_way = 1'b0;
 
-        re_from_ram = 1'b0; // by default, do not read from RAM (only read when miss)
+        cache_miss = 1'b0; // by default, do not read from RAM (only read when miss)
         evicted_way = 1'b0;
         evicted_tag = {TAG_SIZE{1'b0}};
         we_to_ram = 1'b0;
@@ -85,32 +83,35 @@ module two_way_cache_controller #(
             else begin // if miss
                 evicted_way = (~v_bits[1] || lru_bit);
 
-                // if need to write back to RAM: only when evicted word is valid and is dirty (ie not the same as in RAM)
-                if (v_bits[evicted_way] && dirty_bits[evicted_way]) begin
-                    // prepare to write evicted way back to RAM
-                    we_to_ram = 1'b1;
-                    evicted_word = words[evicted_way];
-                    evicted_tag = tags[evicted_way];
-                    evicted_ram_addr = {evicted_tag, target_set, 2'b0};
+                if (~after_miss) begin
+                    cache_miss = 1'b1;
+                    // if need to write back to RAM: only when evicted word is valid and is dirty (ie not the same as in RAM)
+                    if (v_bits[evicted_way] && dirty_bits[evicted_way]) begin
+                        // prepare to write evicted way back to RAM
+                        we_to_ram = 1'b1;
+                        evicted_word = words[evicted_way];
+                        evicted_tag = tags[evicted_way];
+                        evicted_ram_addr = {evicted_tag, target_set, 2'b0};
+                    end  // else throw away the evicted data because it's not relevant
+                end else begin
+                    // update with new data from RAM since RAM had one cycle to read
+                    new_words[evicted_way] = rd_from_ram;
+                    new_tags[evicted_way] = target_tag;
+                    new_v_bits[evicted_way] = 1'b1;
+                    new_dirty_bits[evicted_way] = 1'b0;
+                    correct_way = evicted_way;
+                    data_out = rd_from_ram;
                 end
-                // else throw away the evicted data because it's not relevant
-
-                // update with new data from RAM
-                re_from_ram = 1'b1; // ASSUMPTION: this system assumes that RAM read is immediate
-                new_words[evicted_way] = rd_from_ram;
-                new_tags[evicted_way] = target_tag;
-                new_v_bits[evicted_way] = 1'b1;
-                new_dirty_bits[evicted_way] = 1'b0;
-                correct_way = evicted_way;
-
-                data_out = rd_from_ram;
             end
 
-            new_lru_bit = ~correct_way; // update LRU as the other way in set (not used this cycle)
+            // if cache miss, we don't update anything yet
+            if (~cache_miss) begin
+                new_lru_bit = ~correct_way; // update LRU as the other way in set (not used this cycle)
 
-            if (we) begin // write to cache
-                new_words[correct_way] = wd;
-                new_dirty_bits[correct_way] = 1'b1; // update dirty bit
+                if (we) begin // write to cache
+                    new_words[correct_way] = wd;
+                    new_dirty_bits[correct_way] = 1'b1; // update dirty bit
+                end
             end
         end
     end

@@ -12,14 +12,22 @@ module top #(
     interfaceE intfE();
     interfaceM intfM();
     interfaceW intfW();
-    
+
+    wire                    CacheMiss_wire;
+    wire                    Stall_wire;
     wire                    PCSrcE_wire;
     wire [DATA_WIDTH-1:0]   PCTargetE_wire;
     wire [DATA_WIDTH-1:0]   ReadDataM_wire; // for data forwarding from memory stage
 
+    stall_top stall (
+        .trigger(trigger),
+        .cache_miss(CacheMiss_wire),
+        .out(Stall_wire)
+    );
+
     fetch_top fetch (
         .clk(clk),
-        .stall(trigger),
+        .stall(Stall_wire),
         .reset(rst),
 
         .PCSrc(PCSrcE_wire),
@@ -32,7 +40,7 @@ module top #(
 
     decode_top decode (
         .clk(clk),
-        .stall(trigger),
+        .stall(Stall_wire),
         .reset(rst),
 
         .InstrD(intfD.InstrD),
@@ -66,7 +74,7 @@ module top #(
 
     execute_top execute (
         .clk(clk),
-        .stall(trigger),
+        .stall(Stall_wire),
         .reset(rst),
 
         .RegWriteE(intfE.RegWriteE),
@@ -106,7 +114,7 @@ module top #(
 
     memwrite_top memory_write (
         .clk(clk),
-        .stall(trigger),
+        .stall(Stall_wire),
         .reset(rst),
         
         .RegWriteM(intfM.RegWriteM),
@@ -122,7 +130,9 @@ module top #(
 
         .RegWriteW(intfW.RegWriteW),
         .RdW(intfW.RdW),
-        .ResultW(intfW.ResultW)
+        .ResultW(intfW.ResultW),
+
+        .cache_miss(CacheMiss_wire)
     );
 
 endmodule
