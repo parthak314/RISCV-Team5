@@ -1,25 +1,6 @@
 
 ## Table of contents:
 
-<<<<<<< HEAD
-## Evidence 
-
-
-
-## Team members:
-
-```
-Chong, Clarke 
-Khanna, Partha
-Ng, Joel
-Aubeeluck,Kevin 
-```
-
-## Contribution Tables
-
-### Single Cycle CPU
-![RISC-V 32I single cycle CPU implementation](images/single-cycle.jpg)
-=======
 - Single Cycle CPU Implementation
 - Pipelined CPU Implementation
 - Cached Implementation
@@ -71,7 +52,6 @@ This single cycle implementation covers the basic requirements for most CPU oper
 | F1 Assembly.s                |        |      |       |        |
 | System Testing and Debugging |        |      |       |        |
 `X` - Lead Contributor   `*` - Partial Contributor
->>>>>>> 021a7ecd4bf65e75300026c68ea595cfb00775cf
 
 ### Pipelined CPU
 ![alt text](images/pipelined-schematic.png)
@@ -185,41 +165,11 @@ Tasks:
     - if a branch is taken, clear instr in pipeline that have not been executed -> replace with nop
 
 ## Stretch Goal 2: Adding Data Memory Cache
-<<<<<<< HEAD
-### Design:
-- Cache Parameters:
-    - Capacity: 4096 Bytes; Block size: 4 words (16 bytes); Associativity: 2-way set associate; Sets: S = C/(bN) = 4096/32 = 128 sets each of 2 blocks
-- Fields:
-    - Tag (identify memory block for where the cache block is)
-    - Index (Identifies set where block is stored)
-    - Offset (Identifies word in a block)
-    - Valid Bit (V) (if cache block contains valid data)
-    - Dirty Bit (D) (if block has been modified or an update)
-- Using Least recently used to decide which block to evict
-- Writing:
-    - Updates block in memory only when evicted, write-through writes data to both cache and memory immediately
 
-### Pipeline modifications:
-- Replace single cycle memory access in memory stage with cache controller
-- Hit detection
-- Replacement on miss (laod from memory)
-- Write-back to memory on eviction
-
-### Cache data path:
-- Index and Offset extraction: bits of memory offset for index (select the set) and offset (word within a block)
-- Tag comparison (compare tag in addresswith tags stored in cache set)
-- If a miss occurs and set is full, evict a block and replace with new data based on LRU
-- Cache hit: use the offset to select the word in a block
-- Cache controller: handles miss logic by fetching blocks frrom main memory and updating cache
-=======
-
->>>>>>> 021a7ecd4bf65e75300026c68ea595cfb00775cf
 
    
 ## Stretch Goal 3: Full RV32I Design
 
-<<<<<<< HEAD
-=======
 ## Superscalar Model Implementation
 ![](images/superscalar-model.png)
 ### Hardware
@@ -239,5 +189,3 @@ The High level requirements for this file are to:
 This then follows the same procedure to assemble the instruction set (by `assemble.sh` via the `riscv gnu toolchain`) before inputting this into instruction memory, as shown above.
 
 Further details can be seen in individual reports.
-
->>>>>>> 021a7ecd4bf65e75300026c68ea595cfb00775cf
