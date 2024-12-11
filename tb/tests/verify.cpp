@@ -5,7 +5,7 @@
 
 #define CYCLES 10000
 
-TEST_F(CpuTestbench, TestAddiBne)
+TEST_F(CpuTestbench, Test3)
 {
     setupTest("test3");
     initSimulation();

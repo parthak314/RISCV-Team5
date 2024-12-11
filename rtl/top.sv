@@ -14,7 +14,6 @@ module top #(
 
 // Fetch Wires
 logic PCSrc;
-logic IncrSrc;
 logic [DATA_WIDTH-1:0] InstrA;
 logic [DATA_WIDTH-1:0] InstrB;
 
@@ -35,7 +34,6 @@ fetch_top fetch_top_mod (
     .clk            (clk),
     .rst            (rst),
     .PCSrc          (PCSrc),
-    .IncrSrc        (IncrSrc),
     .InstrA         (InstrA),
     .InstrB         (InstrB)
 );
@@ -50,7 +48,6 @@ decode_top decode_top_mod (
     .resultB        (ResultB),
     // .zero           (Zero),
     // .negative       (Negative),
-    .IncrSrc        (IncrSrc),
     .PCSrc          (PCSrc),
     .ResultSrc      (ResultSrc),
     .MemWrite       (MemWrite),
