@@ -181,11 +181,12 @@ Structural design modifications:
 Given the time available, this model implements the instructions for `R-type`, `I-type (imm)`
 
 ### Out-of-order Processor
-The key change here is the Out-Of-Order Processor which is a python script. It is simply called in the main bash script.
+The key change here is the Out-Of-Order Processor which is a C++ script (and a Python script that our team originally wrote in). It is compiled and run right before `assemble.sh` in the `doit.sh` script to optimise the assembly for the superscalar processor.
 The High level requirements for this file are to:
-- Break down the instruction set into 
-- Reorder the instructions such that the same register is not accessed in consecutive instructions
-- Reassemble this into the instruction set
+- Create a dependency graph of all instructions by checking if linking each instruction with preceding instructions based on register data dependencies.
+- Create a priority queue based on the number of dependencies that each instruction has.
+- Reorganise the instructions based on which has the highest priority (most dependencies), while ensuring no dependency requirement is violated.
+- Reassemble this into a new assembly file that is ready to be converted to machine code with `assembly.sh`.
 This then follows the same procedure to assemble the instruction set (by `assemble.sh` via the `riscv gnu toolchain`) before inputting this into instruction memory, as shown above.
 
-Further details can be seen in individual reports.
+Further details can be seen in individual reports (Partha, Joel).
