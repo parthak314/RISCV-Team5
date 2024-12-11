@@ -14,9 +14,9 @@ module top #(
 
 // Fetch Wires
 logic PCSrc;
+logic IncrSrc;
 logic [DATA_WIDTH-1:0] InstrA;
 logic [DATA_WIDTH-1:0] InstrB;
-logic [DATA_WIDTH-1:0] IncrSrc;
 
 // Data Wires
 // logic Zero, Negative; // negative, zero flags
