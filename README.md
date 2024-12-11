@@ -30,7 +30,9 @@
 | Partha Khanna   | [parthak314](https://github.com/parthak314)           | 02374670 | pk1223@ic.ac.uk | [Partha's Statement](statements/ParthaKhanna)  |
 ## Single Cycle
 ### Schematic
-==TODO: Add Single Cycle Schematic==
+
+![RISC-V 32I single cycle CPU implementation](images/single-cycle-model.png)
+
 ![RISC-V 32I single cycle CPU implementation](images/single-cycle.jpg)
 ### Overview
 This single cycle implementation covers the basic requirements for most CPU operations, this implements the following instructions: `R-type`, `I-type (immediate)`, `lbu`, `sb`, `beq`, `bne`, `jal`, `jalr`, `lui`.
