@@ -7,6 +7,67 @@
 - Complete RISC-V
 - Superscalar Processor
 ==TODO: Add links==
+
+## Quick Start
+
+We completed the Single-Cycle and all of the stretch goals (Pipelined, Cache, Full RV32I Design). Further, we also embarked on an extension project in designing a dual-ALU superscalar processor. They can be found in the following branches:
+| Branch | Description |
+| ------ | ----------- |
+|`main` | Single-Cycle Implementation |
+|`pipelined` | Pipelined Implementation |
+|`cache` | Cache + Single-Cycle Implementation |
+|`complete` | Pipelined + Cache + Full RV32I Implementation |
+|`superscalar` | Superscalar Implementation |
+
+<br>
+
+The following instructions are accurate for all versions of our implementation, execpt for `superscalar`. Specific instructions on testing it can be found within the `superscalar` branch itself.
+
+To access each version,
+```bash
+git checkout <branch-name>
+```
+
+#### Quick Start - GTest Testing
+
+To run the provided tests within the target branch,
+```bash
+ cd ./tb
+ ./doit.sh
+```
+
+To run the tests we wrote for individual components (while in `./tb/`),
+```
+./run_our_tests.sh
+```
+
+The script above runs all of our tests. However, the individual C++ testbenches can be found in `./tb/our_tests` and are written with GTest. The scripts to run them are found in `./tb/bash`, where they are named similarly.
+
+#### Quick Start - Vbuddy Tests
+
+##### **Windows only**: remember to include `~/Documents/iac/lab0-devtools/tools/attach_usb.sh` command to connect Vbuddy.
+
+To run the f1 light test within the `./tb/` folder,
+
+```bash
+sudo chmod +x f1_test.sh
+./f1_test.sh
+```
+
+Other versions can omit the usb attachment step.
+
+To run the pdf test wtihin the `./tb/` folder,
+```bash
+sudo chmod +x pdf_test.sh
+./pdf_test.sh
+```
+
+Both `cpp` scripts can be found in `./tb/vbuddy_test`. The distribution for the pdf test can be changed by overwriting the distribution name in `./tb/vbuddy_test/pdf_tb.cpp` in line 13.
+```cpp
+// can change to "noisy" or "triangle"
+const std::string distribution = "gaussian"; 
+```
+
 ## Repository Structure
  ==TODO: Add the repo tree with branches==
 
@@ -28,7 +89,9 @@
 | Joel Ng         | [energy-in-joles](https://github.com/energy-in-joles) | 0219309  | zjn22@ic.ac.uk  | [Joel's Statement](statements/JoelNg.md)          |
 | Kevin Aubeeluck | [Kevinaubeeluck](https://github.com/Kevinaubeeluck)   |          |                 | [Kevin's Statement](statements/KevinAubeeluck.md) |
 | Partha Khanna   | [parthak314](https://github.com/parthak314)           | 02374670 | pk1223@ic.ac.uk | [Partha's Statement](statements/ParthaKhanna.md)  |
+
 ## Single Cycle
+
 ### Schematic
 
 ![RISC-V 32I single cycle CPU implementation](images/single-cycle-model.png)
