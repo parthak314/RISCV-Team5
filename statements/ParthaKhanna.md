@@ -3,13 +3,7 @@
 ***Partha Khanna***
 
 ---
-<<<<<<< HEAD
-
 ## Overview
-
-=======
-## Overview
->>>>>>> 021a7ecd4bf65e75300026c68ea595cfb00775cf
 - [[#Single Cycle RISCV-32I Design]]
 	- [[#Sign Extension Unit]]
 	- [[#Control Unit]]
@@ -18,14 +12,10 @@
 		- [[#F1 Assembly]]
 		- [[#Probability Distribution Function]]
 		- [[#System Debugging]]
-<<<<<<< HEAD
-- 
-=======
 - [[#Pipelined RISCV-32I Design]]
-	- 
 - [[#Data Memory Cache Implementation]]
 - [[#Complete RISCV-32I Design]]
->>>>>>> 021a7ecd4bf65e75300026c68ea595cfb00775cf
+
 
 ---
 
@@ -335,40 +325,49 @@ jump:
 
 ---
 # Data Memory Cache Implementation
-
-<<<<<<< HEAD
-
----
-# Complete RISCV-32I Design
-=======
-### Aims
-- Using 2 way associative cache to improve processor performance
-- This will have cache read for hit/miss detection:
-	- A miss means a cache block is fetched from memory and the word is written to cache block
-	- a hit means the word is written to cache block
-- To handle cache coherency (if cache contains different data from main memory), we use **Write-back cache** - data written to cache with dirty bit associated with cache block set. It is written to main memory only when evicted from cache.
+This was a team effort between Joel and myself.
+## Aims
+Implementing a 2-way set associative cache system which can:
+- Reduce memory access time by leveraging temporal and spatial locality
+- Minimise cache misses by associating multiple blocks with each set
+- Implement an LRU replacement policy for evictions
+- Uses dirty bit tracking for optimising memory writes.
 
 ## Implementation
-Before implementing, we need to identify the parameters and their bit widths.
-Since this is 2-way set associative cache, we have 2 blocks per set. In RISC-V, the cache capacity is 4096 Bytes, giving the number of sets as:
-$$
-Sets = \frac{Blocks}{associativity} = \frac{Capacity}{associtivity \cdot block size} =  \frac{4096}{2 \cdot 8} = 256 = 2^8
-$$
-And the number of cache lines as 4096/256 = 16
-The tag is used to identify the memory block for a particular set of cache, in this case we have:
-$$
-Tag = Address Width - SetBitWidth - OffsetWidth = 32 - \log_2(256) - 2 = 22
-$$
-However 
-Cache parameters:
-- `Blocks`= 2
-- `Capacity`= 4096 Bytes
-- `Number of Sets` = 256
-- `Cache lines` = 16
-- `Data Width` = 32 bits
-- `offset` = 2 bits (4 bytes per block)
-- `Tag width` = 22 bits
+Using what is provided on the lecture slides, 2 way cache associative means that the number of sets is 512, with each set containing 2 data blocks, containing the valid, dirty and tag bits and 1 LRU bit.
 
+| Bits per Set | Description                                   | Size               |
+| ------------ | --------------------------------------------- | ------------------ |
+| LRU Bit      | Tracks which block to evict                   | 1 bit              |
+| Valid Bit    | Indicate whether blocks are valid             | 2 bits (1 per way) |
+| Dirty Bit    | Indicate modified blocks requiring write-back | 2 bits (1 per way) |
+| Tags         | Distinguish memory addresses                  | 21 bits * 2        |
+| Data Words   | Actual data stored in the cache               | 32 bits * 2        |
+The address is 32 bits which is divided into:
+
+| Bits        | Purpose                                    | Size |
+| ----------- | ------------------------------------------ | ---- |
+| Tag Bits    | Distinguishes blocks across sets           | 21   |
+| Set Index   | Identifies the target set within the cache | 9    |
+| Byte Offset | Identifies the byte within a word          | 2    |
+
+Now that cache design parameterisation is complete, we can focus on the key areas of this:
+
+**Hit Detection**: Checks if the requested tag matches any block in the set and if the valid bit is set. For each way (`0` and `1`): 
+```systemVerilog
+hits[way] = v_bits[way] && (tags[way] == target_tag)
+```
+
+**Miss Handling**: If no hit occurs then:
+- **Eviction**: Select the block to evict based on LRU bit and if it is valid and dirty then it writes back to memory.
+- **Replacement**: Reads the requested data from RAM and updates the evicted block with the new data and resets the dirty bit.
+
+**Writing**: When a cache write occurs, the data is updated in the cache, thus marking the block as dirty and indicating that it differs from memory.
+
+**Reading**: This returns the data based on the address mode which is implemented as Word addressing or Byte addressing initially (then changed to include half addressing)
+## Testing
+
+## Summary and Learnings
 
 ---
 # Complete RISCV-32I Design

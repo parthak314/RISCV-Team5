@@ -310,20 +310,13 @@ The following stages have been added on top of the basic RISC-V model (single cy
 ![](../images/cache-schematic.png)
 ## Contributions
 
-| Module | Clarke | Joel | Kevin | Partha |
-| ------ | ------ | ---- | ----- | ------ |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
+| Module                       | Clarke | Joel | Kevin | Partha |
+| ---------------------------- | ------ | ---- | ----- | ------ |
+| memory_top.sv                |        | `X`  |       |        |
+| ram2port.sv                  |        | `X`  |       | `*`    |
+| sram.sv                      |        | `X`  |       |        |
+| cache controller             |        | `X`  |       | `X`    |
+| System Testing and Debugging |        | `X`  |       | `X`    |
 `X` - Lead Contributor   `*` - Partial Contributor
 ## File Structure
 ```
