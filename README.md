@@ -10,7 +10,7 @@
 
 ## Quick Start
 
-We completed the Single-Cycle and all of the stretch goals (Pipelined, Cache, Full RV32I Design). Further, we also embarked on an extension project in designing a dual-ALU superscalar processor. They can be found in the following branches:
+We completed the Single-Cycle and all of the stretch goals (Pipelined, Two-Way Set Associative Write-Back Cache, Full RV32I Design). Further, we also embarked on an extension project in designing a dual-ALU superscalar processor. They can be found in the following branches:
 | Branch | Description |
 | ------ | ----------- |
 |`main` | Single-Cycle Implementation |
@@ -54,9 +54,7 @@ sudo chmod +x f1_test.sh
 ./f1_test.sh
 ```
 
-Other versions can omit the usb attachment step.
-
-To run the pdf test wtihin the `./tb/` folder,
+To run the pdf test within the `./tb/` folder,
 ```bash
 sudo chmod +x pdf_test.sh
 ./pdf_test.sh
