@@ -1,8 +1,8 @@
 
 ## Table of contents:
 
-- Single Cycle CPU Implementation
-- Pipelined CPU Implementation
+- [Single Cycle CPU Implementation](#single-cycle)
+- [Pipelined CPU Implementation](#pipelined-cpu)
 - Cached Implementation
 - Complete RISC-V
 - Superscalar Processor
