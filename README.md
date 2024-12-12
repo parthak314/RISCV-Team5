@@ -77,6 +77,7 @@ const std::string distribution = "gaussian";
 | Cache                 |        |      |       |        |
 | Integration           |        |      |       |        |
 | Superscalar Processor |        |      |       |        |
+
 `X` - Lead Contributor   `*` - Partial Contributor
 ## Team members and Statements:
 
@@ -109,6 +110,7 @@ This single cycle implementation covers the basic requirements for most CPU oper
 | System Testing and Debugging |        |      |       |        |
 | PDF testing                  |        |      |       |        |
 | F1 Testing                   |        |      |       |        |
+
 `X` - Lead Contributor   `*` - Partial Contributor
 
 ## File Structure
@@ -235,6 +237,7 @@ The entire program is still running every cycle, but display is changed to updat
 |        |        |      |       |        |
 |        |        |      |       |        |
 |        |        |      |       |        |
+
 `X` - Lead Contributor   `*` - Partial Contributor
 ## File Structure
 ```
@@ -317,6 +320,7 @@ The following stages have been added on top of the basic RISC-V model (single cy
 | sram.sv                      |        | `X`  |       |        |
 | cache controller             |        | `X`  |       | `X`    |
 | System Testing and Debugging |        | `X`  |       | `X`    |
+
 `X` - Lead Contributor   `*` - Partial Contributor
 ## File Structure
 ```
@@ -373,6 +377,7 @@ The following stages have been added on top of the basic RISC-V model (single cy
 |        |        |      |       |        |
 |        |        |      |       |        |
 |        |        |      |       |        |
+
 `X` - Lead Contributor   `*` - Partial Contributor
 ## File Structure
 
@@ -403,6 +408,7 @@ The following stages have been added on top of the basic RISC-V model (single cy
 |        |        |      |       |        |
 |        |        |      |       |        |
 |        |        |      |       |        |
+
 `X` - Lead Contributor   `*` - Partial Contributor
 ## File Structure
 
