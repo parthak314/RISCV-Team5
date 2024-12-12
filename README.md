@@ -1,14 +1,14 @@
 
-## Table of contents:
+# Table of contents:
 
 - [Single Cycle CPU Implementation](#single-cycle)
 - [Pipelined CPU Implementation](#pipelined-cpu)
-- Cached Implementation
-- Complete RISC-V
-- Superscalar Processor
-==TODO: Add links==
+- [Cached Implementation](#)
+- [Complete RISC-V](#)
+- [Superscalar Processor]()
 
-## Quick Start
+
+# Quick Start
 
 We completed the Single-Cycle and all of the stretch goals (Pipelined, Two-Way Set Associative Write-Back Cache, Full RV32I Design). Further, we also embarked on an extension project in designing a dual-ALU superscalar processor. They can be found in the following branches:
 | Branch | Description |
@@ -68,9 +68,6 @@ Both `cpp` scripts can be found in `./tb/vbuddy_test`. The distribution for the 
 const std::string distribution = "gaussian"; 
 ```
 
-## Repository Structure
- ==TODO: Add the repo tree with branches==
-
 ### Top Level Contributions
 
 | Section               | Clarke | Joel | Kevin | Partha |
@@ -80,25 +77,21 @@ const std::string distribution = "gaussian";
 | Cache                 |        |      |       |        |
 | Integration           |        |      |       |        |
 | Superscalar Processor |        |      |       |        |
-
+`X` - Lead Contributor   `*` - Partial Contributor
 ## Team members and Statements:
 
-| Team Member     | GitHub                                                | CID      | Email           | Link to Personal Statement                     |
-| --------------- | ----------------------------------------------------- | -------- | --------------- | ---------------------------------------------- |
+| Team Member     | GitHub                                                | CID      | Email           | Link to Personal Statement                        |
+| --------------- | ----------------------------------------------------- | -------- | --------------- | ------------------------------------------------- |
 | Clarke Chong    | [clarkechong](https://github.com/clarkechong)         | 02395382 | cc1823@ic.ac.uk | [Clarke's Statement](statements/ClarkeChong.md)   |
-| Joel Ng         | [energy-in-joles](https://github.com/energy-in-joles) | 0219309  | zjn22@ic.ac.uk  | [Joel's Statement](statements/JoelNg.md)          |
+| Joel Ng         | [energy-in-joles](https://github.com/energy-in-joles) | 02193809 | zjn22@ic.ac.uk  | [Joel's Statement](statements/JoelNg.md)          |
 | Kevin Aubeeluck | [Kevinaubeeluck](https://github.com/Kevinaubeeluck)   |          |                 | [Kevin's Statement](statements/KevinAubeeluck.md) |
 | Partha Khanna   | [parthak314](https://github.com/parthak314)           | 02374670 | pk1223@ic.ac.uk | [Partha's Statement](statements/ParthaKhanna.md)  |
 
-## Single Cycle
-
-### Schematic
-
-![RISC-V 32I single cycle CPU implementation](images/single-cycle-model.png)
-
-![RISC-V 32I single cycle CPU implementation](images/single-cycle.jpg)
+# Single Cycle
 ### Overview
 This single cycle implementation covers the basic requirements for most CPU operations, this implements the following instructions: `R-type`, `I-type (immediate)`, `lbu`, `sb`, `beq`, `bne`, `jal`, `jalr`, `lui`.
+## Schematic
+![RISC-V 32I single cycle CPU implementation](images/single-cycle-model.png)
 
 ### Contributions
 
@@ -114,106 +107,139 @@ This single cycle implementation covers the basic requirements for most CPU oper
 | top (system integration)     |        |      |       |        |
 | F1 Assembly.s                |        |      |       |        |
 | System Testing and Debugging |        |      |       |        |
+| PDF testing                  |        |      |       |        |
+| F1 Testing                   |        |      |       |        |
 `X` - Lead Contributor   `*` - Partial Contributor
 
-### Pipelined CPU
-![alt text](images/pipelined-schematic.png)
+## File Structure
 
-Fetch - Joel \
-Data - Partha\
-Execute - Clarke\
-Memory - Kevin
+```
+.
+├── rtl
+│   ├── adder.sv
+│   ├── decode
+│   │   ├── control.sv
+│   │   ├── decode_top.sv
+│   │   ├── reg_file.sv
+│   │   └── signextend.sv
+│   ├── execute
+│   │   ├── alu.sv
+│   │   └── execute_top.sv
+│   ├── fetch
+│   │   ├── fetch_top.sv
+│   │   ├── instr_mem.sv
+│   │   └── pc_register.sv
+│   ├── memory
+│   │   ├── datamem.sv
+│   │   └── memory_top.sv
+│   ├── mux.sv
+│   ├── mux_4x2.sv
+│   └── top.sv
+└── tb
+    ├── asm
+    │   ├── 1_addi_bne.s
+    │   ├── 2_li_add.s
+    │   ├── 3_lbu_sb.s
+    │   ├── 4_jal_ret.s
+    │   ├── 5_pdf.s
+    │   ├── f1_fsm.s
+    │   └── f1_fsm_simplified.s
+    ├── assemble.sh
+    ├── bash
+    │   ├── control_test.sh
+    │   ├── decode_top_test.sh
+    │   ├── execute_test.sh
+    │   ├── fetch_test.sh
+    │   ├── memory_test.sh
+    │   ├── reg_file_test.sh
+    │   └── sign_extend_test.sh
+    ├── doit.sh
+    ├── f1_test.sh
+    ├── our_tests
+    │   ├── control_test_tb.cpp
+    │   ├── datamem_tb.cpp
+    │   ├── decode_top_test_tb.cpp
+    │   ├── execute_tb.cpp
+    │   ├── fetch_tb.cpp
+    │   ├── memory_tb.cpp
+    │   ├── reg_file_test_tb.cpp
+    │   └── signextend_test_tb.cpp
+    ├── pdf_test
+    ├── pdf_test.sh
+    ├── reference
+    ├── test_out
+    │   ├── 1_addi_bne
+    │   ├── 2_li_add
+    │   ├── 3_lbu_sb
+    │   ├── 4_jal_ret
+    │   ├── 5_pdf
+    │   └── obj_dir
+    ├── tests
+    │   ├── cpu_testbench.h
+    │   └── verify.cpp
+    ├── two_way_cache_top.vcd
+    ├── vbuddy.cfg
+    ├── vbuddy_test
+    │   ├── f1_fsm_tb.cpp
+    │   ├── pdf_tb.cpp
+    │   └── vbuddy.cpp
+    └── verification.md
+```
 
-Key: * = Created ** = Edited
+Note: only for this version, is the `tb` folder shown, this contains the tests and shows all other execution files
 
-| Task | Files| Clarke | Partha | Joel | Kevin |
-| ---- | ---- | ---- | ---- | ---- | ---- |
-| <u>**Single cycle** | ---- | ---- | ---- | ---- | ---- |
-| Fetch | instr_mem.sv,<br>pc_register.sv,<br>adder.sv,<br>mux.sv,<br>  | ---- | ---- | ---- | ---- |
-| Data | control.sv,<br>reg_file,<br>signextend.sv | ---- | ---- | ---- | ---- |
-| Execute | alu.sv,<br>mux.sv | ---- | ---- | ---- | ---- |
-| Memory/Write | datamem.sv,<br>mux_4x2.sv  | ---- | ---- | ---- | ---- |
-| Integration | top.sv,<br>sim_execute.cpp | ---- | ---- | ---- | ---- |
-| <u>**Pipelining** | ---- | ---- | ---- | ---- | ---- |
-| <u>**Cache** | ---- | ---- | ---- | ---- | ---- |
-| Git | ---- | ---- | ---- | ---- | ---- |
+## Implementation
 
+## Testing
+==All Videos==
+### F1
+### PDF: Gaussian
+### PDF: Noisy
+### PDF: Triangle
 
+For the PDF tests, there were initially several waveforms that were elongated. But this can be rectified by displaying the value every 3 clock cycles, as opposed to every clock cycle. We can do this by the following lines:
+```cpp
+bool is_paused = vbdFlag();
+      top->trigger = is_paused;
+      if (!is_paused) {
+          j++;
+          displaying = true;
+          if (j % 3 == 0) {
+            vbdCycle(j);
+            vbdPlot(top->a0, 0, 255);
+          }
+      }
+```
+The entire program is still running every cycle, but display is changed to updating every 3 cycles.
 
+---
+# Pipelined RISCV CPU
 
-## Joint Statement of Contribution
+## Overview
 
+## Schematic
 
+## Contributions
 
-Below we have tasks at a glance
-#### Clarke: 
+| Module | Clarke | Joel | Kevin | Partha |
+| ------ | ------ | ---- | ----- | ------ |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+`X` - Lead Contributor   `*` - Partial Contributor
+## File Structure
 
-Tasks:
-- Task 1 
-	- Explanation
-- Task 2 
-	- Explanation
-
-#### Partha: 
-
-Tasks:
-- Task 1 
-	- Explanation
-- Task 2 
-	- Explanation
-
-#### Joel: 
-
-Tasks:
-- Task 1 
-	- Explanation
-- Task 2 
-	- Explanation
-
-#### Kevin: 
-
-Tasks:
-- Task 1 
-	- Explanation
-- Task 2 
-	- Explanation
-
-
-
-
-## Project Goalposts 
-
-## Goal 1: Single-Cycle RV321 implentation of F1 lights 
-## Stretch Goal 1: Pipelined RV321 Design
-
-### Actions:
-- Pipeline Stages
-    - Pipeling registers
-- Hazard detection Unit
-    - Data Hazards
-    - Control Hazards
-        - Stall pipeling if data required is unavailable
-        - Issue Nops or flush instructions for control hazards
-        - Decide if forwarding/bypassing is possible
-- Forwarding Logic
-    - Multiplexers for input to ALU
-    - Implement forwarding paths that verify:
-         - if destination register of an earlier instruction matches source register of current ins
-         - If data is available in memory/writeback, forward it to execute
-    - Add forwarding control logic to determine source of operands (reg file or forwarded data)
-- Stalling
-    - Hold instructions in fetch and decode stages if data is unavailable
-    - freeze updates in pipeline registers for affected stages
-    e.g. lw followed by dependant instr
-- branch handling
-    - control hazards:
-        - flush pipeline stages when a branch is taken
-        - *branch prediction here*
-- contrrol signal pipelining
-    - ensure all control signals are pipelined.
-
-
-### Implementation:
+## Implementation
+The following stages have been added on top of the basic RISC-V model (single cycle):
 - Pipeline Registers between all stages
     - storing instruction data, intermediate data, control signals
 - control unit
@@ -227,14 +253,95 @@ Tasks:
 - Flushing
     - if a branch is taken, clear instr in pipeline that have not been executed -> replace with nop
 
-## Stretch Goal 2: Adding Data Memory Cache
+## Testing
 
+---
+# Data Memory Cache
 
-   
-## Stretch Goal 3: Full RV32I Design
+## Overview
 
-## Superscalar Model Implementation
+## Schematic
+
+## Contributions
+
+| Module | Clarke | Joel | Kevin | Partha |
+| ------ | ------ | ---- | ----- | ------ |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+`X` - Lead Contributor   `*` - Partial Contributor
+## File Structure
+
+## Implementation
+
+## Testing
+
+---
+# Complete RISCV CPU
+
+## Overview
+
+## Schematic
+
+## Contributions
+
+| Module | Clarke | Joel | Kevin | Partha |
+| ------ | ------ | ---- | ----- | ------ |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+`X` - Lead Contributor   `*` - Partial Contributor
+## File Structure
+
+## Implementation
+
+## Testing
+
+---
+# Superscalar RISCV CPU
+
+## Overview
+
+## Schematic
 ![](images/superscalar-model.png)
+## Contributions
+
+| Module | Clarke | Joel | Kevin | Partha |
+| ------ | ------ | ---- | ----- | ------ |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+|        |        |      |       |        |
+`X` - Lead Contributor   `*` - Partial Contributor
+## File Structure
+
+## Implementation
 ### Hardware
 Structural design modifications:
 - <span style="color:#eaa19f">Fetch</span>: No change from previous model, output is now `dataA` and `dataB` - selecting consecutive instructions from the Out-Of-Order Processor.
@@ -253,3 +360,6 @@ The High level requirements for this file are to:
 This then follows the same procedure to assemble the instruction set (by `assemble.sh` via the `riscv gnu toolchain`) before inputting this into instruction memory, as shown above.
 
 Further details can be seen in individual reports (Partha, Joel).
+
+## Testing
+
