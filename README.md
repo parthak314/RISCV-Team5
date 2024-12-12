@@ -237,7 +237,53 @@ The entire program is still running every cycle, but display is changed to updat
 |        |        |      |       |        |
 `X` - Lead Contributor   `*` - Partial Contributor
 ## File Structure
-
+```
+.
+├── rtl
+│   ├── decode
+│   │   ├── control_unit.sv
+│   │   ├── control_unit.txt
+│   │   ├── decode_pipeline_regfile.sv
+│   │   ├── decode_top.sv
+│   │   ├── register_file.sv
+│   │   └── sign_ext.sv
+│   ├── execute
+│   │   ├── alu.sv
+│   │   ├── branch_logic.sv
+│   │   ├── execute_pipeline_regfile.sv
+│   │   ├── execute_top.sv
+│   │   └── hazard_unit.sv
+│   ├── fetch
+│   │   ├── fetch_pipeline_regfile.sv
+│   │   ├── fetch_top.sv
+│   │   ├── fetch_top.txt
+│   │   ├── instr_mem.sv
+│   │   ├── pc_register.sv
+│   │   └── pc_register.txt
+│   ├── general-purpose
+│   │   ├── adder.sv
+│   │   ├── hazard_unit.txt
+│   │   ├── mux.sv
+│   │   ├── mux3.sv
+│   │   └── mux4.txt
+│   ├── memwrite
+│   │   ├── data_mem.sv
+│   │   ├── loadstore_parsing_unit.sv
+│   │   ├── memwrite_pipeline_regfile.sv
+│   │   └── memwrite_top.sv
+│   ├── top-module-interfaces
+│   │   ├── interfaceD.sv
+│   │   ├── interfaceE.sv
+│   │   ├── interfaceM.sv
+│   │   └── interfaceW.sv
+│   └── top.sv
+├── simple-tb
+│   ├── check-syntax.sh
+│   ├── hex.txt
+│   ├── playground_tb.cpp
+│   └── run-playground.sh
+└── tb
+```
 ## Implementation
 The following stages have been added on top of the basic RISC-V model (single cycle):
 - Pipeline Registers between all stages
