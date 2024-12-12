@@ -14,7 +14,7 @@ We completed the Single-Cycle and all of the stretch goals (Pipelined, Two-Way S
 | Branch | Description |
 | ------ | ----------- |
 |`main` | Single-Cycle Implementation |
-|`pipelined` | Pipelined Implementation |
+|`pipelined` | Pipelined (+ Full RV32I Implementation) Implementation |
 |`cache` | Cache + Single-Cycle Implementation |
 |`complete` | Pipelined + Cache + Full RV32I Implementation |
 |`superscalar` | Superscalar Implementation |
@@ -22,6 +22,8 @@ We completed the Single-Cycle and all of the stretch goals (Pipelined, Two-Way S
 <br>
 
 The following instructions are accurate for all versions of our implementation, execpt for `superscalar`. Specific instructions on testing it can be found within the `superscalar` branch itself.
+
+For the versions with full RV32I implementation, we have also written extra test cases to test full functionality, called along with the provided test in `doit.sh`. Please refer to the respective branch `README.md` documents for more information.
 
 To access each version,
 ```bash
