@@ -307,7 +307,7 @@ The following stages have been added on top of the basic RISC-V model (single cy
 ## Overview
 
 ## Schematic
-
+![](../images/cache-schematic.png)
 ## Contributions
 
 | Module | Clarke | Joel | Kevin | Partha |
@@ -326,7 +326,33 @@ The following stages have been added on top of the basic RISC-V model (single cy
 |        |        |      |       |        |
 `X` - Lead Contributor   `*` - Partial Contributor
 ## File Structure
-
+```
+.
+├── rtl
+│   ├── adder.sv
+│   ├── decode
+│   │   ├── control.sv
+│   │   ├── decode_top.sv
+│   │   ├── reg_file.sv
+│   │   └── signextend.sv
+│   ├── execute
+│   │   ├── alu.sv
+│   │   └── execute_top.sv
+│   ├── fetch
+│   │   ├── fetch_top.sv
+│   │   ├── instr_mem.sv
+│   │   └── pc_register.sv
+│   ├── memory
+│   │   ├── memory_top.sv
+│   │   ├── ram2port.sv
+│   │   ├── sram.sv
+│   │   ├── two_way_cache_controller.sv
+│   │   └── two_way_cache_top.sv
+│   ├── mux.sv
+│   ├── mux_4x2.sv
+│   └── top.sv
+└── tb
+```
 ## Implementation
 
 ## Testing
