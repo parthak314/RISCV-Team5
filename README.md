@@ -1,72 +1,43 @@
+# Complete Implementation
 
-## Abstract:
+In this complete implementation, we integrated a 1k word (4096 bytes) two-way set associative cache with our pipelined processor, running a full RV32I ISA. We also implemented cache miss stall to simulate the delay that comes with reading from RAM on a cache miss.
 
+To demonstrate the full RV32I implementation, we have included `6_shift.s`, `7_logic.s`, `8_load.s` in `./tb/asm` which tests the remaining RV32I instructions. These scripts are run along with the provided test cases in `doit.sh`.
 
-## Team members:
+#### Quick Start - GTest Testing
 
+To run the provided tests within the target branch,
+```bash
+ cd ./tb
+ ./doit.sh
 ```
-Chong, Clarke 
-Khanna, Partha
-Ng, Joel
-Aubeeluck,Kevin 
+
+To run the tests we wrote for individual components (while in `./tb/`),
+```
+./run_our_tests.sh
 ```
 
-## Contribution Tables
+The script above runs all of our tests. However, the individual C++ testbenches can be found in `./tb/our_tests` and are written with GTest. The scripts to run them are found in `./tb/bash`, where they are named similarly.
 
-### Single Cycle CPU
-![RISC-V 32I single cycle CPU implementation](images/single-cycle.jpg)
+#### Quick Start - Vbuddy Tests
 
-### Pipelined CPU
-![alt text](images/pipelined.png)
-Fetch - Joel \
-Data - Partha\
-Execute - Clarke\
-Memory - Kevin 
+##### **Windows only**: remember to include `~/Documents/iac/lab0-devtools/tools/attach_usb.sh` command to connect Vbuddy.
 
-| File | Clarke | Partha | Joel | Kevin |
-| ---- | ------ | ------ | ---- | ----- |
+To run the f1 light test within the `./tb/` folder,
 
-## Joint Statement of Contribution
+```bash
+sudo chmod +x f1_test.sh
+./f1_test.sh
+```
 
+To run the pdf test within the `./tb/` folder,
+```bash
+sudo chmod +x pdf_test.sh
+./pdf_test.sh
+```
 
-
-Below we have tasks at a glance
-#### Clarke: 
-
-Tasks:
-- Task 1 
-	- Explanation
-- Task 2 
-	- Explanation
-
-#### Partha: 
-
-Tasks:
-- Task 1 
-	- Explanation
-- Task 2 
-	- Explanation
-
-#### Joel: 
-
-Tasks:
-- Task 1 
-	- Explanation
-- Task 2 
-	- Explanation
-
-#### Kevin: 
-
-Tasks:
-- Task 1 
-	- Explanation
-- Task 2 
-	- Explanation
-
-
-
-
-## Project Goalposts 
-
-### Goal 1: Single-Cycle RV321 implentation of F1 lights 
-### Stretch Goal 1: Pipelined RV321 Design
+Both `cpp` scripts can be found in `./tb/vbuddy_test`. The distribution for the pdf test can be changed by overwriting the distribution name in `./tb/vbuddy_test/pdf_tb.cpp` in line 13.
+```cpp
+// can change to "noisy" or "triangle"
+const std::string distribution = "gaussian"; 
+```
