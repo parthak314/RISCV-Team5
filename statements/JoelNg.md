@@ -7,8 +7,9 @@
 
 ### Single-Cycle
 1. [Created Fetch module and testbenches](#created-fetch-module-and-testbenches)
-2. [Co-wrote the testbench scripts for f1_fsm with Kevin and wrote the testbench script for Vbuddy PDF](#co-wrote-the-testbench-scripts-for-f1_fsm-with-kevin-and-wrote-the-testbench-script-for-vbuddy-pdf)
-3. Integrated single-cycle system and debugged system to pass testbenches
+2. [Integrated single-cycle system and debugged system to pass testbenches](#integrated-single-cycle-system-and-debugged-system-to-pass-testbenches)
+3. [Co-wrote the testbench scripts for f1_fsm with Kevin and wrote the testbench script for Vbuddy PDF](#co-wrote-the-testbench-scripts-for-f1_fsm-with-kevin-and-wrote-the-testbench-script-for-vbuddy-pdf)
+
 
 ### Pipelined
 1. Modified Fetch module and testbenches for pipelining
@@ -38,11 +39,79 @@ To test the functionality of the module, I wrote a comprehensive testbench scrip
 1. Sanity check to test the instruction at the first position matches with the ground truth array
 2. Check that the fetch module iterates through the entire `pdf.hex` correctly (with the PC+4 functionality, PCSrc = 0).
 3. Check that the fetch module branches correctly (using PC + Imm functionality, PCSrc = 1). This was done by feeding the module with a vector of Imm positions to jump forward or backwards and to compare the instruction output with the ground truth array.
-4. Check that the fetch module correctly stalls with PCSrc = 3 (This is implemented to stall with trigger).
-5. Finally, a test that mixes all the previous components to ensure they all work in tandem.
+4. Check that the fetch module jumps to the Result value correctly (Using rs1 + imm for JALR, PCSrc = 2). This was done in a similar fashion to branch, comparing the post-jump instruction with the ground truth array.
+5. Check that the fetch module correctly stalls with PCSrc = 3 (This is implemented to stall with trigger).
+6. Finally, a test that mixes all the previous components to ensure they all work in tandem.
 
 ![fetch_tb](../images/joel/fetch_tb.png)
 
 As expected, we receive a full score on the testbench.
 
+### Integrated single-cycle system and debugged system to pass testbenches
+
+After everyone had completed their parts, I led the team in integrating their various components together, double checking that their testbenches were accurate and that they were passing all required tests. I then built the `top.sv` for the single-cycle module and began to connect the various top modules together. As I was putting everything together, there were 3 major issues that we failed to address individually:
+1. There was some discrepency in the understanding of LUI and JAL implementation (implicit 0 LSB bit in jump and 12 bit shifting in LUI). This led to the wrong data being sent from the decode block.
+2. We had not considered the implementation of JALR properly and were lacking the required hardware to perform PC = rs1 + imm. This was resolved with point 3.
+3. We had also not considered the implementation of trigger in the system. We required the ability to stall the system with the trigger input, and this was done by converting PCSrc to be 2 bits long. This accommodated additional cases: PCNext = rs1 + imm (PCSrc = 3) for JALR in point 2, and PCNext = PC (PCSrc = 4) for trigger stall.
+
+Point 1 and 2 were discovered by debugging the system with `GTKWave`, where I scrutinised each instruction waveform in the failed `2_li_add` and `4_jal_ret` tests from the `doit.sh`.
+
+After these considerations were made, the single-cycle system successfully passed all cases and the final schematic and implementation can be seen in the main [README.md](../README.md#single-cycle).
+
 ### Co-wrote the testbench scripts for f1_fsm with Kevin and wrote the testbench script for Vbuddy PDF
+
+#### f1_fsm
+
+While I was debugging the single-cycle system, Kevin wrote a rough outline of the `./tb/vbuddy_test/f1_fsm_tb.cpp` test. I then integrated the assembly that Partha had written in `./tb/asm/f1_fsm.s`, by building a temporary `program.hex` file with shell commands in the testbench cpp script (same as what was done for `doit.sh`). To show off the trigger implementation, I also connected it to the `vbdflag()` feature on Vbuddy, so that we could see the system stopping and sarting with the press of the rotary switch.
+
+#### pdf
+
+For the pdf implementation, I similarly loaded the `reference/pdf.hex` into a temporary `program.hex` file, along with string input for the appropriate distribution (gaussian, noisy, etc.) to load into a `data.hex` file for the RAM module. 
+
+As it was only meaningful to display the waveform once the program was in its `display` loop, I had to come up with a way to discern when it was time to run `vbdplot()` to plot the waveform. Initially, since we knew the program loops forever, I created a long delay of about 1e6 cycles - long enough such that we know that we will definitely be in the `display loop`. However, this implementation seemed clumsy to me. Since we were plotting `a0` and it was only written to during the `display` loop, I decided to set a flag in the cpp that is triggered when the `a0` output differs from the recorded `a0` value at the start of the program.
+
+```cpp
+bool displaying = false;
+int original_a0 = top->a0; // record the original a0 value. If it changes, means time to display
+int j = 0; // vbudy display cycle counter (only starts incrementing when displaying)
+```
+
+This worked very effectively!
+
+Another issue I noticed while I was running the program, was that the gaussian signal seemed to be stretched along the horizontal axis. On closer inspection of the code, I realised that this was due to the fact that within the display loop of the assembly code, the output `a0` is only updated every 3 cycles, as the other 2 clock cycles were used for fetching the next value in RAM and for looping:
+
+```s
+bfc00060 <_loop3> (File Offset: 0x1060):
+_loop3():
+bfc00060:	1005c503          	lbu	a0,256(a1) # a0 only updates here!
+bfc00064:	00158593          	addi	a1,a1,1
+bfc00068:	fec59ce3          	bne	a1,a2,bfc00060 <_loop3> (File Offset: 0x1060)
+```
+
+Hence, it was not useful to be plotting on every cycle, where I decided to instead plot every 3 cycles:
+
+```cpp
+if (!is_paused) {
+    // we only plot every 3 steps because we only update a0 every 3 steps in the loop
+    // BNE and ADDI don't make any direct changes to a0.
+    j++;
+    displaying = true;
+    if (j % 3 == 0) {
+    vbdCycle(j);
+    vbdPlot(top->a0, 0, 255);
+    }
+}
+```
+
+I also added quality of life features such as:
+- Displaying the distribution in the display header (so that we can photograph and identify the distributions)
+- A simple interrupt listener to remove the temporary hex files when the program is interrupted (as seen below)
+
+```cpp
+void end_program(int signum) {
+  std::cout << "\nShutting down..." << std::endl;
+  std::ignore = system("rm -f program.hex data.hex");
+  exit(signum);
+};
+```
+
