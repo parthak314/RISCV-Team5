@@ -12,7 +12,7 @@
 
 
 ### Pipelined
-1. Modified Fetch module and testbenches for pipelining
+1. [Modified Fetch module and testbenches for pipelining](#modified-fetch-module-and-testbenches-for-pipelining)
 
 ### Cache (Single-Cycle)
 1. Design and implement two-way write-back cache implementation
@@ -36,12 +36,12 @@
 For the single-cycle part of the project, we worked in our individual branches, where I did most of the writing and testing in the `fetch` branch. Using Clarke's Fetch module that he created for the RISC-V reduced processor, I tweaked the module design to fit within the full single-cycle processor. 
 
 To test the functionality of the module, I wrote a comprehensive testbench script `./tb/our_test/fetch_tb.cpp` with _GTEST_ that can be used with the script `./bash/fetch_test.sh`. It tests the functionality of the fetch module thoroughly, where I loaded the instructions in `/reference/pdf.hex` into `instr_mem.sv` and compared results against a ground truth array of the `pdf.hex` instructions. My tests covered the following:
-1. Sanity check to test the instruction at the first position matches with the ground truth array
-2. Check that the fetch module iterates through the entire `pdf.hex` correctly (with the PC+4 functionality, PCSrc = 0).
-3. Check that the fetch module branches correctly (using PC + Imm functionality, PCSrc = 1). This was done by feeding the module with a vector of Imm positions to jump forward or backwards and to compare the instruction output with the ground truth array.
-4. Check that the fetch module jumps to the Result value correctly (Using rs1 + imm for JALR, PCSrc = 2). This was done in a similar fashion to branch, comparing the post-jump instruction with the ground truth array.
-5. Check that the fetch module correctly stalls with PCSrc = 3 (This is implemented to stall with trigger).
-6. Finally, a test that mixes all the previous components to ensure they all work in tandem.
+1. **InitialStateTest:** Sanity check to test the instruction at the first position matches with the ground truth array
+2. **IterationTest:** Check that the fetch module iterates through the entire `pdf.hex` correctly (with the PC+4 functionality, PCSrc = 0).
+3. **BranchTest:** Check that the fetch module branches correctly (using PC + Imm functionality, PCSrc = 1). This was done by feeding the module with a vector of Imm positions to jump forward or backwards and to compare the instruction output with the ground truth array.
+4. **JumpTest:** Check that the fetch module jumps to the Result value correctly (Using rs1 + imm for JALR, PCSrc = 2). This was done in a similar fashion to branch, comparing the post-jump instruction with the ground truth array.
+5. **StallTest:** Check that the fetch module correctly stalls with PCSrc = 3 (This is implemented to stall with trigger).
+6. **FullTest:** Finally, a test that mixes all the previous components to ensure they all work in tandem.
 
 ![fetch_tb](../images/joel/fetch_tb.png)
 
@@ -54,7 +54,7 @@ After everyone had completed their parts, I led the team in integrating their va
 2. We had not considered the implementation of JALR properly and were lacking the required hardware to perform PC = rs1 + imm. This was resolved with point 3.
 3. We had also not considered the implementation of trigger in the system. We required the ability to stall the system with the trigger input, and this was done by converting PCSrc to be 2 bits long. This accommodated additional cases: PCNext = rs1 + imm (PCSrc = 3) for JALR in point 2, and PCNext = PC (PCSrc = 4) for trigger stall.
 
-Point 1 and 2 were discovered by debugging the system with `GTKWave`, where I scrutinised each instruction waveform in the failed `2_li_add` and `4_jal_ret` tests from the `doit.sh`.
+With the help of Partha, point 1 and 2 were discovered by debugging the system with `GTKWave`, where we scrutinised each instruction waveform in the failed `2_li_add` and `4_jal_ret` tests from the `doit.sh`.
 
 After these considerations were made, the single-cycle system successfully passed all cases and the final schematic and implementation can be seen in the main [README.md](../README.md#single-cycle).
 
@@ -115,3 +115,32 @@ void end_program(int signum) {
 };
 ```
 
+## Pipelined
+
+### Modified Fetch module and testbenches for pipelining
+
+Much of the design considerations and planning for pipelining was done by Clarke and Kevin. I took charge of the fetch section of the processor again, adding a `fetch_pipeline_regfile.sv` to the fetch module. This register was to separate the instructions at the decode stage (denoted with `_o` suffix below) and the next instruction coming out of the fetch stage (denoted with `_i` suffix below):
+
+```sv
+always_ff @ (negedge clk) begin
+
+    if (en & !clear) begin // regular operation
+        Instr_o     <= Instr_i;
+        PC_o        <= PC_i;
+        PCPlus4_o   <= PCPlus4_i;    
+    end
+
+    else if (clear) begin // if cleared, set all to 0 (useful for flush and reset)
+        Instr_o     <= 0;
+        PC_o        <= 0;
+        PCPlus4_o   <= 0;
+    end
+
+end
+```
+
+Similar to before, I updated my `./tb/our_tests/fetch_tb.cpp` file to include the new `fetch_pipeline_regfile.sv`, split into the following test:
+1. **InitialStateTest:** Sanity check, same as above. However, this time we run an extra cycle to push the first instruction to `Instr_o`.
+2. **IterationTest:** Test that the processor iterates through instructions correctly, same as before.
+3. **BranchTest:** Test that the processor branches correctly, same as before.
+4. //TODO
