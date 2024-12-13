@@ -31,6 +31,8 @@ To access each version,
 git checkout <branch-name>
 ```
 
+### **IMPORTANT:** Please run all testbench scripts while in `/tb`. For simplicity, testbenches were written with absolute path referenced from `/tb`.
+
 #### Quick Start - GTest Testing
 
 To run the provided tests within the target branch,
@@ -40,11 +42,16 @@ To run the provided tests within the target branch,
 ```
 
 To run the tests we wrote for individual components (while in `./tb/`),
-```
+```bash
 ./run_our_tests.sh
 ```
 
-The script above runs all of our tests. However, the individual C++ testbenches can be found in `./tb/our_tests` and are written with GTest. The scripts to run them are found in `./tb/bash`, where they are named similarly.
+The script above runs all of our tests. However, the individual C++ testbenches can be found in `./tb/our_tests` and are written with GTest. The scripts to run them are found in `./tb/bash`, where they are named similarly. However, please run them while in `./tb` and not in `./tb/bash`.
+
+```bash
+sudo chmod +x ./bash/<unit_test>.sh
+./bash/<unit_test>.sh
+```
 
 #### Quick Start - Vbuddy Tests
 
@@ -274,48 +281,38 @@ The entire program is still running every cycle, but display is changed to updat
 ```
 .
 ├── rtl
-│   ├── decode
-│   │   ├── control_unit.sv
-│   │   ├── control_unit.txt
-│   │   ├── decode_pipeline_regfile.sv
-│   │   ├── decode_top.sv
-│   │   ├── register_file.sv
-│   │   └── sign_ext.sv
-│   ├── execute
-│   │   ├── alu.sv
-│   │   ├── branch_logic.sv
-│   │   ├── execute_pipeline_regfile.sv
-│   │   ├── execute_top.sv
-│   │   └── hazard_unit.sv
-│   ├── fetch
-│   │   ├── fetch_pipeline_regfile.sv
-│   │   ├── fetch_top.sv
-│   │   ├── fetch_top.txt
-│   │   ├── instr_mem.sv
-│   │   ├── pc_register.sv
-│   │   └── pc_register.txt
-│   ├── general-purpose
-│   │   ├── adder.sv
-│   │   ├── hazard_unit.txt
-│   │   ├── mux.sv
-│   │   ├── mux3.sv
-│   │   └── mux4.txt
-│   ├── memwrite
-│   │   ├── data_mem.sv
-│   │   ├── loadstore_parsing_unit.sv
-│   │   ├── memwrite_pipeline_regfile.sv
-│   │   └── memwrite_top.sv
-│   ├── top-module-interfaces
-│   │   ├── interfaceD.sv
-│   │   ├── interfaceE.sv
-│   │   ├── interfaceM.sv
-│   │   └── interfaceW.sv
-│   └── top.sv
-├── simple-tb
-│   ├── check-syntax.sh
-│   ├── hex.txt
-│   ├── playground_tb.cpp
-│   └── run-playground.sh
+│   ├── decode
+│   │   ├── control_unit.sv
+│   │   ├── decode_pipeline_regfile.sv
+│   │   ├── decode_top.sv
+│   │   ├── register_file.sv
+│   │   └── sign_ext.sv
+│   ├── execute
+│   │   ├── alu.sv
+│   │   ├── branch_logic.sv
+│   │   ├── execute_pipeline_regfile.sv
+│   │   ├── execute_top.sv
+│   │   └── hazard_unit.sv
+│   ├── fetch
+│   │   ├── fetch_pipeline_regfile.sv
+│   │   ├── fetch_top.sv
+│   │   ├── instr_mem.sv
+│   │   └── pc_register.sv
+│   ├── general-purpose
+│   │   ├── adder.sv
+│   │   ├── mux.sv
+│   │   └── mux3.sv
+│   ├── memwrite
+│   │   ├── data_mem.sv
+│   │   ├── loadstore_parsing_unit.sv
+│   │   ├── memwrite_pipeline_regfile.sv
+│   │   └── memwrite_top.sv
+│   ├── top-module-interfaces
+│   │   ├── interfaceD.sv
+│   │   ├── interfaceE.sv
+│   │   ├── interfaceM.sv
+│   │   └── interfaceW.sv
+│   └── top.sv
 └── tb
 ```
 ## Implementation
