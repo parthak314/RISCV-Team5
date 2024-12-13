@@ -3,12 +3,9 @@
 ***Partha Khanna***
 
 This document provides a comprehensive overview of my contributions to the RISC-V project. It outlines the completed work, the methodologies employed, the rationale behind key design decisions, the strategies used to address challenges, any mistakes encountered along the way and their subsequent resolution, as well as the insights and lessons learned from this experience.
-# Pending tasks
-- [ ] Check all links
-- [ ] Learning section
-- [ ] Place all images in my own folder
 
 ---
+
 ## Overview
 - [Single Cycle RISCV-32I Design](#single-cycle-riscv-32i-design) 
 	- [Sign Extension Unit](#sign-extension-unit)
