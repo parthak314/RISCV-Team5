@@ -7,7 +7,7 @@ rm -f *.vcd
 # Translate Verilog -> C++ including testbench
 verilator   -Wall --trace \
             -cc ../rtl/memory/two_way_cache_top.sv \
-            --exe ./our_tests/two_way_cache_top_test.cpp \
+            --exe ./our_tests/cache_top_tb_p2.cpp \
             -y ../rtl/ \
             --prefix "Vdut" \
             -o Vdut \
