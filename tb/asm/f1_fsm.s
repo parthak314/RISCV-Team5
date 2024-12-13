@@ -5,7 +5,7 @@ main:
     li      a0, 0x0                # a0 holds the current state (S_0 initially)
     li      a2, 0                  # a2 is used for cmd_delay
     li      a3, 0                  # a3 is used for cmd_seq
-    li      t1, 0b11111111          # t1 = 1111111 (Value at State 8 for 7-bit state)
+    li      t1, 0b11111111         # t1 = 11111111 (Value at State 8)
     li      t4, 0b1011010          # Seed for 7-bit LFSR (pseudo-random generator)
 
 shift_loop:
