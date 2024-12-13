@@ -1,6 +1,6 @@
 # Table of contents:
 
-- Quick Start
+- [Quick Start](#quick-start)
 - [Single Cycle CPU Implementation](#single-cycle)
 - [Pipelined CPU Implementation](#pipelined-cpu)
 - [Cached Implementation](#data-memory-cache)
@@ -372,6 +372,8 @@ Custom test cases written to assess full RV32I functionality. Uses instructions 
 ![pipelined tb case 1-8 testing](images/pipelined-testcases1-8.png)
 > *Pipelined model passes all 8 test cases.*
 
+We also ran the same `pdf` and `f1_fsm` tests on Vbuddy, and observed the similar outputs as in single-cycle.
+
 ---
 # Data Memory Cache
 
@@ -453,6 +455,8 @@ This implementation efficiently handles data locality with low-latency access on
 
 Moving onto the given test cases, we can see that the complete execution takes 646 ms in comparison to the 1054 ms for the single cycle model.
 ![Cache testing](images/cache-testing.png)
+
+We also ran the same `pdf` and `f1_fsm` tests on Vbuddy, and observed the similar outputs as in single-cycle.
 
 ---
 # Complete RISCV CPU
@@ -555,6 +559,8 @@ Similar to pipelined, test cases 1-8 assess the full RV32I instruction set for t
 ![alt text](images/complete-vers-testcase.png)
 
 All tests pass as expected.
+
+We also ran the same `pdf` and `f1_fsm` tests on Vbuddy, and observed the similar outputs as in single-cycle.
 
 ---
 # Superscalar RISCV CPU
