@@ -15,7 +15,7 @@
 1. [Modified Fetch module and testbenches for pipelining](#modified-fetch-module-and-testbenches-for-pipelining)
 
 ### Cache (Single-Cycle)
-1. [Design and implement two-way write-back cache implementation](#)
+1. [Design and implement two-way write-back cache implementation](#design-and-implement-two-way-write-back-cache-implementation)
 2. Assisted in writing testbenches for cache system
 3. Completed integration of cache with single-cycle system
 
@@ -33,7 +33,7 @@
 
 ### Created Fetch module and testbenches
 
-For the single-cycle part of the project, we worked in our individual branches, where I did most of the writing and testing in the `fetch` branch. Using Clarke's Fetch module that he created for the RISC-V reduced processor, I tweaked the module design to fit within the full single-cycle processor. 
+For the single-cycle part of the project, we worked in our individual branches, where I did most of the writing and testing in the `fetch` branch. Using Clarke's fetch module that he created for the RISC-V reduced processor, I tweaked the module design to fit within the full single-cycle processor. 
 
 To test the functionality of the module, I wrote a comprehensive testbench script `./tb/our_tests/fetch_top_tb.cpp` with _GTEST_ that can be used with the script `./bash/fetch_top_test.sh`. It tests the functionality of the fetch module thoroughly, where I loaded the instructions in `/reference/pdf.hex` into `instr_mem.sv` and compared results against a ground truth array of the `pdf.hex` instructions. My tests covered the following:
 1. **InitialStateTest:** Sanity check to test the instruction at the first position matches with the ground truth array
@@ -151,8 +151,82 @@ After changing the code, I updated my `./tb/our_tests/fetch_tb.cpp` file to incl
 3. **TargetTest:** Test that pc goes to the `PCTarget` correctly on the following cycle.
 4. **StallTest:** Test that the fetch module correctly stalls when `stall` is HIGH.
 
-![fetch_tb_pipeline](../images/joel/fetch_tb.png)
+![fetch_tb_pipeline](../images/joel/fetch_tb_pipelined.png)
 
-Although I did not play as big of a role in integrating the pipelining system, I helped the team discuss how we could implement the trigger stall in the new system, where we finally came to the consenus of routing trigger to the pipeline registers to "freeze" and maintain the states at each stage by preventing anything being written to the registers during a stall. This worked perfectly!
+### Discussion about trigger stall implementation in pipelining
+
+Although I did not play as big of a role in integrating the pipelining system, I discussed with the team how we could implement the trigger stall in the new system, where we finally came to the consenus of routing trigger to the pipeline registers to "freeze" and maintain the states at each stage by preventing anything being written to the registers during a stall. This worked perfectly!
+
+## Cache
+
+I took a major role in the design, creation and testing of the cache module. This discussion pertains specifically to our first iteration of cache (within `cache` branch), where we implemented cache on a single cycle system for simplicity. It was later integrated into the pipelined system in the `complete` branch, that will be discussed later.
+
+Initially, Partha proposed a solution with a single cache controller script that implicity held an array to store the cache data. However, I decided to abstract the physical sram memory block into a separate module so that we could better debug the input and output of both modules.
+
+We finally decided on the following system:
+```
+├── memory_top.sv
+│   ├── ram2port.sv
+│   ├── two_way_cache_top.sv
+│   │   ├── two_way_cache_controller.sv
+│   │   └── sram.sv
+```
+
+- `memory_top.sv`: No change to the way it interacts with the other external modules. This allows the cache system to be highly modular, as it makes no impact on the rest of the system.
+- `ram2port.sv`: As we were working on the cache implementation, we recognised that we required a dual-port RAM, because a cache miss may require both writing to RAM (because of the write-back system), and reading from RAM (retrieving the missed word).
+- `two_way_cache_top.sv`: This module was responsible for handling the input and outputs between RAM and the cache system, as well as input and outputs from memory_top.
+- `two_way_cache_controller.sv`: This module houses the majority of logic for the cache system. This will be discussed next.
+- `sram.sv`: This module just serves as a memory block (similar to the way the ram module is designed).
+
+### Design and implement two-way write-back cache implementation
+
+In this section, we will mostly be discussing the implementation the cache controller and sram. Since we are designing a two-way cache block to hold 4096 bytes (1k words), we are able to determine the number of sets it will store:
+```
+Number of bytes in word = 4 (8 bits * 4 in one word)
+Hence, number of words = 4096 / 4 = 1024
+
+Number of ways in one set = 2
+Hence, number of sets = 1024 / 2 = 512.
+```
+
+Since we are storing 512 sets, we know that our number of set bits will be **log2(512) = 9**. We can then determine the number of bits in each word tag:
+
+```
+Number of address bits = 32 bits
+Number of set bits = 9 bits
+Byte offset = 2
+
+Hence, number of bits in each tag = 32 - 9 - 2 = 21.
+```
+
+This allows us to calculate the total number of bits in one set (including all the overhead bits):
+```
+Number of LRU bits = 1 (0 = word0 and 1 = word1)
+Number of V bits = 2 (1 for each word)
+Number of dirty bits = 2 (1 for each word)
+Number of tag bits = 42 (21 for each word)
+Number of word bits = 64 (32 for each word)
+
+Hence, total bits in a set = 1 + 2 + 2 + 42 + 64 = 111.
+
+-------
+
+Format for each way:
+Way{n} = | V bit | dirty bit | 21-bit tag | 32-bit word |
+
+Set format:
+| LRU Bit | Way0 (55 bits) | Way1 (55 bits) |
+```
+
+Using this, we are able to create our cache system. The biggest challenge I faced was the complicated sequential logic that was completed in one cycle. When we encounter a cache miss, there is a long sequence of information to update, including reading and writing back to RAM. When poorly handled, updates along the way could lead to circular logic.
+
+To simplify the process, I created a copy of each set variable (v bit, dirty bit, tag, word) within the `always_comb` block that I updated during the cache retrieval process. This way, I could complete all updates without modifying the original set data. After all logic had been updated, I wrote back to the set block with the updated variables.
+
+### Assisted in writing testbenches for cache system
+
+While I was writing the cache system, Partha helped me write a series of tests for the cache, testing that our system correctly read via byte/word addressing, and that the write-back feature and RAM data retrieval process was valid during a cache miss.
+
+This test can be found in `cache branch -> ./tb/our_tests/cache_top_tb_p2.cpp` that can be run with the script found in `cache branch -> ./tb/bash/cache_top_test_p2.sh`.
+
 
 
