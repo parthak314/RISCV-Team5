@@ -53,7 +53,7 @@ Using what I created in the reduced RISC-V CPU (lab 4), I extended this to inclu
 
 The following structure was used for each of the instruction types:
 
-![Instruction types](../images/instruction-types.png)
+![Instruction types](../images/partha/instruction-types.png)
 
 We can do this by using a `select case` statement which concatenates different parts of the instruction to form the immediate.
 The `ImmSrc` is taken from the control unit which send the value of this as per the opcode.
@@ -104,7 +104,7 @@ The inputs and outputs of the system are:
 
 The image below shows the structure for this and the table below shows the value for each of the control bits:
 
-![Untitled(10).png](../images/control-unit.png)
+![Untitled(10).png](../images/partha/control-unit.png)
 
 | **Instruction Type** |   **`PCSrc`**   | **`ResultSrc`** | **`MemWrite`** |  **`ALUcontrol`**   | **`ALUSrc`** | **`ImmSrc`** | **`RegWrite`** |
 | -------------------- | :-------------: | :-------------: | :------------: | :-----------------: | :----------: | :----------: | :------------: |
@@ -155,7 +155,7 @@ case (funct_3)
 
 Which satisfies the following implementation as per the RISC-V 32I base instructions:
 
-![image.png](../images/alucontrol-instructions.png)
+![image.png](../images/partha/alucontrol-instructions.png)
 
 **ResultSrc:**
 `ResultSrc` was initially defined as 1 bit as the select signal for the result which is written into the regfile on the next clock cycle. When this is:
@@ -214,7 +214,7 @@ Inputs, outputs and Parameters used here are:
     - `read_data1` (`RD1`) and `read_data2` (`RD2`) contains the data read from the specified registers
     - `a0` - debug the output for monitoring register 10
 
-![Register File Schematic](../images/regfile-schematic.png)
+![Register File Schematic](../images/partha/regfile-schematic.png)
 
 The registers are first created as an array by:
 
@@ -224,7 +224,7 @@ logic [DATA_WIDTH-1:0] registers [2**ADDR_WIDTH-1:0];
 
 The entire RISC-V CPU makes use of all 32 32-bit registers with some kept for a specific purpose and others for temporary and other usage as described here:
 
-![registers](../images/registers.png)
+![registers](../images/partha/registers.png)
 
 This is also specified here: [https://en.wikichip.org/wiki/risc-v/registers](https://en.wikichip.org/wiki/risc-v/registers)
 
@@ -412,7 +412,7 @@ This can be verified with gtkwave.
 
 Looking at the first test case, `1_addi_bne.s`, We can see that there is a branch that occurs. which means that we expect clear to be high when the branch is performed (which means that the output values from the decode pipeline register is `0`. However, at other times (since there are no jumps) for any other instruction implemented, we expect the values to be the same.
 
-![](../images/pipeline-addibne-waveform.png)
+![](../images/partha/pipeline-addibne-waveform.png)
 ## Potential Enhancements and Learnings
 
 Whilst branch prediction could be implemented in the future to anticipate control flow changes, this is not required for the complete RISC-V model.
