@@ -547,7 +547,12 @@ The complete structure is not shown here, only the key relevant files.
 The implementation of the complete version remains structurally similar to the pipelined, full RV32I version. With the addition of cache, the CPU now stalls upon a cache miss in attempt to better emulate a real-world processsor.
 
 ## Testing
-![Complete System Testing](images/complete-testing.png)
+### Test Cases 1-8
+Similar to pipelined, test cases 1-8 assess the full RV32I instruction set for the complete version. 
+
+![alt text](images/complete-vers-testcase.png)
+
+All tests pass as expected.
 
 ---
 # Superscalar RISCV CPU
