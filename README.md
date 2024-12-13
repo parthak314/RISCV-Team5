@@ -280,11 +280,11 @@ Challenges such as data hazards, control hazards, structural hazards are mitigat
 | Decode block               |        |      |       | `X`    |
 | Execute block              | `X`    |      |       |        |
 | Fetch block                |        | `X`  |       |        |
-| Memwrite block             | `*`    |      | `X`   |        |
+| Memory block             | `*`    |      | `X`   |        |
 | Decode pipeline register   |        |      |       | `X`    |
 | Execute pipeline register  | `X`    |      |       |        |
 | Fetch pipeline register    |        | `X`  |       |        |
-| Memwrite pipeline register |        |      | `X`   |        |
+| Memory pipeline register |        |      | `X`   |        |
 | System Integration         | `X`    |      | `X`   |        |
 | Testing and Debugging      | `X`    |      | `X`   |        |
 
@@ -314,11 +314,11 @@ Challenges such as data hazards, control hazards, structural hazards are mitigat
 │   │   ├── adder.sv
 │   │   ├── mux.sv
 │   │   └── mux3.sv
-│   ├── memwrite
+│   ├── memory
 │   │   ├── data_mem.sv
 │   │   ├── loadstore_parsing_unit.sv
-│   │   ├── memwrite_pipeline_regfile.sv
-│   │   └── memwrite_top.sv
+│   │   ├── memory_pipeline_regfile.sv
+│   │   └── memory_top.sv
 │   ├── top-module-interfaces
 │   │   ├── interfaceD.sv
 │   │   ├── interfaceE.sv
@@ -444,9 +444,9 @@ The design ensures that each component, including the cache and pipeline, operat
 | -------------------------- | ------ | ---- | ----- | ------ |
 | execute_top                | `X`    |      |       |        |
 | fetch_top                  |        | `X`  |       |        |
-| memwrite_top               |        |      | `X`   |        |
+| memory_top               |        |      | `X`   |        |
 | decode_top                 |        |      |       | `X`    |
-| memwrite cache integration | `X`    | `X`  |       |        |
+| memory cache integration | `X`    | `X`  |       |        |
 | System integration         | `X`    | `X`  |       |        |
 | Testing and Debugging      | `X`    | `X`  |       |        |
 
@@ -477,11 +477,11 @@ The design ensures that each component, including the cache and pipeline, operat
 │   │   ├── adder.sv
 │   │   ├── mux.sv
 │   │   └── mux3.sv
-│   ├── memwrite
+│   ├── memory
 │   │   ├── dram_main_mem.sv
 │   │   ├── loadstore_parsing_unit.sv
-│   │   ├── memwrite_pipeline_regfile.sv
-│   │   ├── memwrite_top.sv
+│   │   ├── memory_pipeline_regfile.sv
+│   │   ├── memory_top.sv
 │   │   ├── sram_cache.sv
 │   │   ├── two_way_cache_controller.sv
 │   │   └── two_way_cache_top.sv
