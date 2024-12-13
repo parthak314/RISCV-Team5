@@ -393,7 +393,7 @@ As mentioned briefly already, the unaligned-access parsing unit conflicted with 
 - So, a byte offset is required to select the desired byte (or half) to operate on.
     - E.g. if operating on a byte at `0x3`, then the block `0x0` to `0x4` is retrieved. The byte offset to select the byte at `0x3` would be `0b10`.
     - `00` for 1st byte, `01` for 2nd, `10` for 3rd, `11` for 4th
-- Take this byte offset variable from the cache module. It corresponds to bits [1:0] of the RAM address being accessed (in other words, bits `[1:0]` of `ALUResultM`).
+- Take this byte offset variable from the cache module. It corresponds to bits `[1:0]` of the RAM address being accessed (in other words, bits `[1:0]` of `ALUResultM`).
 - Now we know which byte/half to operate on. Resume regular parsing operation.
     - Sign/unsigned extension of byte or half for `LB` and `LH`.
     - For store instructions, ensure only the desired byte/half is overwritten. The remaining bits should maintain the same value as when the block was retrieved.
