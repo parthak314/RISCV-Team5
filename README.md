@@ -101,12 +101,12 @@ const std::string distribution = "gaussian";
 | --------------- | ----------------------------------------------------- | -------- | --------------- | ------------------------------------------------- |
 | Clarke Chong    | [clarkechong](https://github.com/clarkechong)         | 02395382 | cc1823@ic.ac.uk | [Clarke's Statement](statements/ClarkeChong.md)   |
 | Joel Ng         | [energy-in-joles](https://github.com/energy-in-joles) | 02193809 | zjn22@ic.ac.uk  | [Joel's Statement](statements/JoelNg.md)          |
-| Kevin Aubeeluck | [Kevinaubeeluck](https://github.com/Kevinaubeeluck)   |02467502|ka1423@ic.ac.uk| [Kevin's Statement](statements/KevinAubeeluck.md) |
+| Kevin Aubeeluck | [Kevinaubeeluck](https://github.com/Kevinaubeeluck)   | 02467502 | ka1423@ic.ac.uk | [Kevin's Statement](statements/KevinAubeeluck.md) |
 | Partha Khanna   | [parthak314](https://github.com/parthak314)           | 02374670 | pk1223@ic.ac.uk | [Partha's Statement](statements/ParthaKhanna.md)  |
 
 # Single Cycle
 ### Overview
-This single cycle implementation covers the basic requirements for most CPU operations, this implements the following instructions: `R-type`, `I-type (immediate)`, `lbu`, `sb`, `beq`, `bne`, `jal`, `jalr`, `lui`.
+This single cycle implementation covers the basic requirements for most CPU operations, this implements the following instructions: `R-type`, `I-type (immediate)`, `lbu`, `lw`, `sb`, `sw`, `beq`, `bne`, `jal`, `jalr`, `lui`.
 ## Schematic
 ![RISC-V 32I single cycle CPU implementation](images/single-cycle-model.png)
 
@@ -221,9 +221,9 @@ Instructions implemented:
 | -------- | -------------------------------------------------------------- |
 | R        | `add` `sub` `xor` `or` `and` `sll` `srl` `sra` `slt` `sltu`    |
 | I (ALU)  | `addi` `xori` `ori` `andi` `slli` `srli` `srai` `slti` `sltiu` |
-| I (load) | `lbu`                                                          |
+| I (load) | `lbu` `lw`                                                     |
 | I (jump) | `jalr`                                                         |
-| S        | `sb`                                                           |
+| S        | `sb` `sw`                                                      |
 | B        | `beq` `bne`                                                    |
 | U        | `lui`                                                          |
 | J        | `jal`                                                          |
@@ -233,7 +233,7 @@ Instructions implemented:
 For the tests provided (`1_addi_bne` `2_li_add` `3_lbu_sb` `4_jal_ret` `5_pdf`):
 ![Single cycle testing](/images/single-cycle-tests.png)
 ### F1
-==ADD TESTING==
+https://github.com/user-attachments/assets/9f212d15-4109-42d0-b1a7-e5c23f5cd3c2
 
 ### PDF: Gaussian
 https://github.com/user-attachments/assets/ea8e738c-7042-4297-840e-35a427eaf2c0
@@ -431,8 +431,8 @@ Moving onto the given test cases, we can see that the complete execution takes 6
 # Complete RISCV CPU
 
 ## Overview
-The complete system integration for a RISC-V project involves implementing all instructions defined by the RISC-V instruction set architecture (ISA).
-Here, we integrate a cache system to enhance memory access speed and reduce latency (seen in the `cache` branch. 
+The complete system integration for a RISC-V project involves implementing all instructions defined by the RISC-V instruction set architecture.
+Here, we integrate a cache system to enhance memory access speed and reduce latency (seen in the `cache` branch). 
 Pipelining is incorporated to improve throughput by enabling the concurrent execution of multiple instructions (from `pipelined` branch).  
 The design ensures that each component, including the cache and pipeline, operates cohesively for optimal performance. This integration results in a high-performance RISC-V processor capable of handling complex tasks efficiently.
 ## Schematic

@@ -11,15 +11,15 @@
 3. [Co-wrote the testbench scripts for f1_fsm with Kevin and wrote the testbench script for Vbuddy PDF](#co-wrote-the-testbench-scripts-for-f1_fsm-with-kevin-and-wrote-the-testbench-script-for-vbuddy-pdf)
 
 
-### Pipelined
+### [Pipelined](#pipelined-1)
 1. [Modified Fetch module and testbenches for pipelining](#modified-fetch-module-and-testbenches-for-pipelining)
 
-### Cache (Single-Cycle)
+### [Cache (Single-Cycle)](#cache)
 1. [Design and implement two-way write-back cache implementation](#design-and-implement-two-way-write-back-cache-implementation)
-2. Assisted in writing testbenches for cache system
-3. Completed integration of cache with single-cycle system
+2. [Assisted in writing testbenches for cache system](#assisted-in-writing-testbenches-for-cache-system)
+3. [Completed integration of cache with single-cycle system](#completed-integration-of-cache-with-single-cycle-system)
 
-### Pipelined + Cache (Final Version)
+### [Pipelined + Cache (Final Version)](#complete-pipelined--cache)
 1. Implemented pipelining stall for cache miss
 
 ### Extension: Superscalar Processor
@@ -159,7 +159,7 @@ Although I did not play as big of a role in integrating the pipelining system, I
 
 ## Cache
 
-I took a major role in the design, creation and testing of the cache module. This discussion pertains specifically to our first iteration of cache (within `cache` branch), where we implemented cache on a single cycle system for simplicity. It was later integrated into the pipelined system in the `complete` branch, that will be discussed later.
+I took the lead role in the design, creation and testing of the cache module. This discussion pertains specifically to our first iteration of cache (within `cache` branch), where we implemented cache on a single cycle system for simplicity. It was later integrated into the pipelined system in the `complete` branch, that will be discussed later.
 
 Initially, Partha proposed a solution with a single cache controller script that implicity held an array to store the cache data. However, I decided to abstract the physical sram memory block into a separate module so that we could better debug the input and output of both modules.
 
@@ -218,15 +218,132 @@ Set format:
 | LRU Bit | Way0 (55 bits) | Way1 (55 bits) |
 ```
 
-Using this, we are able to create our cache system. The biggest challenge I faced was the complicated sequential logic that was completed in one cycle. When we encounter a cache miss, there is a long sequence of information to update, including reading and writing back to RAM. When poorly handled, updates along the way could lead to circular logic.
+#### Cache System Design
+
+Using this, we are able to create our cache system. We retrieve the relevant set from cache, and dissect the set bits into their respective categories: lru_bit, v_bits, dirty_bits, tags, words.
+
+We determine a cache hit as when the v bit of the set way is HIGH and when the tag matches with the input tag:
+```sv
+assign hits[0] = (v_bits[0] && (tags[0] == target_tag));
+assign hits[1] = (v_bits[1] && (tags[1] == target_tag));
+```
+
+On a cache miss, most of the logic is straightforward: we use the LRU bit to decide which word to evict and, we replace the evicted way with the correct data from RAM. When design a write-back cache, however, we have to determine when we are required to write back to RAM on eviction. This was determined to be when the v bit of the evicted set is HIGH and when the dirty bit is HIGH. This allows us to ensure that we are writing valid, new data to RAM:
+
+```sv
+// ensure that the v_bit belong to the evicted way is HIGH
+// ensure that the dirty_bit belong to the evicted way is HIGH
+if(v_bits[evicted_way] && dirty_bits[evicted_way]) begin
+...
+```
+
+We realised that the cache controller must also be responsible for correct byte addressing (LBU and SB), as the RAM block should only be communicating with the cache via word addresses. Hence, the responsibility is shifted to the cache controller. We routed the `addr_mode` wire to the cache_controller to enable us to do byte addressing for load and store within the cache controller.
+
+```sv 
+if (we) begin // write to cache
+    if (addr_mode) begin
+        case (offset) // handle different offsets for SB
+            2'b00:      new_words[correct_way] = {new_words[correct_way][31:8], wd[7:0]};
+            2'b01:      new_words[correct_way] = {new_words[correct_way][31:16], wd[7:0], new_words[correct_way][7:0]};
+            2'b10:      new_words[correct_way] = {new_words[correct_way][31:24], wd[7:0], new_words[correct_way][15:0]};
+            2'b11:      new_words[correct_way] = {wd[7:0], new_words[correct_way][23:0]};
+            default:    new_words[correct_way] = {new_words[correct_way][31:8], wd[7:0]};
+        endcase
+    end else new_words[correct_way] = wd;
+
+    new_dirty_bits[correct_way] = 1'b1; // update dirty bit
+end
+
+// read from cache address
+if (addr_mode) begin
+    case (offset) // handle different offset for LBU
+        2'b00:          data_out = {24'b0, new_words[correct_way][7:0]};
+        2'b01:          data_out = {24'b0, new_words[correct_way][15:8]};
+        2'b10:          data_out = {24'b0, new_words[correct_way][23:16]};
+        2'b11:          data_out = {24'b0, new_words[correct_way][31:24]};
+        default:        data_out = {24'b0, new_words[correct_way][7:0]};
+    endcase
+end else                data_out = new_words[correct_way];
+```
+
+#### Circular Logic Issue
+
+The biggest challenge I faced was the complicated sequential logic that was completed in one cycle. When we encounter a cache miss, there is a long sequence of information to update, including reading and writing back to RAM. When poorly handled, updates along the way could lead to circular logic.
+
 
 To simplify the process, I created a copy of each set variable (v bit, dirty bit, tag, word) within the `always_comb` block that I updated during the cache retrieval process. This way, I could complete all updates without modifying the original set data. After all logic had been updated, I wrote back to the set block with the updated variables.
 
 ### Assisted in writing testbenches for cache system
 
-While I was writing the cache system, Partha helped me write a series of tests for the cache, testing that our system correctly read via byte/word addressing, and that the write-back feature and RAM data retrieval process was valid during a cache miss.
+While I was writing the cache system, Partha helped me write a series of tests for `two_way_cache_top.sv`, testing that our system correctly read via byte/word addressing, and that the write-back feature and RAM data retrieval process was valid during a cache miss.
 
 This test can be found in `cache branch -> ./tb/our_tests/cache_top_tb_p2.cpp` that can be run with the script found in `cache branch -> ./tb/bash/cache_top_test_p2.sh`.
 
+Initially, there were some issues with the testbench, where it expected a synchronous read. However, I worked with him to correct this issue:
 
+![cache_tb_p2](../images/joel/cache_tb_p2.png)
 
+We successfully passed all the test cases from his testbench! During debugging, I also wrote a simple testbench script to test the eviction functionality of the system. This can be found in `cache branch -> ./tb/our_tests/cache_top_tb_p1.cpp` that can be run with the script found in `cache branch -> ./tb/bash/cache_top_test_p1.sh`. 
+
+The test cases are as follows:
+- **WriteWordTest:** This test worked within a single set, writing words to it and observing that the system attempts to read from ram on cache miss, and that cache data written back to RAM is retrieved correctly.
+- **EnableTest:** This test was to ensure that the cache access enable logic was working. On cache disable, it should output `32'b0`. More on the cache access enable design will be discussed in the [next section](#cache-access-enable).
+
+![cache_tb_p1](../images/joel/cache_tb_p1.png)
+
+Similarly, we pass the two tests with no issue!
+
+### Completed integration of cache with single-cycle system
+
+The challenge now was integrating our cache system as a submodule in the `memory_top.sv` module. Although we had passed the earlier testbenches, we were having significant issue passing the pdf test in `doit.sh`.
+
+#### RAM Addressing Issue
+
+After meticulously debugging the system with gtkwave, we found a major oversight in our integration. For the cache system to work, it was imperative that we ONLY read and write to our RAM memory block in word aligned offsets (ie in blocks of 4 bytes starting from address 0).
+
+The issue we were facing was that we were reading from RAM directly with the address input in `memory_top.sv`. This includes when we were performing byte addressing, resulting in cache words being retreived wrongly. To address this, we replaced the least 2 significant bits in `r_addr` with `2'b0` to ensure that we always read from RAM in word addressing.
+
+```sv
+ram2port ram_mod (
+    ...
+    .r_addr({ALUResult[31:2], 2'b0}), // always read from ram in 32 bit word blocks (byte addressing handled in cache only)
+    ...
+);
+```
+
+#### Cache Access Enable
+
+Secondly, I also realised that even on instructions that did not involve the memory module, the cache system would still attempt to read from the `memory_top` input of `ALUResult`. This resulted in unncessary cache access that led to cache updates and evictions, even when cache was not involved. To resolve this, I added an enable pin to the `two_way_cache_top` module, where cache would only operate when `en` was HIGH. Else, it would produce an output of `32'b0`.
+
+As this enable pin was relevant to both read and write operations, I added an OR operator in `memory_top` that assigned `CacheAccessEnable` (wire connected to cache `en`) to HIGH on both:
+
+```sv
+// assign HIGH when ResultSrc == 2'b01 (ie when trying to read from memory)
+// OR when MemWrite (ie when trying to write to memory)
+assign CacheAccessEnable = (ResultSrc == 2'b01 || MemWrite);
+
+two_way_cache_top cache_top_mod (
+    ...
+    .en(CacheAccessEnable),
+    ...
+);
+```
+
+#### RAM Read Enable
+
+Although a RAM read enable pin had no impact on the actual performance of the system in simulation, I thought it illogical for us to be reading from RAM on every cycle. This would defeat the purpose of using a cache system, if we were attempting to read from RAM each time as well. Hence, I added a RAM read enable pin to the system. This was only assigned to HIGH on a cache miss:
+
+```sv
+if (hits[0] || hits[1]) correct_way = hits[1]; // if hit
+else begin // if miss
+    ...
+    re_from_ram = 1'b1; // only assign HIGH on miss
+    ...
+end
+```
+
+Finally, it was important to acknowledge an assumption in the simulation that may not hold true in reality. When we are trying to squeeze an entire cache miss operation in one cycle, we have to operate on the assumption that RAM read is instant. That is, when we enable RAM read after a miss, the data is sent to cache immediately.
+
+Naturally, this is unrealistic and is antithetical to the purpose of the cache system. However, for the purpose of this single-cycle system, we have to make this assumption. When we migrate to an integrated cache + pipelined system, we are able to build a more realistic cache miss mechanism that requires a system stall for RAM data retreival. This will be discussed in the next section.
+
+## Complete (Pipelined + Cache)
