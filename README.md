@@ -1,4 +1,20 @@
 
+# Pending changes
+- [ ] Pipelined Sections
+	- [ ] Overview - Partha
+	- [ ] Schematic to be added - Kevin
+	- [ ] Implementation - Clarke
+	- [ ] Testing - Clarke
+- [ ] Cache 
+	- [ ] Overview - Partha
+	- [ ] Implementation - Partha
+	- [ ] Testing - Partha
+- [ ] Complete
+	- [ ] Schematics - Kevin
+	- [ ] Implementation - Clarke/Joel
+	- [ ] Testing - Clarke/Joel
+
+
 # Table of contents:
 
 - Quick Start
@@ -252,24 +268,26 @@ The entire program is still running every cycle, but display is changed to updat
 
 ## Overview
 
+# Abstract: Pipelining in RISC-V Processors
+
+Pipelining is used to enhance performance by dividing instruction execution into stages: Fetch, Decode, Execute, Memory, and Writeback, thus enabling parallel execution of multiple instructions. This reduces overall execution time while maintaining individual instruction latency. 
+Challenges such as data hazards, control hazards, structural hazards are mitigated using techniques like data forwarding, stalling, and flushing. Pipelining significantly improves throughput, achieving faster program execution compared to single-cycle designs.
 ## Schematic
 
 ## Contributions
 
-| Module | Clarke | Joel | Kevin | Partha |
-| ------ | ------ | ---- | ----- | ------ |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
+| Module                     | Clarke | Joel | Kevin | Partha |
+| -------------------------- | ------ | ---- | ----- | ------ |
+| Decode block               |        |      |       | `X`    |
+| Execute block              | `X`    |      |       |        |
+| Fetch block                |        | `X`  |       |        |
+| Memwrite block             | `*`    |      | `X`   |        |
+| Decode pipeline register   |        |      |       | `X`    |
+| Execute pipeline register  | `X`    |      |       |        |
+| Fetch pipeline register    |        | `X`  |       |        |
+| Memwrite pipeline register |        |      | `X`   |        |
+| System Integration         | `X`    |      | `X`   |        |
+| Testing and Debugging      | `X`    |      | `X`   |        |
 
 `X` - Lead Contributor   `*` - Partial Contributor
 ## File Structure
@@ -311,6 +329,7 @@ The entire program is still running every cycle, but display is changed to updat
 └── tb
 ```
 ## Implementation
+==TO CHANGE==
 The following stages have been added on top of the basic RISC-V model (single cycle):
 - Pipeline Registers between all stages
     - storing instruction data, intermediate data, control signals
@@ -381,38 +400,103 @@ The following stages have been added on top of the basic RISC-V model (single cy
 # Complete RISCV CPU
 
 ## Overview
-
+The complete system integration for a RISC-V project involves implementing all instructions defined by the RISC-V instruction set architecture (ISA).
+Here, we integrate a cache system to enhance memory access speed and reduce latency (seen in the `cache` branch. 
+Pipelining is incorporated to improve throughput by enabling the concurrent execution of multiple instructions (from `pipelined` branch).  
+The design ensures that each component, including the cache and pipeline, operates cohesively for optimal performance. This integration results in a high-performance RISC-V processor capable of handling complex tasks efficiently.
 ## Schematic
 
 ## Contributions
 
-| Module | Clarke | Joel | Kevin | Partha |
-| ------ | ------ | ---- | ----- | ------ |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
+| Module                     | Clarke | Joel | Kevin | Partha |
+| -------------------------- | ------ | ---- | ----- | ------ |
+| execute_top                | `X`    |      |       |        |
+| fetch_top                  |        | `X`  |       |        |
+| memwrite_top               |        |      | `X`   |        |
+| decode_top                 |        |      |       | `X`    |
+| memwrite cache integration | `X`    | `X`  |       |        |
+| System integration         | `X`    | `X`  |       |        |
+| Testing and Debugging      | `X`    | `X`  |       |        |
+
 
 `X` - Lead Contributor   `*` - Partial Contributor
 ## File Structure
+```
+.
+├── rtl
+│   ├── decode
+│   │   ├── control_unit.sv
+│   │   ├── decode_pipeline_regfile.sv
+│   │   ├── decode_top.sv
+│   │   ├── register_file.sv
+│   │   └── sign_ext.sv
+│   ├── execute
+│   │   ├── alu.sv
+│   │   ├── branch_logic.sv
+│   │   ├── execute_pipeline_regfile.sv
+│   │   ├── execute_top.sv
+│   │   └── hazard_unit.sv
+│   ├── fetch
+│   │   ├── fetch_pipeline_regfile.sv
+│   │   ├── fetch_top.sv
+│   │   ├── instr_mem.sv
+│   │   └── pc_register.sv
+│   ├── general-purpose
+│   │   ├── adder.sv
+│   │   ├── mux.sv
+│   │   └── mux3.sv
+│   ├── memwrite
+│   │   ├── dram_main_mem.sv
+│   │   ├── loadstore_parsing_unit.sv
+│   │   ├── memwrite_pipeline_regfile.sv
+│   │   ├── memwrite_top.sv
+│   │   ├── sram_cache.sv
+│   │   ├── two_way_cache_controller.sv
+│   │   └── two_way_cache_top.sv
+│   ├── top-module-interfaces
+│   │   ├── interfaceD.sv
+│   │   ├── interfaceE.sv
+│   │   ├── interfaceM.sv
+│   │   ├── interfaceW.sv
+│   │   └── stall_top.sv
+│   └── top.sv
+├── simple-tb
+│   ├── check-syntax.sh
+│   ├── hex.txt
+│   ├── playground_tb.cpp
+│   └── run-playground.sh
+└── tb
+    ├── asm
+    │   ├── 1_addi_bne.s
+    │   ├── 2_li_add.s
+    │   ├── 3_lbu_sb.s
+    │   ├── 4_jal_ret.s
+    │   ├── 5_pdf.s
+    │   ├── 6_shift.s
+    │   ├── 7_logic.s
+    │   ├── 8_load.s
+    │   └── f1_fsm.s
+    ├── our_tests
+    │   ├── cache_top_tb.cpp
+    │   ├── execute_top_tb.cpp
+    │   ├── fetch_top_tb.cpp
+    │   ├── hazard.sh
+    │   └── hazard_tb.cpp
+    └── test_out
+```
 
+The complete structure is not shown here, only the key relevant files.
 ## Implementation
 
 ## Testing
+![Complete System Testing](images/complete-testing.png)
 
 ---
 # Superscalar RISCV CPU
 
 ## Overview
-This concept runs 2 instructions in parallel therefore increasing processor performance with 0.5 Cycles per Instruction.
+The superscalar integration for a RISC-V project enables parallel execution of two instructions, reducing Cycles per Instruction (CPI) to 0.5. 
+This improves processor performance by utilising multiple execution units simultaneously. The design incorporates the single cycle design implemented in the `main` branch.
 
 ## Schematic
 ![](images/superscalar-model.png)
@@ -422,7 +506,7 @@ This concept runs 2 instructions in parallel therefore increasing processor perf
 | --------------------- | ------ | ---- | ----- | ------ |
 | reorder_asm           |        | `X`  |       |        |
 | System Verilog        |        |      |       | `X`    |
-| Debugging and Testing |        | `X`  |       | `*`    |
+| Debugging and Testing |        | `X`  |       | `X`    |
 
 `X` - Lead Contributor   `*` - Partial Contributor
 ## File Structure
@@ -461,10 +545,11 @@ Structural design modifications:
 - ![#a9caf2](https://placehold.co/15x15/a9caf2/a9caf2.png) Writeback: Doubled inputs for Data Memory with Load store separate to the data memory to reflect changes in the pipelining section. This is the load store parsing unit. A separate mux for `ResultSrc`.
 
 (Colours correspond the the relevant areas in the schematic)
+
 Given the time available, this model implements the instructions for `R-type`, `I-type (imm)`.
 
 ### Out-of-order Processor
-The key change here is the Out-Of-Order Processor which is a C++ script (and a Python script that our team originally wrote in). It is compiled and run right before `assemble.sh` in the `doit.sh` script to optimise the assembly for the superscalar processor.
+The key change here is the Out-Of-Order Processor which is a C++ script (and a Python script that our team originally wrote in). It is compiled and run right before `assemble.sh` in the `doit.sh` script to optimise the assembly for the superscalar processor. This is required to prevent race conditions from occurring.
 The High level requirements for this file are to:
 - Create a dependency graph of all instructions by checking if linking each instruction with preceding instructions based on register data dependencies.
 - Create a priority queue based on the number of dependencies that each instruction has.
