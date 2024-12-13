@@ -363,7 +363,7 @@ find ../rtl -type f -name "*.sv" > filelist.f
 
 verilator ... -f filelist.f
 ```
-> *Previously, `-y ../rtl` was used to include all modules in the include path, however the `-y` (include path) flag is unable to access subfolders within `rtl`. Now, filelist.f contains all `.sv` files within `rtl`'s folder structure*
+> *Previously, `-y ../rtl` was used to include all modules in the include path, however the `-y` (include path) flag is unable to access subfolders within `rtl`. Now, `filelist.f` contains all `.sv` files within `rtl`'s folder structure*
 
 After a short initial phase of debugging, I was able to get most tests from the provided testbench to pass. The main hurdles were debugging the `lbu_sb.s` and `pdf.s` tests.
 
@@ -421,7 +421,7 @@ if (MemoryOp == HALF) ReadData[31:16] = {16{ReadData[15]}};  // half-word is sig
 ```
 > *The expression `[ByteOffset*8 +: 8]` selects the desired byte using the `+:` dynamic bit selection operator. E.G. if `ByteOffset = 2`, then the next 8 bits from bit 16 are selected (byte `[23:16]`)*
 
-One final point: the `ByteOffset` for half-type instructions is assumed to be a multiple of 2. If operating on the upper half of the block, then `ByteOffset` would be `10`.
+One final point: the `ByteOffset` for half-type instructions is assumed to be a multiple of 2. If operating on the upper half of the block, then `ByteOffset` would be `0b10`, and for the lower half, `0b00`.
 
 ---
 
