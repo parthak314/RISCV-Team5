@@ -586,6 +586,8 @@ add a0, x3, x6 # 4
 nop # 4
 ```
 
+All 3 test scripts can be run using `./doit.sh`, where the script compiles and executes the C++ `reorder_asm.cpp` on the assembly scripts in `asm`. The reordered assembly scripts are then assembled and used to test the superscalar processor. On testing, we discovered that the processor and reordering script work as intended.
+
 ##### As a note: although Kevin and Clarke did not play as significant a role in the actual implementation itself, they contributed immensely by helping to document and clean up the rest of the project. Without their help, it is unlikely that Partha and I would have had to bandwidth to complete this extension.
 
 ## Conclusion
