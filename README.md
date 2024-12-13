@@ -111,7 +111,7 @@ This single cycle implementation covers the basic requirements for most CPU oper
 | F1 Assembly.s                |        |      |       | `X`    |
 | System Testing and Debugging |        | `X`  |       | `X`    |
 | PDF testing                  |        | `X`  |       | `*`    |
-| F1 Testing                   |        | `X`  |       | `X`    |
+| F1 Testing                   |        | `X`  |  `*`  | `X`    |
 
 `X` - Lead Contributor   `*` - Partial Contributor
 
@@ -217,7 +217,7 @@ Instructions implemented:
 ## Testing
 ### Test cases
 For the tests provided (`1_addi_bne` `2_li_add` `3_lbu_sb` `4_jal_ret` `5_pdf`):
-![Single cycle testing](../images/single-cycle-tests.png)
+![Single cycle testing](/images/single-cycle-tests.png)
 ### F1
 ==ADD TESTING==
 
