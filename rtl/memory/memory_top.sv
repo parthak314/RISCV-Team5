@@ -4,6 +4,7 @@ module memory_top #(
     parameter DATA_WIDTH = 32     
 ) (
     input logic                     clk,
+    input logic                     AddrMode, // address mode: 0 for word, 1 for byte
     input logic [1:0]               ResultSrc, // Connects to control unit
     input logic                     MemWrite, // Connects to control unit
     input logic [DATA_WIDTH-1:0]    PCPlus4,
@@ -18,6 +19,7 @@ logic [DATA_WIDTH-1:0] ReadData; // Connects to Mux
 datamem data_mem_mod (
     .a(ALUResult),
     .wd(WriteData),
+    .addr_mode(AddrMode),
     .clk(clk),
     .we(MemWrite),
     .rd(ReadData)
