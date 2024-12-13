@@ -1,12 +1,13 @@
 
 # Table of contents:
 
+- Quick Start
 - [Single Cycle CPU Implementation](#single-cycle)
 - [Pipelined CPU Implementation](#pipelined-cpu)
 - [Cached Implementation](#)
 - [Complete RISC-V](#)
 - [Superscalar Processor]()
-
+- Appendix
 
 # Quick Start
 
@@ -72,11 +73,12 @@ const std::string distribution = "gaussian";
 
 | Section               | Clarke | Joel | Kevin | Partha |
 | --------------------- | ------ | ---- | ----- | ------ |
-| Single cycle          |        |      |       |        |
-| Pipelining            |        |      |       |        |
-| Cache                 |        |      |       |        |
-| Integration           |        |      |       |        |
-| Superscalar Processor |        |      |       |        |
+| Repo Setup            |        |      |       | `X`    |
+| Single cycle          | `X`    | `X`  | `X`   | `X`    |
+| Pipelining            | `X`    | `*`  | `X`   | `*`    |
+| Cache                 |        | `X`  |       | `X`    |
+| Integration           | `X`    | `X`  | `*`   | `*`    |
+| Superscalar Processor |        | `X`  |       | `X`    |
 
 `X` - Lead Contributor   `*` - Partial Contributor
 ## Team members and Statements:
@@ -98,18 +100,18 @@ This single cycle implementation covers the basic requirements for most CPU oper
 
 | Module                       | Clarke | Joel | Kevin | Partha |
 | ---------------------------- | ------ | ---- | ----- | ------ |
-| alu                          |        |      |       |        |
-| instr_mem                    |        |      |       |        |
-| pc_register                  |        |      |       |        |
-| datamem                      |        |      |       |        |
-| control                      |        |      |       |        |
-| reg_file                     |        |      |       |        |
-| signextend                   |        |      |       |        |
-| top (system integration)     |        |      |       |        |
-| F1 Assembly.s                |        |      |       |        |
-| System Testing and Debugging |        |      |       |        |
-| PDF testing                  |        |      |       |        |
-| F1 Testing                   |        |      |       |        |
+| alu                          | `X`    |      |       |        |
+| instr_mem                    |        | `X`  |       |        |
+| pc_register                  |        | `X`  |       |        |
+| datamem                      |        |      | `X`   |        |
+| control                      |        |      |       | `X`    |
+| reg_file                     |        |      |       | `X`    |
+| signextend                   |        |      |       | `X`    |
+| top (system integration)     | `*`    | `X`  | `*`   | `*`    |
+| F1 Assembly.s                |        |      |       | `X`    |
+| System Testing and Debugging |        | `X`  |       | `X`    |
+| PDF testing                  |        | `X`  |       | `*`    |
+| F1 Testing                   |        | `X`  |       | `X`    |
 
 `X` - Lead Contributor   `*` - Partial Contributor
 
@@ -188,16 +190,43 @@ This single cycle implementation covers the basic requirements for most CPU oper
     └── verification.md
 ```
 
+The processor development is done in the register transfer level (`rtl`) folder and the testing is performed in the test bench folder (`tb`).
+The test bench folder contains:
+- Assembly files (1 to 5 provided and f1_fsm) - in later versions
+- `assemble.sh` - translating RISCV assembly to machine code
+- `bash` and `out_tests` - independently created testing cases for individual components
+- `vbuddy_test` - Tests creating to verify RISCV performance with VBuddy (provided)
+Other files are either a result of these files (testing outputs e.g. `*.vcd`) or were provided.
+
 Note: only for this version, is the `tb` folder shown, this contains the tests and shows all other execution files
 
 ## Implementation
+Instructions implemented:
+
+| Type     | Instruction                                                    |
+| -------- | -------------------------------------------------------------- |
+| R        | `add` `sub` `xor` `or` `and` `sll` `srl` `sra` `slt` `sltu`    |
+| I (ALU)  | `addi` `xori` `ori` `andi` `slli` `srli` `srai` `slti` `sltiu` |
+| I (load) | `lbu`                                                          |
+| I (jump) | `jalr`                                                         |
+| S        | `sb`                                                           |
+| B        | `beq` `bne`                                                    |
+| U        | `lui`                                                          |
+| J        | `jal`                                                          |
 
 ## Testing
-==All Videos==
+### Test cases
+For the tests provided (`1_addi_bne` `2_li_add` `3_lbu_sb` `4_jal_ret` `5_pdf`):
+![Single cycle testing](../images/single-cycle-tests.png)
 ### F1
+==ADD TESTING==
+
 ### PDF: Gaussian
+[![Gaussian PDF Testing]](images/PDF-Gaussian.mp4)
 ### PDF: Noisy
+[![Noisy PDF Testing]](images/PDF-Noisy.mp4)
 ### PDF: Triangle
+[![Triangle PDF Testing]](images/PDF-Triangle.mp4)
 
 For the PDF tests, there were initially several waveforms that were elongated. But this can be rectified by displaying the value every 3 clock cycles, as opposed to every clock cycle. We can do this by the following lines:
 ```cpp
@@ -434,3 +463,9 @@ Further details can be seen in individual reports (Partha, Joel).
 
 ## Testing
 
+---
+
+# Appendix
+
+Resources Used:
+RISCV-32I Specification - https://cs.sfu.ca/~ashriram/Courses/CS295/assets/notebooks/RISCV/RISCV_CARD.pdf
