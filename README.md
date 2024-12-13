@@ -544,6 +544,7 @@ The design ensures that each component, including the cache and pipeline, operat
 
 The complete structure is not shown here, only the key relevant files.
 ## Implementation
+The implementation of the complete version remains structurally similar to the pipelined, full RV32I version. With the addition of cache, the CPU now stalls upon a cache miss in attempt to better emulate a real-world processsor.
 
 ## Testing
 ![Complete System Testing](images/complete-testing.png)

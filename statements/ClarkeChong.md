@@ -1,21 +1,21 @@
 # **RISC-V RV32I Processor Coursework**
 #### *Clarke Chong | CID: 02395382 | GitHub: clarkechong*
-# Personal Statement</p>
+# Personal Statement
 
-### <p style="font-size:25px">Overview of Contributions</p>
+### <p style="font-size:30px">Overview of Contributions</p>
 
-### **Reduced RISC-V (Lab 4)**
+### [**Reduced RISC-V (Lab 4)**](#reduced-risc-v-lab-4-1)
 - Fetch Stage
     - Program Counter (PC) Register
     - Related Adders
 - General Debugging
 
-### **Single Cycle**
+### [**Single Cycle**](#single-cycle-1)
 - Execute Stage
     - ALU
     - PCTarget Adder
 
-### **Pipelined + Full RV32I**
+### [**Pipelined + Full RV32I**](#pipelined--full-rv32i-1)
 - Execute Stage
     - ALU + PCTarget Adder + Execute Pipeline Register
     - Branch Logic Module
@@ -29,14 +29,14 @@
     - Addition of multiplexer to handle data forwarding source in memory stage
     - Implement `trigger` and `rst` inputs
 
-### **Pipelined + Full RV32I + Cache**
+### [**Pipelined + Full RV32I + Cache**](#pipelined--full-rv32i--cache-1)
 - Integration, testing and debugging of pipelined + cached processor
     - Integrate cache module into memory-write stage
     - Modify implementation of load / store parse unit to comply with cache interface
 
 ---
 
-### <p style="font-size:25px">Reduced RISC-V (Lab 4)</p>
+## Reduced RISC-V (Lab 4)
 
 This marks the beginning of my practical, hands-on learning of RISC-V architecture. By this point, I was confident with SystemVerilog's syntax and the general principles of describing hardware with HDL.
 
@@ -71,7 +71,7 @@ We recalled that an offset bit 0 is applied to the immediate for branch/jump typ
 
 ---
 
-### <p style="font-size:25px">Single Cycle</p>
+## Single Cycle
 
 Going from lab 4 to single cycle, I decided to branch out to the execute stage.
 The design structure remained similar to lab 4 with exception of the `PC+IMM` adder (aka `PCTarget`) which was simply brought forwards into the execute stage. This is in line with the single cycle schematic we designed with.
@@ -166,7 +166,7 @@ The `verifyALU` function allows for quick, readable initialization of the inputs
 
 ---
 
-### <p style="font-size:25px">Pipelined + Full RV32I</p>
+## Pipelined + Full RV32I
 
 ### Execute stage: ALU, `PCTarget` adder & pipeline register
 
@@ -377,7 +377,7 @@ Finally, after passing the `lbu_sb.s` and `pdf.s` tests, I implemented the trigg
 
 ---
 
-### <p style="font-size:25px">Pipelined + Full RV32I + Cache</p>
+## Pipelined + Full RV32I + Cache
 
 ### Integration
 
@@ -425,8 +425,8 @@ One final point: the `ByteOffset` for half-type instructions is assumed to be a 
 
 ---
 
-### <p style="font-size:25px">Conclusion & final thoughts</p>
+## Conclusion & final thoughts
 
-People always say the best way to learn is to apply your knowledge in practice. For myself, this project has been one of the best examples of this. I now feel confident in explaining each stage of a pipelined processor with cache, and even some of the nuances of associated with a RISC-V processor. Several personal statements from previous groups mention that they wished they had branched out across different sections of the project - I listened to this and did so from the start and I am thoroughly glad I did so.
+People always say the best way to learn is to apply your knowledge in practice. For myself, this project has been one of the best examples of this. I now feel confident in explaining each stage of a pipelined processor with cache, and even some of the nuances of associated with a RISC-V processor. Several personal statements from previous groups mention that they wished they had branched out across different sections of the project - I listened to this and did so from the start and I am glad I did so.
 
 I am also incredibly fortunate to have worked with such a strong team. Everybody was proactive and communicated their ideas and criticism well. I look forwards to being able to work with them again in future.
