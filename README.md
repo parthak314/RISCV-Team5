@@ -1,14 +1,9 @@
 
 # Pending changes
 - [ ] Pipelined Sections
-	- [ ] Overview - Partha
 	- [ ] Schematic to be added - Kevin
 	- [ ] Implementation - Clarke
 	- [ ] Testing - Clarke
-- [ ] Cache 
-	- [ ] Overview - Partha
-	- [ ] Implementation - Partha
-	- [ ] Testing - Partha
 - [ ] Complete
 	- [ ] Schematics - Kevin
 	- [ ] Implementation - Clarke/Joel
