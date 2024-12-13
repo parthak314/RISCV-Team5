@@ -106,7 +106,7 @@ const std::string distribution = "gaussian";
 
 # Single Cycle
 ### Overview
-This single cycle implementation covers the basic requirements for most CPU operations, this implements the following instructions: `R-type`, `I-type (immediate)`, `lbu`, `sb`, `beq`, `bne`, `jal`, `jalr`, `lui`.
+This single cycle implementation covers the basic requirements for most CPU operations, this implements the following instructions: `R-type`, `I-type (immediate)`, `lbu`, `lw`, `sb`, `sw`, `beq`, `bne`, `jal`, `jalr`, `lui`.
 ## Schematic
 ![RISC-V 32I single cycle CPU implementation](images/single-cycle-model.png)
 
@@ -221,9 +221,9 @@ Instructions implemented:
 | -------- | -------------------------------------------------------------- |
 | R        | `add` `sub` `xor` `or` `and` `sll` `srl` `sra` `slt` `sltu`    |
 | I (ALU)  | `addi` `xori` `ori` `andi` `slli` `srli` `srai` `slti` `sltiu` |
-| I (load) | `lbu`                                                          |
+| I (load) | `lbu` `lw`                                                     |
 | I (jump) | `jalr`                                                         |
-| S        | `sb`                                                           |
+| S        | `sb` `sw`                                                      |
 | B        | `beq` `bne`                                                    |
 | U        | `lui`                                                          |
 | J        | `jal`                                                          |
