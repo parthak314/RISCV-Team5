@@ -9,7 +9,7 @@ find ../rtl -type f -name "*.sv" > filelist.f
 # run Verilator to translate Verilog into C++, including C++ testbench
 verilator   -Wall -cc --trace \
             ../rtl/fetch/fetch_top.sv \
-            --exe ./our_tests/fetch_tb.cpp \
+            --exe ./our_tests/fetch_top_tb.cpp \
             -f filelist.f \
             --top-module fetch_top \
             --prefix "Vdut" \
