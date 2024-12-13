@@ -37,6 +37,7 @@ protected:
 
 
         dut->clk = 0;
+        dut->en = 1;
         dut->addr_mode = 0;
         dut->wd = 0;
         dut->we = 0;

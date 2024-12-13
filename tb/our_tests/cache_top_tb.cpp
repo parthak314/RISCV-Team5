@@ -23,6 +23,7 @@ public:
     void initializeInputs()
     {
         top->clk = 0;
+        top->en = 1;
         top->addr_mode = 0;
         top->wd = 0;
         top->we = 0;
@@ -49,6 +50,7 @@ public:
     }
 };
 
+// test word writing and eviction
 TEST_F(TestDut, WriteWordTest)
 {
     // write and fill both ways in set
@@ -71,12 +73,32 @@ TEST_F(TestDut, WriteWordTest)
     top->we = 0;
     top->addr = 0x0004;
     top->eval();
+    EXPECT_EQ(top->re_from_ram, 1); // check that on miss, we are reading from ram
     EXPECT_EQ(top->rd, 100);
+    runSimulation();
+
+    top->addr = 0x0804;
+    top->rd_from_ram = 150;
+    top->eval();
+    EXPECT_EQ(top->rd, 150);
+    runSimulation();
+}
+
+// test en function
+TEST_F(TestDut, EnableTest) {
+    // write and fill both ways in set
+    top->rd_from_ram = 100;
+    top->wd = 20;
+    top->we = 1;
+    top->addr = 0x0004;
     runSimulation();
     top->addr = 0x0804;
-    top->eval();
-    EXPECT_EQ(top->rd, 100);
+    top->we = 1;
+    top->wd = 30;
     runSimulation();
+    top->en = 0;
+    top->eval();
+    EXPECT_EQ(top->rd, 0);
 }
 
 int main(int argc, char **argv)
