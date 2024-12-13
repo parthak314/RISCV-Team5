@@ -4,7 +4,7 @@
 
 ---
 ## Overview
-- [[#Single Cycle RISCV-32I Design]]
+- [[#Single Cycle RISCV-32I Design]] DONE
 	- [[#Sign Extension Unit]]
 	- [[#Control Unit]]
 	- [[#Register File]]
@@ -13,8 +13,10 @@
 		- [[#Probability Distribution Function]]
 		- [[#System Debugging]]
 - [[#Pipelined RISCV-32I Design]]
-- [[#Data Memory Cache Implementation]]
+- [[#Data Memory Cache Implementation]] DONE
 - [[#Complete RISCV-32I Design]]
+- Superscalar
+- Learnings and project summary
 
 
 ---
@@ -366,8 +368,104 @@ hits[way] = v_bits[way] && (tags[way] == target_tag)
 
 **Reading**: This returns the data based on the address mode which is implemented as Word addressing or Byte addressing initially (then changed to include half addressing)
 ## Testing
+Before beginning testing, we nee to establish performance metrics. These are:
+1. **Hit and Miss Rates**: $HR$, $MR = 1-HR$ 
+2. **Average Memor==y Acc==ess times**: $= t_{cache} + t_{MM} \cdot MR_{cache}$ .
+		Given a miss rate of $20\%$ for this implementation of cache, it means that $AMAT =  1+(100*0.2) = 21 cycles$
+3. **Eviction Behaviour**
+
+The strategy here is to perform unit testing by simulating individual cache operations, such as verifying hit and miss detection logic. 
+Then continue with Integration testing by connecting the cache with the sram and main memory modules, testing the section.
+Then finally testing the entire system's performance with the new changes put in place. (the evidence for this is seen in the Team statement).
+
+1. Cache Read Hit (Single with Word Addressing)
+   - Inputs: `addr = 0x0004` `wd = 0xFACEFACE` `we = 1` `addr_mode = 0`
+   - Outputs: `rd = 0xFACEFACE` `we_to_ram = 0`
+
+2. Cache Read Hit (Single with Byte Addressing)
+   - Inputs: `addr = 0x0004` `wd = 0x000000FF` `we = 1` `addr_mode = 1`
+   - Outputs: `rd = 0x000000FF` `we_to_ram = 0`
+
+3. Cache Read Miss (Single with Word Addressing)
+   - Inputs: `addr = 0x0008` `we = 0` `addr_mode = 0` `rd_from_ram = 0xDEADBEEF`
+   - Outputs: `rd = 0xDEADBEEF` `we_to_ram = 0`
+
+4. Cache Read Hit with Multiple Words
+   - Inputs: 
+     - Write: `addr = 0x0000`, `wd = 0xA5A5A5A5` `addr = 0x0004`, `wd = 0xA5A5A5A6`
+       `addr = 0x0008`, `wd = 0xA5A5A5A7` `addr = 0x000C`, `wd = 0xA5A5A5A8` 
+       `we = 1` `addr_mode = 0`
+     - Read: `addr = 0x0000` `addr = 0x0004` `addr = 0x0008` `addr = 0x000C`
+       `we = 0` `addr_mode = 0`
+   - Outputs: 
+     - `rd = {0xA5A5A5A5, 0xA5A5A5A6, 0xA5A5A5A7, 0xA5A5A5A8}`
+     - `we_to_ram = 0`
+
+5. Cache Read Hit with Multiple Bytes
+   - Inputs: 
+     - Write: `addr = 0x0000`, `wd = 0xA5A5A5A5` `addr = 0x0010`, `wd = 0xA5A5A5A6`
+       `addr = 0x0020`, `wd = 0xA5A5A5A7` `addr = 0x0030`, `wd = 0xA5A5A5A8`
+       `we = 1` `addr_mode = 1`
+     - Read: `addr = 0x0000` `addr = 0x0010` `addr = 0x0020` `addr = 0x0030`
+       `we = 0` `addr_mode = 1`
+   - Outputs: 
+     - `rd = {0xA5A5A5A5, 0xA5A5A5A6, 0xA5A5A5A7, 0xA5A5A5A8}`
+     - `we_to_ram = 0`
+
+6. Cache Write Hit
+   - Inputs: `addr = 0x0008` `wd = 0xCA7490EF` `we = 1` `addr_mode = 0`
+   - Outputs: `we_to_ram = 0`
+
+7. Cache Write Miss
+   - Inputs: `addr = 0x0030` `wd = 0xDEADBEEF` `we = 1` `addr_mode = 0`
+   - Outputs: 
+     - `we_to_ram = 1`
+     - `wd_to_ram = 0xDEADBEEF`
+     - `w_addr_to_ram = 0x0030`
+
+8. Cache Eviction
+   - Inputs: 
+     - Write: `addr = 0x0004`, `wd = 0xAAAAAAA1` `addr = 0x20004`, `wd = 0xBBBBBBB2`
+       `we = 1` `addr_mode = 0`
+     - Trigger Eviction: `addr = 0x40004` `rd_from_ram = 0x12345678` `we = 0` `addr_mode = 0`
+   - Outputs: 
+     - Eviction: 
+       - `we_to_ram = 1`
+       - `w_addr_to_ram = 0x0004`
+       - `wd_to_ram = 0xAAAAAAA1`
+     - New Data: `rd = 0x12345678`
+
+9. Complete Cache Behaviour
+   - Inputs: 
+     - Write: `addr = 0x0004`, `wd = 0x11111111` `addr = 0x0014`, `wd = 0x22222222`
+       `we = 1` `addr_mode = 0`
+     - Read: `addr = 0x0004`, `we = 0` `addr = 0x0014`, `we = 0`
+     - Trigger Eviction: `addr = 0x0024` `rd_from_ram = 0x33333333` `we = 0`
+   - Outputs: 
+     - Reads: `rd = 0x11111111` `rd = 0x22222222`
+     - Eviction: 
+       - `we_to_ram = 1`
+       - `w_addr_to_ram = 0x0004`
+       - `wd_to_ram = 0x11111111`
+     - New Data: `rd = 0x33333333`
 
 ## Summary and Learnings
+
+While Implementing Cache, I implemented set associativity, used LRU replacement, utilised valid and dirty bits, with byte and word addressing and this is done inside a cache controller.
+
+There were several mistakes made in the initial model that were rectified later:
+- Using independent registers instead of a packed/combined set which was useful for debugging initially but is not scalable or correct as an ideal implementation
+- The testing cases don't cover multiple misses and similar edge cases
+
+The learnings from this include:
+- Understanding Temporal and Spatial locality, effectively exploiting locality to reduce access latency for repeated and sequential memory access, aligning with lecture content, especially for loops and arrays
+- Increasing associativity to 2 ways which reduces conflict misses without lots of complexity of fully associative cache, balancing performance and design overhead.
+- Cache misses that can trigger costly memory accesses, so implementing the design that handles write-back and read-through strategies that minimise coherence issues and miss latency.
+
+In the future, we can enhance this model by implementing:
+- Prefetching: Add a system to anticipate and load likely-to-be-accessed data during misses to reduce future miss rates (further to spatial locality) which is a similar concept to dynamic branch prediction.
+- Dynamic Block Sizing
+- Multi Level cache with varying speeds and sizes.
 
 ---
 # Complete RISCV-32I Design
@@ -379,91 +477,147 @@ hits[way] = v_bits[way] && (tags[way] == target_tag)
 
 ## Implementation
 
+Looking at the schematic, we see that there are 2 major areas for development. This is the Out-of-order processor and changing all the hardware. 
 
-- **Creating a Dependency Graph**:
-    
-    - Identify data dependencies between instructions, including:
-        - **RAW (Read After Write):** A later instruction reads a value written by an earlier one.
-        - **WAR (Write After Read):** A later instruction writes to a register that an earlier instruction reads.
-        - **WAW (Write After Write):** Two instructions write to the same register.
-- **Reordering Instructions**:
-    
-    - Use a graph to represent dependencies and resolve them while issuing independent instructions in parallel.
-- **Implementation Plan**:
-    
-    - Parse a set of instructions and determine dependencies.
-    - Use a `HashMap` to store dependency relationships for quick lookups.
-    - Implement a scheduling loop that checks dependencies and issues instructions.
+### Out-of-order processor
+Note: The initial implementation was done in rust, but a different implementation was put in place by Joel (a more efficient alternative) which is available in both Python and C++.
+The initial implementation was in rust and is available here: 
+https://gist.github.com/parthak314/32b124b0622381cd2cc28686a15ba2fe
 
-#### **1. Define the Instruction Structure**
+Reorder instructions to avoid hazards while maximizing parallelism, respecting dependencies.
+#### Instruction Dependencies:
+- **RAW (Read After Write):** A later instruction reads a value written by an earlier one.
+- **WAR (Write After Read):** A later instruction writes to a register read by an earlier one.
+- **WAW (Write After Write):** Two instructions write to the same register.
 
-The `Instruction` struct represents each instruction with:
+Define a structured representation of instructions for dependency tracking.
 
-- `name`: The type of instruction (e.g., `lw`, `add`, etc.).
-- `dest`: The destination register where the result is stored.
-- `sources`: A list of source registers that the instruction reads.
-
-For example:
+#### Example:
 
 rust
 
 Copy code
 
-`Instruction { name: "add", dest: Some("s8"), sources: ["t1", "t2"] }`
+`Instruction {     name: "add",      dest: Some("s8"),  // Destination register     sources: ["t1", "t2"] // Source registers }`
 
-- `add` writes to `s8` (destination) and reads from `t1` and `t2` (sources).
-
----
-
-#### **2. Build the Dependency Graph**
-
-This step identifies dependencies between instructions and constructs a **dependency graph**. This graph ensures instructions are reordered correctly without introducing hazards.
-
-**a. Initialize the Graph**
-
-- Create a `HashMap` to represent the graph.
-- Each instruction is represented by its index in the list.
-- Each node (instruction) points to the instructions that depend on it.
-
-Example: If `add` depends on the result of `lw`, the graph will have an edge from `lw` to `add`.
-
-**b. Identify Dependencies** For every pair of instructions (`instr1`, `instr2`):
-
-- **RAW (Read After Write)**: If `instr2` reads a register written by `instr1`, add an edge from `instr1` to `instr2`.
-- **WAR (Write After Read)**: If `instr2` writes to a register read by `instr1`, add an edge from `instr1` to `instr2`.
-- **WAW (Write After Write)**: If `instr2` writes to the same register as `instr1`, add an edge from `instr1` to `instr2`.
-
-**c. Track Incoming Dependencies** Count the number of dependencies (indegree) for each instruction. Instructions with no dependencies are ready to execute first.
+- `add` writes to `s8` and reads from `t1` and `t2`.
 
 ---
 
-#### **3. Prepare the Ready Queue**
+### **3. Build a Dependency Graph**
 
-Instructions with no incoming dependencies are added to a **ready queue**. These instructions can be issued immediately because they don’t rely on any previous results.
+A dependency graph models relationships between instructions, ensuring dependencies are respected during reordering.
 
-For example:
+#### a. **Graph Initialization**
 
-- If `lw` doesn’t depend on anything, it is added to the ready queue.
+- Use a `HashMap` to store nodes where:
+    - Keys are instruction indices.
+    - Values are lists of dependent instructions (edges).
+
+#### b. **Identify Dependencies**
+
+For each pair of instructions (`instr1`, `instr2`):
+
+- **RAW (Read After Write):** Add an edge from `instr1` to `instr2` if `instr2` reads a register written by `instr1`.
+- **WAR (Write After Read):** Add an edge if `instr2` writes to a register read by `instr1`.
+- **WAW (Write After Write):** Add an edge if both write to the same register.
+
+#### c. **Track Indegree**
+
+Maintain a count of incoming dependencies for each instruction (indegree). Instructions with no incoming edges are ready to execute first.
 
 ---
 
-#### **4. Reorder Instructions**
+### **4. Prepare the Ready Queue**
 
-**a. Process the Ready Queue** While there are instructions in the ready queue:
-
-1. Remove an instruction from the queue and mark it as "issued."
-2. Add it to the reordered list (`execution_order`).
-3. Check all dependent instructions (nodes in the graph that point to it):
-    - Decrease their dependency count (indegree).
-    - If their dependencies are resolved (indegree = 0), add them to the ready queue.
-
-**b. Continue Until All Instructions Are Issued** The algorithm continues processing the ready queue until all instructions are reordered.
+Instructions with no incoming dependencies are added to a **ready queue** for immediate execution. This queue facilitates efficient scheduling of instructions that don’t depend on others.
 
 ---
 
-#### **5. Output the Reordered Instructions**
+### **5. Reorder Instructions**
 
-The reordered list of instructions (`execution_order`) is returned. This list is guaranteed to respect all dependencies and avoid hazards.
+#### a. **Scheduling Algorithm**
 
-https://gist.github.com/parthak314/32b124b0622381cd2cc28686a15ba2fe
->>>>>>> 021a7ecd4bf65e75300026c68ea595cfb00775cf
+1. **Process the Ready Queue:**
+    
+    - Remove an instruction from the queue.
+    - Mark it as "issued" and add it to the reordered list (`execution_order`).
+    - For each dependent instruction (nodes connected by an edge):
+        - Decrease its indegree by 1.
+        - If indegree becomes 0, add it to the ready queue.
+2. **Repeat Until Complete:**
+    
+    - Continue issuing instructions from the ready queue until all instructions are processed.
+
+#### b. **Avoid Deadlocks:**
+
+By ensuring the ready queue always processes instructions with no dependencies, the algorithm guarantees forward progress.
+
+---
+
+### **6. Output the Reordered Instructions**
+
+The reordered instructions (`execution_order`) are returned as the final result. This list respects all dependencies and avoids hazards, enabling efficient parallel execution.
+
+---
+
+### **Example Walkthrough**
+
+#### Input Instructions:
+
+1. `lw t0, 0(t1)`
+2. `add t2, t0, t3`
+3. `sw t2, 4(t1)`
+
+#### Dependency Analysis:
+
+- **Instruction 2 (add):** RAW dependency on `t0` from Instruction 1 (`lw`).
+- **Instruction 3 (sw):** RAW dependency on `t2` from Instruction 2 (`add`).
+
+#### Dependency Graph:
+
+Copy code
+
+`1 → 2 → 3`
+
+#### Execution:
+
+1. Start with the ready queue containing Instruction 1 (`lw`).
+2. Issue Instruction 1. Add Instruction 2 to the queue (dependency resolved).
+3. Issue Instruction 2. Add Instruction 3 to the queue (dependency resolved).
+4. Issue Instruction 3.
+
+#### Output:
+
+Reordered Instructions:
+
+1. `lw t0, 0(t1)`
+2. `add t2, t0, t3`
+3. `sw t2, 4(t1)`
+
+---
+
+### Implementation Plan
+
+1. **Parse Instructions:**
+    
+    - Represent each instruction with a struct (`Instruction`).
+2. **Build Dependency Graph:**
+    
+    - Use a `HashMap` to store dependencies and track indegree.
+3. **Reorder Instructions:**
+    
+    - Use a ready queue to process instructions in dependency order.
+4. **Output Results:**
+    
+    - Return the reordered list of instructions for hazard-free execution.
+
+This approach ensures correctness and minimizes execution stalls due to hazards, enhancing parallelism and performance.
+
+
+
+
+
+
+---
+# Learning and Project Summary
