@@ -101,7 +101,7 @@ const std::string distribution = "gaussian";
 | --------------- | ----------------------------------------------------- | -------- | --------------- | ------------------------------------------------- |
 | Clarke Chong    | [clarkechong](https://github.com/clarkechong)         | 02395382 | cc1823@ic.ac.uk | [Clarke's Statement](statements/ClarkeChong.md)   |
 | Joel Ng         | [energy-in-joles](https://github.com/energy-in-joles) | 02193809 | zjn22@ic.ac.uk  | [Joel's Statement](statements/JoelNg.md)          |
-| Kevin Aubeeluck | [Kevinaubeeluck](https://github.com/Kevinaubeeluck)   |02467502|ka1423@ic.ac.uk| [Kevin's Statement](statements/KevinAubeeluck.md) |
+| Kevin Aubeeluck | [Kevinaubeeluck](https://github.com/Kevinaubeeluck)   | 02467502 | ka1423@ic.ac.uk | [Kevin's Statement](statements/KevinAubeeluck.md) |
 | Partha Khanna   | [parthak314](https://github.com/parthak314)           | 02374670 | pk1223@ic.ac.uk | [Partha's Statement](statements/ParthaKhanna.md)  |
 
 # Single Cycle
@@ -431,8 +431,8 @@ Moving onto the given test cases, we can see that the complete execution takes 6
 # Complete RISCV CPU
 
 ## Overview
-The complete system integration for a RISC-V project involves implementing all instructions defined by the RISC-V instruction set architecture (ISA).
-Here, we integrate a cache system to enhance memory access speed and reduce latency (seen in the `cache` branch. 
+The complete system integration for a RISC-V project involves implementing all instructions defined by the RISC-V instruction set architecture.
+Here, we integrate a cache system to enhance memory access speed and reduce latency (seen in the `cache` branch). 
 Pipelining is incorporated to improve throughput by enabling the concurrent execution of multiple instructions (from `pipelined` branch).  
 The design ensures that each component, including the cache and pipeline, operates cohesively for optimal performance. This integration results in a high-performance RISC-V processor capable of handling complex tasks efficiently.
 ## Schematic
