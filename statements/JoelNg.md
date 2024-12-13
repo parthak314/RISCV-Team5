@@ -10,7 +10,6 @@
 2. [Integrated single-cycle system and debugged system to pass testbenches](#integrated-single-cycle-system-and-debugged-system-to-pass-testbenches)
 3. [Co-wrote the testbench scripts for f1_fsm with Kevin and wrote the testbench script for Vbuddy PDF](#co-wrote-the-testbench-scripts-for-f1_fsm-with-kevin-and-wrote-the-testbench-script-for-vbuddy-pdf)
 
-
 ### [Pipelined](#pipelined-1)
 1. [Modified Fetch module and testbenches for pipelining](#modified-fetch-module-and-testbenches-for-pipelining)
 
@@ -394,16 +393,9 @@ module top #(
     );
     ...
     fetch_top fetch (
-        .clk(clk),
+        ...
         .stall(Stall_wire), // stall input changed to the output from stall_top
-        .reset(rst),
-
-        .PCSrc(PCSrcE_wire),
-        .PCTarget(PCTargetE_wire),
-
-        .InstrD(intfD.InstrD),
-        .PCD(intfD.PCD),
-        .PCPlus4D(intfD.PCPlus4D)
+        ...
     );
     ...
     // done the same for decode_top, execute_top, memory_top
