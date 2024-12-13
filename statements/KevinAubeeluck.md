@@ -10,7 +10,7 @@
 - Pipelining
 	- Hazard Unit(iteration and top)
 	- Integration tests
-- Branch prediction(?)
+- Reflection
 
 # Single Cycle
 
@@ -67,10 +67,15 @@ Above(fig.7/8) is details the basic logic of forwarding between the Execute and 
 ![[k_fig10.png]](../images/kevin/k_fig10.png)$$Figure \ 10$$
 Lwstall controls StallF, StallD and FlushE and is a 1 whenever we load a word (ResultSrcE = 2b'01, from the RISC-V I-type load instruction) and if either Rs1D or Rs2D is equal to the RS1E, then we forward(fig.8). The first condition is self explanatory but the second condition is actually due modified due to the RISCV instruction set for load(fig. 11 & 12).  The location where the memory location is only dependant on rs1 so it presents a data hazard hence we check for equality for forwarding.
 
+
 ![[k_fig11.png]](../images/kevin/k_fig11.png)
+<br />
+
 $$Figure \ 11$$
+<br />
 ![[k_fig12.png]](../images/kevin/k_fig12.png)
 $$Figure \ 12$$
+<br />
 This fixes the lw data hazard because we stall for long enough to load the updated word and we put our execute stage in a bubble through the flush.
 
 ### Stalls and flushes(beq)
@@ -89,6 +94,7 @@ branchstall = (BranchD  && RegWriteE  && (WriteRegE == Rs1D || WriteRegE == Rs
 ```
 
 $$Figure \ 14$$
+<br />
 We have to stall in cases of branch misprediction and moving an equality checker(fig. 13) to decode allows us to stall for only 1 cycle instead of 3. The equality checker introduces a raw data hazard which is solved very easily with data forwarding making the first two lines(fig. 14) standard forwarding.
 
 The branch stall checks for branching ($BranchD$) , checks if we write our result ($RegWriteE$) and then checks if we are using a register just modified ($WriteRegE == Rs1D || WriteRegE  == Rs2D$).
@@ -97,17 +103,17 @@ The second line implements the same thing with the difference being it occurring
 ## Hazard Unit(cut down) 
 
 ![[k_fig14.png]](../images/kevin/k_fig14.png)
-$$Figure \ 14$$
+$$Figure \ 15$$
 
 We cut the hazard unit down to just forwarding and abandoned stalling and flush as we determined we could just flush the instruction depending on the external inputs to the cpu(trigger mapping to stall and reset mapping to flush). 
 
 We did not have to consider beq hazards as due to being calculated in the execute stage(fig. 15), we only get a 1 cycle stall hence no need to relocate it to the decode meaning we can disregard the second forwarding.  Using trigger as the stall implements the stall for the 2 cycle lw delay and the reset being used as a flush works due to it being a 1 cycle stall.
 
 ![[k_fig15.png]](../images/kevin/k_fig15.png)
-$$Figure \ 15$$
+$$Figure \ 16$$
 
 
-# Integration Tests
+# Integration Tests(asm)
 
 ## Overall test philosophy
 
@@ -138,3 +144,15 @@ Tests over all Load/Store Operations
 	- lh,lb expected values were calculated incorrectly, erroneously taking the top 16 and 8 bits respectively instead of the bottom 
 	- Did not account for unsigned loads being non sign extended
     
+
+# Integration Tests(Pipelining)
+
+I tested the implementations for the [Memory top](https://github.com/parthak314/RISCV-Team5/blob/pipelined/tb/our_tests/memory_top_tb.cpp) and the [Decode top ](https://github.com/parthak314/RISCV-Team5/blob/pipelined/tb/our_tests/decode_top_tb.cpp) under our internal tests. Taking into account the position of the presence of the register lead to much more care being taken with equality conditions. 
+
+I ended up meeting quite tough road blocks especially in the decode testing where I had clocked components that I had to write to and ensure they continue to have expected behavior through the cycles. I found that debug output messages were quite helpful in identifying specific problem bits in the code.
+
+There is also a testbench for the defunct hazard unit which I have kept as it helped a lot in determining how we could simplify the unit down. The trade off with the more streamlined version was that we couldn't use our hazard unit for stalls but for the complete a stall logic unit connection to only cache was used which solves the issue more elegantly.
+
+# Reflection
+
+I've gained a much greater appreciation for the mammoth complexity of cpus and the importance of solid teamwork and communication throught the design process. While I did generally understand the overall logic, it's a night and day difference actually implementing and going through the motions of troubleshooting and fixes that I feel made me much more confident in how the cpu functions. If I could redo this project again, one thing I would very much try to get a full understanding of the the other sections as early as possible such that understanding the pieces during the later stages of integration was more seamless.  
