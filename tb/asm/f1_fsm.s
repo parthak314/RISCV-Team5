@@ -5,12 +5,12 @@ main:
     li      a0, 0x0                # a0 holds the current state (S_0 initially)
     li      a2, 0                  # a2 is used for cmd_delay
     li      a3, 0                  # a3 is used for cmd_seq
-    li      t1, 0b11111111         # t1 = 11111111 (Value at State 8)
-    li      t4, 0b10110101         # Seed for LFSR (pseudo-random generator)
+    li      t1, 0b11111111          # t1 = 1111111 (Value at State 8 for 7-bit state)
+    li      t4, 0b1011010          # Seed for 7-bit LFSR (pseudo-random generator)
 
 shift_loop:
-    # delay
-    li      t2, 10 
+# delay
+    li      t2, 10                 # Set delay counter to 10 (1-second equivalent for 1 MHz clock)
 delay_loop:
     addi    t2, t2, -1             # Decrement the counter
     bnez    t2, delay_loop         # Repeat until counter reaches 0
@@ -22,11 +22,11 @@ delay_loop:
 state_S8:
     li      a2, 1                  # Set cmd_delay to 1 in S_8
 
-    # Generate random delay using LFSR
+    # Generate random delay using 7-bit LFSR
     andi    t5, t4, 1              # Extract LSB of LFSR
     srli    t4, t4, 1              # Shift LFSR right by 1
     beqz    t5, lfsr_skip          # If LSB is 0, skip XOR
-    xori    t4, t4, 0b10100101     # XOR with feedback polynomial
+    xori    t4, t4, 0b10100000     # XOR with feedback polynomial for 7-bit LFSR (x^7 + x^6 + 1)
 lfsr_skip:
     addi    t6, zero, 10           # Cap delay to 10
     rem     t5, t4, t6             # Compute random delay between 0 and 9
