@@ -476,7 +476,7 @@ The High level requirements for this file are to:
 - Create a priority queue based on the number of dependencies that each instruction has.
 - Reorganise the instructions based on which has the highest priority (most dependencies), while ensuring no dependency requirement is violated.
 - Reassemble this into a new assembly file that is ready to be converted to machine code with `assembly.sh`.
-This then follows the same procedure to assemble the instruction set (by `assemble.sh` via the `riscv gnu toolchain`) before inputting this into instruction memory, as shown above.
+This then follows the same procedure to assemble the instruction set (by `assemble.sh` via the `riscv gnu toolchain`). The generated machine code is then copied into `program.hex` for the instruction memory module to load (as shown in the schematic above).
 
 Further details can be seen in individual reports (Partha, Joel).
 ## Testing
