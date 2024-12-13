@@ -225,13 +225,10 @@ For the tests provided (`1_addi_bne` `2_li_add` `3_lbu_sb` `4_jal_ret` `5_pdf`):
 https://github.com/user-attachments/assets/ea8e738c-7042-4297-840e-35a427eaf2c0
 
 ### PDF: Noisy
-[Noisy PDF Testing](https://github.com/parthak314/RISCV-Team5/blob/main/images/PDF-Noisy.mp4)
+https://github.com/user-attachments/assets/cfd5bc62-d1f2-445f-99db-e14eacb9b977
 
 ### PDF: Triangle
-[Triangle PDF Testing](https://github.com/parthak314/RISCV-Team5/blob/main/images/PDF-Triangle.mp4)
-
-
-
+https://github.com/user-attachments/assets/f4134cbb-5490-4b97-a8ce-6705e8a41cf7
 
 For the PDF tests, there were initially several waveforms that were elongated. But this can be rectified by displaying the value every 3 clock cycles, as opposed to every clock cycle. We can do this by the following lines:
 ```cpp
