@@ -41,12 +41,7 @@ To run the provided tests within the target branch,
  ./doit.sh
 ```
 
-To run the tests we wrote for individual components (while in `./tb/`),
-```bash
-./run_our_tests.sh
-```
-
-The script above runs all of our tests. However, the individual C++ testbenches can be found in `./tb/our_tests` and are written with GTest. The scripts to run them are found in `./tb/bash`, where they are named similarly. However, please run them while in `./tb` and not in `./tb/bash`.
+For unit testing each module top (fetch_top, decode_top, execute_top, memory_top), we wrote individual C++ testbenches written with GTest that can be found in `./tb/our_tests`. The scripts to run them are found in `./tb/bash`, where they are named similarly. However, please run them while in `./tb` and not in `./tb/bash`. To run the tests we wrote for individual components (while in `./tb/`):
 
 ```bash
 sudo chmod +x ./bash/<unit_test>.sh
