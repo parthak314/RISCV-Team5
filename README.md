@@ -266,6 +266,9 @@ The entire program is still running every cycle, but display is changed to updat
 ---
 # Pipelined RISCV CPU
 
+## Schematic
+![RISC-V 32I Pipelined implementation](images/Pipelined.png)
+
 ## Overview
 
 # Abstract: Pipelining in RISC-V Processors
@@ -405,6 +408,7 @@ Here, we integrate a cache system to enhance memory access speed and reduce late
 Pipelining is incorporated to improve throughput by enabling the concurrent execution of multiple instructions (from `pipelined` branch).  
 The design ensures that each component, including the cache and pipeline, operates cohesively for optimal performance. This integration results in a high-performance RISC-V processor capable of handling complex tasks efficiently.
 ## Schematic
+![RISC-V 32I Pipelined + Cache implementation](images/Complete.png)
 
 ## Contributions
 
