@@ -455,11 +455,13 @@ This concept runs 2 instructions in parallel therefore increasing processor perf
 ## Implementation
 ### Hardware
 Structural design modifications:
-- <span style="color:#eaa19f">Fetch</span>: No change from previous model, output is now `dataA` and `dataB` - selecting consecutive instructions from the Out-Of-Order Processor.
-- <span style="color:#e9b76e">Decode</span>: Doubled inputs for each block
-- <span style="color:red">Execute</span>: Replicated models for ALU
-- <span style="color:#a9caf2">Writeback</span>: Doubled inputs for Data Memory with Load store separate to the data memory to reflect changes in the pipelining section. This is the load store parsing unit. A separate mux for `ResultSrc`. 
-Given the time available, this model implements the instructions for `R-type`, `I-type (imm)`
+- ![#e88986](https://placehold.co/15x15/e88986/e88986.png) Fetch: No change from previous model, output is now `dataA` and `dataB` - selecting consecutive instructions from the Out-Of-Order Processor.
+- ![#e9b76e](https://placehold.co/15x15/e9b76e/e9b76e.png) Decode: Doubled inputs for each block
+- ![#cc3f37](https://placehold.co/15x15/cc3f37/cc3f37.png) Execute: Replicated models for ALU
+- ![#a9caf2](https://placehold.co/15x15/a9caf2/a9caf2.png) Writeback: Doubled inputs for Data Memory with Load store separate to the data memory to reflect changes in the pipelining section. This is the load store parsing unit. A separate mux for `ResultSrc`.
+
+(Colours correspond the the relevant areas in the schematic)
+Given the time available, this model implements the instructions for `R-type`, `I-type (imm)`.
 
 ### Out-of-order Processor
 The key change here is the Out-Of-Order Processor which is a C++ script (and a Python script that our team originally wrote in). It is compiled and run right before `assemble.sh` in the `doit.sh` script to optimise the assembly for the superscalar processor.
