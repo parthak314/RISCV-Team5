@@ -15,7 +15,7 @@
 1. [Modified Fetch module and testbenches for pipelining](#modified-fetch-module-and-testbenches-for-pipelining)
 
 ### Cache (Single-Cycle)
-1. Design and implement two-way write-back cache implementation
+1. [Design and implement two-way write-back cache implementation](#)
 2. Assisted in writing testbenches for cache system
 3. Completed integration of cache with single-cycle system
 
@@ -35,7 +35,7 @@
 
 For the single-cycle part of the project, we worked in our individual branches, where I did most of the writing and testing in the `fetch` branch. Using Clarke's Fetch module that he created for the RISC-V reduced processor, I tweaked the module design to fit within the full single-cycle processor. 
 
-To test the functionality of the module, I wrote a comprehensive testbench script `./tb/our_test/fetch_tb.cpp` with _GTEST_ that can be used with the script `./bash/fetch_test.sh`. It tests the functionality of the fetch module thoroughly, where I loaded the instructions in `/reference/pdf.hex` into `instr_mem.sv` and compared results against a ground truth array of the `pdf.hex` instructions. My tests covered the following:
+To test the functionality of the module, I wrote a comprehensive testbench script `./tb/our_tests/fetch_top_tb.cpp` with _GTEST_ that can be used with the script `./bash/fetch_top_test.sh`. It tests the functionality of the fetch module thoroughly, where I loaded the instructions in `/reference/pdf.hex` into `instr_mem.sv` and compared results against a ground truth array of the `pdf.hex` instructions. My tests covered the following:
 1. **InitialStateTest:** Sanity check to test the instruction at the first position matches with the ground truth array
 2. **IterationTest:** Check that the fetch module iterates through the entire `pdf.hex` correctly (with the PC+4 functionality, PCSrc = 0).
 3. **BranchTest:** Check that the fetch module branches correctly (using PC + Imm functionality, PCSrc = 1). This was done by feeding the module with a vector of Imm positions to jump forward or backwards and to compare the instruction output with the ground truth array.
@@ -55,6 +55,8 @@ After everyone had completed their parts, I led the team in integrating their va
 3. We had also not considered the implementation of trigger in the system. We required the ability to stall the system with the trigger input, and this was done by converting PCSrc to be 2 bits long. This accommodated additional cases: PCNext = rs1 + imm (PCSrc = 3) for JALR in point 2, and PCNext = PC (PCSrc = 4) for trigger stall.
 
 With the help of Partha, point 1 and 2 were discovered by debugging the system with `GTKWave`, where we scrutinised each instruction waveform in the failed `2_li_add` and `4_jal_ret` tests from the `doit.sh`.
+
+For point 3, we also encountered a bug where as the system stalled and instructions were repeated, instructions that involved register or memory write would continually write during the stall. This was an issue for an incremental instruction like `addi a0, a0, 5` because we would be continually adding 5 to `a0` during the stall. This was resolved by disabling write enables during stall to prevent unncessary overwrite.
 
 After these considerations were made, the single-cycle system successfully passed all cases and the final schematic and implementation can be seen in the main [README.md](../README.md#single-cycle).
 
@@ -139,8 +141,18 @@ always_ff @ (negedge clk) begin
 end
 ```
 
-Similar to before, I updated my `./tb/our_tests/fetch_tb.cpp` file to include the new `fetch_pipeline_regfile.sv`, split into the following test:
+Note that we are writing to the register on the negative clock edge this time. This is to address timing issues, ensurirng that the pipeline register input is pushed to the next stage before the next positive clock edge.
+
+Further, we also abstracted PCSrc back to being 1 bit, where instead of separating JALR (PCNext = rd1 + imm) and branch functions (PCNext = pc + imm), we decided to instead centralise them with a `PCTarget` wire that is updated outside the fetch module. Further, there is a dedicated `stall` wire, since stalling is now a core feature of our system (as part of the way pipelined systems are designed).
+
+After changing the code, I updated my `./tb/our_tests/fetch_tb.cpp` file to include the new `fetch_pipeline_regfile.sv`, split into the following test:
 1. **InitialStateTest:** Sanity check, same as above. However, this time we run an extra cycle to push the first instruction to `Instr_o`.
 2. **IterationTest:** Test that the processor iterates through instructions correctly, same as before.
-3. **BranchTest:** Test that the processor branches correctly, same as before.
-4. //TODO
+3. **TargetTest:** Test that pc goes to the `PCTarget` correctly on the following cycle.
+4. **StallTest:** Test that the fetch module correctly stalls when `stall` is HIGH.
+
+![fetch_tb_pipeline](../images/joel/fetch_tb.png)
+
+Although I did not play as big of a role in integrating the pipelining system, I helped the team discuss how we could implement the trigger stall in the new system, where we finally came to the consenus of routing trigger to the pipeline registers to "freeze" and maintain the states at each stage by preventing anything being written to the registers during a stall. This worked perfectly!
+
+
