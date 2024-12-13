@@ -2,31 +2,30 @@
 
 ***Partha Khanna***
 
+This document provides a comprehensive overview of my contributions to the RISC-V project. It outlines the completed work, the methodologies employed, the rationale behind key design decisions, the strategies used to address challenges, any mistakes encountered along the way and their subsequent resolution, as well as the insights and lessons learned from this experience.
 # Pending tasks
 - [ ] Check all links
 - [ ] Add images where needed
-- [ ] Complete pipelining section
 - [ ] Complete RISC-V section
 - [ ] Learning section
-- [ ] Data memory
+- [ ] Update single cycle diagram to include loading and storing
 
 ---
 ## Overview
-- [[#Single Cycle RISCV-32I Design]] DONE
+- [[#Single Cycle RISCV-32I Design]] 
 	- [[#Sign Extension Unit]]
 	- [[#Control Unit]]
 	- [[#Register File]]
+	- Data Memory
 	- [[#Single cycle CPU assembling and testing]]
 		- [[#F1 Assembly]]
 		- [[#Probability Distribution Function]]
 		- [[#System Debugging]]
 - [[#Pipelined RISCV-32I Design]]
-- [[#Data Memory Cache Implementation]] DONE
+- [[#Data Memory Cache Implementation]] 
 - [[#Complete RISCV-32I Design]]
 - Superscalar
 - Learnings and project summary
-
-==Check all links==
 
 ---
 
@@ -262,10 +261,53 @@ This encourages efficient operand access with dual read ports, useful for R-type
 - Use other addresses for output as defined above - registers which return a value are also `a1`, `f10`, `f11`
 
 ---
+
+## Data Memory
+
+Whilst Kevin provided the basic framework for this section, I helped to add byte and word addressing.
+### Implementation
+
+In the single cycle model, we only require the word and byte wise addressing. This include `sb` `sw` `lbu` `lw`. The full loading and storing is implemented in the completed model.
+#### Loading
+This was implemented by combinational logic for loading (since this is effectively reading a value from the data memory):
+``` systemVerilog
+if (addr_mode) rd = {24'b0, ram_array[a[16:0]]}; // load unsigned byte
+else begin // load word
+   rd = {ram_array[a[16:0] + 3], 
+		 ram_array[a[16:0] + 2], 
+		 ram_array[a[16:0] + 1], 
+		 ram_array[a[16:0]]};
+end
+```
+
+Since a byte is the same width as the data stored in `ram_array`, we can simply extend this value with `0` at the front for the initial 3 bytes since the value we are to output is 32 bits or 4 bytes.
+Noting that a word is 32 bits/4 bytes itself, we can follow a similar approach by extracting consecutive bytes from the data memory and concatenating this into a 32 bit value as opposed to setting the most significant 3 Bytes as 0.
+
+#### Storing
+For storing, since we only store a value on the positive edge of a clock cycle (for the purpose of synchronisation and timing control), we need to have sequential logic here which will only execute if the write enable is high (as a safety measure to prevent inadvertent overwriting).
+
+```systemVerilog
+if (we) begin
+	if (addr_mode) begin // store byte
+		ram_array[a[16:0]] <= wd[7:0];
+	end else begin // store word
+		ram_array[a[16:0]] <= wd[7:0];
+		ram_array[a[16:0] + 1] <= wd[15:8];
+		ram_array[a[16:0] + 2] <= wd[23:16];
+		ram_array[a[16:0] + 3] <= wd[31:24];
+	end
+end
+```
+
+For storing a byte, since the data memory has a width of 1 byte, we can simply store in the value from the incoming write data variable. For storing a word, we can follow a similar approach to load word by storing in each byte of the incoming data in consecutive bytes of the data memory.
+
+### Testing
+These instructions were implemented and tested alongside tests provided. 
+
 ## Single cycle CPU assembling and testing
 After the individual components had been designed and tested, I assembled them into the `data_top.sv` file which is the top module for the control unit, sign extension and register file.
 
-This was then incorporated by @Joel into the `top.sv` which is the model of the CPU at this stage.
+This was then incorporated by Joel into the `top.sv` which is the model of the CPU at this stage.
 
 This was then tested through the following test cases (assembly, shell scripts and testbench) that were already provided:
 1. `addi bne`: initialising registers, incrementing values, comparing values with conditional branching
@@ -302,16 +344,21 @@ As a result of testing and debugging (using gtkwave), we found out that there we
 # Pipelined RISCV-32I Design
 
 ## Aims
-- Developing a pipelined version of the 
-
+Developing a pipelined version of the single cycle model by:
+-  Adding a pipeline register to store Instruction fields, such as opcodes and operands
+- Control signals propagation
+- Connection to the Hazard Unit for hazard handling such as stalling, data forwarding and flushing.
 ## Implementation
-
-## Testing
-
-## Potential Enhancements and Learnings
-
-controlmunit
-
+The decode section contains the following file structure:
+```
+├── control_unit.sv
+├── decode_pipeline_regfile.sv
+├── decode_top.sv
+├── register_file.sv
+└── sign_ext.sv
+```
+There are no changes to the sign extension and register file modules.
+However, for the control unit, since the `zero` and `negative` flags can no longer be used (since they cannot loop back from the execute section into the decode section), we make use of the `branch` and `jump` control signals which are implemented as:
 
 | `branch` | logic     |
 | -------- | --------- |
@@ -322,15 +369,12 @@ controlmunit
 | `101`    | bge       |
 | `110`    | bltu      |
 | `111`    | bgeu      |
-`branch` not used is `011`
-This implementation uses the logic:
-- if branch = 0 then no branching
-- if branch != 0:
-	- MSB = 0: use zero flag
-	- MSB = 1: use negative flag
-
-jump:
-
+`branch` value `011` is not used since this implementation uses the logic:
+- if `branch` = `0` then no branching
+- if `branch` != `0`:
+	- `branch[2]` = 0: use zero flag
+	- `branch[2]` = 1: use negative flag
+Similarly with jump:
 
 | `jump` | logic         |
 | ------ | ------------- |
@@ -339,9 +383,29 @@ jump:
 | `10`   | `jalr`        |
 | `11`   | trigger/stall |
 
+For the `decode_pipeline_regfile.sv`, this acts a the bridge between the decode and execute stages by holding the intermediate values and control signals.
+It has the specifications:
+- Inputs: Control Signals, Register operands, Immediate Values, Program counter.
+- Outputs: Propagated signals and operands to execute stage/
+Implementing the control logic:
+- On a negative clock edge, data is latched into pipeline register
+- Enable signal (`en`) determines if data is written into the register, `clear` signal resets/flushes the register such as when jumping or branching
 
+For the top module integration, we can then combine these together - as can be seen in `decode_top.sv`
 
+## Testing
+In this case, Testing can quite simple since we can check to ensure that the values are reverted back to 0 if there is a clear, no value is written if there is a low enable and the entire unit operates as intended with slight modifications to the tests conducted with the decode section in the single cycle.
 
+This can be verified with gtkwave.
+
+Looking at the first test case, `1_addi_bne.s`, We can see that there is a branch that occurs. which means that we expect clear to be high when the branch is performed (which means that the output values from the decode pipeline register is `0`. However, at other times (since there are no jumps) for any other instruction implemented, we expect the values to be the same.
+
+![](../images/pipeline-addibne-waveform.png)
+## Potential Enhancements and Learnings
+
+Whilst branch prediction could be implemented in the future to anticipate control flow changes, this is not required for the complete RISC-V model.
+
+In terms of technical learnings from this stage, I have been able to understand the principles of pipeline synchronisation,  use of modular design during implementing and testing and Read-After-Write hazards (RAW) that are addressed through stalling and forwarding.
 
 ---
 # Data Memory Cache Implementation
