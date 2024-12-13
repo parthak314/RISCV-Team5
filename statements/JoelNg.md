@@ -5,7 +5,7 @@
 
 ## Summary of contributions (in chronological order):
 
-### Single-Cycle
+### [Single-Cycle](#single-cycle-1)
 1. [Created Fetch module and testbenches](#created-fetch-module-and-testbenches)
 2. [Integrated single-cycle system and debugged system to pass testbenches](#integrated-single-cycle-system-and-debugged-system-to-pass-testbenches)
 3. [Co-wrote the testbench scripts for f1_fsm with Kevin and wrote the testbench script for Vbuddy PDF](#co-wrote-the-testbench-scripts-for-f1_fsm-with-kevin-and-wrote-the-testbench-script-for-vbuddy-pdf)
@@ -468,6 +468,8 @@ end
 #### Testing
 
 In order to test the functionality of the cache system, I had to tweak the original `cache_top_tb.cpp` file to reflect the one cycle delay for reading from RAM. Besides this, there were no changes to the testbench. On running the testbench, we pass all relevant unit tests for cache read/write, eviction and enable:
+
+![cache_complete_tb](../images/joel/cache_tb_complete.png)
 
 After unit testing, we also ran all provided tests and found that they worked as expected.
 
