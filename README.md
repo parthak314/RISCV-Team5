@@ -6,7 +6,7 @@
 - [Cached Implementation](#data-memory-cache)
 - [Complete RISC-V](#complete-riscv-cpu)
 - [Superscalar Processor](#superscalar-riscv-cpu)
-- Appendix
+- [Appendix](#appendix)
 
 # Quick Start
 
@@ -223,15 +223,27 @@ Instructions implemented:
 For the tests provided (`1_addi_bne` `2_li_add` `3_lbu_sb` `4_jal_ret` `5_pdf`):
 ![Single cycle testing](/images/single-cycle-tests.png)
 ### F1
+
+https://github.com/user-attachments/assets/9f212d15-4109-42d0-b1a7-e5c23f5cd3c2
+
 [link](/images/vbuddy_tests/F1_FSM.mp4)
 
 ### PDF: Gaussian
+
+https://github.com/user-attachments/assets/ea8e738c-7042-4297-840e-35a427eaf2c0
+
 [link](/images/vbuddy_tests/PDF-Gaussian.mp4)
 
 ### PDF: Noisy
+
+https://github.com/user-attachments/assets/cfd5bc62-d1f2-445f-99db-e14eacb9b977
+
 [link](/images/vbuddy_tests/PDF-Noisy.mp4)
 
 ### PDF: Triangle
+
+https://github.com/user-attachments/assets/f4134cbb-5490-4b97-a8ce-6705e8a41cf7
+
 [link](/images/vbuddy_tests/PDF-Triangle.mp4)
 
 For the PDF tests, there were initially several waveforms that were elongated. But this can be rectified by displaying the value every 3 clock cycles, as opposed to every clock cycle. We can do this by the following lines:
