@@ -420,29 +420,46 @@ The following stages have been added on top of the basic RISC-V model (single cy
 # Superscalar RISCV CPU
 
 ## Overview
+This concept runs 2 instructions in parallel therefore increasing processor performance with 0.5 Cycles per Instruction.
 
 ## Schematic
 ![](images/superscalar-model.png)
 ## Contributions
 
-| Module | Clarke | Joel | Kevin | Partha |
-| ------ | ------ | ---- | ----- | ------ |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
-|        |        |      |       |        |
+| Module                | Clarke | Joel | Kevin | Partha |
+| --------------------- | ------ | ---- | ----- | ------ |
+| reorder_asm           |        | `X`  |       |        |
+| System Verilog        |        |      |       | `X`    |
+| Debugging and Testing |        | `X`  |       | `*`    |
 
 `X` - Lead Contributor   `*` - Partial Contributor
 ## File Structure
-
+```
+.
+├── rtl
+│   ├── adder.sv
+│   ├── decode
+│   │   ├── control.sv
+│   │   ├── decode_top.sv
+│   │   ├── reg_file.sv
+│   │   └── signextend.sv
+│   ├── execute
+│   │   ├── alu.sv
+│   │   └── execute_top.sv
+│   ├── fetch
+│   │   ├── fetch_top.sv
+│   │   ├── instr_mem.sv
+│   │   └── pc_register.sv
+│   ├── memory
+│   │   ├── datamem.sv
+│   │   └── memory_top.sv
+│   ├── mux.sv
+│   ├── mux_4x2.sv
+│   └── top.sv
+└── tb
+    ├── reorder_asm.cpp
+    └── reorder_asm.py
+```
 ## Implementation
 ### Hardware
 Structural design modifications:
@@ -462,8 +479,8 @@ The High level requirements for this file are to:
 This then follows the same procedure to assemble the instruction set (by `assemble.sh` via the `riscv gnu toolchain`) before inputting this into instruction memory, as shown above.
 
 Further details can be seen in individual reports (Partha, Joel).
-
 ## Testing
+![Superscalar testing](./images/superscalar-testing.png)
 
 ---
 
