@@ -1,15 +1,3 @@
-
-# Pending changes
-- [ ] Pipelined Sections
-	- [ ] Schematic to be added - Kevin
-	- [ ] Implementation - Clarke
-	- [ ] Testing - Clarke
-- [ ] Complete
-	- [ ] Schematics - Kevin
-	- [ ] Implementation - Clarke/Joel
-	- [ ] Testing - Clarke/Joel
-
-
 # Table of contents:
 
 - Quick Start
@@ -550,9 +538,15 @@ The design ensures that each component, including the cache and pipeline, operat
 
 The complete structure is not shown here, only the key relevant files.
 ## Implementation
+The implementation of the complete version remains structurally similar to the pipelined, full RV32I version. Note that with the addition of cache, the CPU now stalls upon a cache miss in order to better emulate a real-world processsor.
 
 ## Testing
-![Complete System Testing](images/complete-testing.png)
+### Test Cases 1-8
+Similar to pipelined, test cases 1-8 assess the full RV32I instruction set for the complete version. 
+
+![alt text](images/complete-vers-testcase.png)
+
+All tests pass as expected.
 
 ---
 # Superscalar RISCV CPU
