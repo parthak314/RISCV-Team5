@@ -106,7 +106,7 @@ const std::string distribution = "gaussian";
 | --------------- | ----------------------------------------------------- | -------- | --------------- | ------------------------------------------------- |
 | Clarke Chong    | [clarkechong](https://github.com/clarkechong)         | 02395382 | cc1823@ic.ac.uk | [Clarke's Statement](statements/ClarkeChong.md)   |
 | Joel Ng         | [energy-in-joles](https://github.com/energy-in-joles) | 02193809 | zjn22@ic.ac.uk  | [Joel's Statement](statements/JoelNg.md)          |
-| Kevin Aubeeluck | [Kevinaubeeluck](https://github.com/Kevinaubeeluck)   |02029595|ka1423@ic.ac.uk| [Kevin's Statement](statements/KevinAubeeluck.md) |
+| Kevin Aubeeluck | [Kevinaubeeluck](https://github.com/Kevinaubeeluck)   |02467502|ka1423@ic.ac.uk| [Kevin's Statement](statements/KevinAubeeluck.md) |
 | Partha Khanna   | [parthak314](https://github.com/parthak314)           | 02374670 | pk1223@ic.ac.uk | [Partha's Statement](statements/ParthaKhanna.md)  |
 
 # Single Cycle
