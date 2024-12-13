@@ -105,7 +105,7 @@ This single cycle implementation covers the basic requirements for most CPU oper
 | alu                          | `X`    |      |       |        |
 | instr_mem                    |        | `X`  |       |        |
 | pc_register                  |        | `X`  |       |        |
-| datamem                      |        |      | `X`   |        |
+| datamem                      |        |      | `X`   | `*`    |
 | control                      |        |      |       | `X`    |
 | reg_file                     |        |      |       | `X`    |
 | signextend                   |        |      |       | `X`    |
