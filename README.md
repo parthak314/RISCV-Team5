@@ -35,6 +35,7 @@ We completed the Single-Cycle and all of the stretch goals (Pipelined, Two-Way S
 |`cache` | Cache + Single-Cycle Implementation |
 |`complete` | Pipelined + Cache + Full RV32I Implementation |
 |`superscalar` | Superscalar Implementation |
+|`reduced-riscv` | Simplified version of the RISC-V processor (lab 4) |
 
 <br>
 
