@@ -8,11 +8,14 @@ This document provides a comprehensive overview of my contributions to the RISC-
 - [ ] Add images where needed
 - [ ] Complete RISC-V section
 - [ ] Learning section
+- [ ] F1 Assembly
 - [ ] Update single cycle diagram to include loading and storing
+- [ ] Update superscalar diagram with no 4/8
 
 ---
 ## Overview
 - [[#Single Cycle RISCV-32I Design]] 
+	- F1 Assembly
 	- [[#Sign Extension Unit]]
 	- [[#Control Unit]]
 	- [[#Register File]]
@@ -30,6 +33,8 @@ This document provides a comprehensive overview of my contributions to the RISC-
 ---
 
 # Single Cycle RISCV-32I Design
+## F1 Assembly
+
 ## Sign Extension Unit
 [System Verilog](../rtl/data/sign_extend) | [Testbench with test cases](../tb/our_tests/signextend_test_tb.cpp) | [Shell script for testing](../tb/bash/sign_extend_test.sh)
 ### Aims
@@ -553,7 +558,9 @@ In the future, we can enhance this model by implementing:
 ---
 # Complete RISCV-32I Design
 
-The main alterations for this section were checking over and making minor adjustments to `decode_top.sv`. No further contribution made to this section.
+The main alterations for this section were checking over and making minor adjustments to `decode_top.sv`. 
+
+I also assisted in testing and debugging which can be seen in the team statement.
 
 ---
 # Superscalar Model of RISCV-32I
@@ -567,140 +574,42 @@ Note: The initial implementation was done in rust, but a different implementatio
 The initial implementation in rust is available here: 
 https://gist.github.com/parthak314/32b124b0622381cd2cc28686a15ba2fe
 
-Reorder instructions to avoid hazards while maximizing parallelism, respecting dependencies.
-#### Instruction Dependencies:
-- **RAW (Read After Write):** A later instruction reads a value written by an earlier one.
-- **WAR (Write After Read):** A later instruction writes to a register read by an earlier one.
-- **WAW (Write After Write):** Two instructions write to the same register.
+This module reorders instructions to avoid hazards while maximizing parallelism, respecting dependencies and therefore preventing race conditions.
+First, to understand the dependencies, we have 
+- RAW (Read After Write): A later instruction reads a value written by an earlier one.
+- WAR (Write After Read): A later instruction writes to a register read by an earlier one.
+- WAW (Write After Write): Two instructions write to the same register.
 
-Define a structured representation of instructions for dependency tracking.
+One potential implementation is to use a Hash map with keys as instruction indices and values are dependant instructions. We then count the incoming dependencies for each instruction and add the instructions with no dependencies to the queue for execution.
+This allows us to build a dependency graph and reorder the instructions, removing them from the queue and reducing their dependents' indegree.
 
-#### Example:
+Then outputting the result.
 
-rust
+However, now we face issues such as:
+- Higher dependency by using nested loops for error checking
+- Using a static dependency graph that doesn't dynamically adapt to changes when instructions are issued
+- No verification for valid inputs
 
-Copy code
+These issues are addressed in Joel's personal statement where a better model was developed.
 
-`Instruction {     name: "add",      dest: Some("s8"),  // Destination register     sources: ["t1", "t2"] // Source registers }`
+### Hardware
+Many changes were made in order to pass through 2 instructions simultaneously.
+This is a brief overview of them:
+- Duplicate ALU
+- Enhanced Data Memory to support 2 separate sets of inputs and outputs for parallel memory operation
+- Additional Register File ports for 2 instructions
+- Fetching 2 instructions per cycle
+- PC increment multiplexing
+- Control unit changes
+- Control signals changes - now implemented as 2 bit values with the Most significant bit(s) for instruction A and the least significant for instruction B.
+- Sign Extension enhancement for 2 inputs and 2 outputs
+This effectively implements 2 data paths and this can be visually seen on the schematic I created below:
 
-- `add` writes to `s8` and reads from `t1` and `t2`.
+![Super Scalar processor](../images/superscalar-model.png)
 
----
-
-### **3. Build a Dependency Graph**
-
-A dependency graph models relationships between instructions, ensuring dependencies are respected during reordering.
-
-#### a. **Graph Initialization**
-
-- Use a `HashMap` to store nodes where:
-    - Keys are instruction indices.
-    - Values are lists of dependent instructions (edges).
-
-#### b. **Identify Dependencies**
-
-For each pair of instructions (`instr1`, `instr2`):
-
-- **RAW (Read After Write):** Add an edge from `instr1` to `instr2` if `instr2` reads a register written by `instr1`.
-- **WAR (Write After Read):** Add an edge if `instr2` writes to a register read by `instr1`.
-- **WAW (Write After Write):** Add an edge if both write to the same register.
-
-#### c. **Track Indegree**
-
-Maintain a count of incoming dependencies for each instruction (indegree). Instructions with no incoming edges are ready to execute first.
-
----
-
-### **4. Prepare the Ready Queue**
-
-Instructions with no incoming dependencies are added to a **ready queue** for immediate execution. This queue facilitates efficient scheduling of instructions that don’t depend on others.
-
----
-
-### **5. Reorder Instructions**
-
-#### a. **Scheduling Algorithm**
-
-1. **Process the Ready Queue:**
-    
-    - Remove an instruction from the queue.
-    - Mark it as "issued" and add it to the reordered list (`execution_order`).
-    - For each dependent instruction (nodes connected by an edge):
-        - Decrease its indegree by 1.
-        - If indegree becomes 0, add it to the ready queue.
-2. **Repeat Until Complete:**
-    
-    - Continue issuing instructions from the ready queue until all instructions are processed.
-
-#### b. **Avoid Deadlocks:**
-
-By ensuring the ready queue always processes instructions with no dependencies, the algorithm guarantees forward progress.
-
----
-
-### **6. Output the Reordered Instructions**
-
-The reordered instructions (`execution_order`) are returned as the final result. This list respects all dependencies and avoids hazards, enabling efficient parallel execution.
-
----
-
-### **Example Walkthrough**
-
-#### Input Instructions:
-
-1. `lw t0, 0(t1)`
-2. `add t2, t0, t3`
-3. `sw t2, 4(t1)`
-
-#### Dependency Analysis:
-
-- **Instruction 2 (add):** RAW dependency on `t0` from Instruction 1 (`lw`).
-- **Instruction 3 (sw):** RAW dependency on `t2` from Instruction 2 (`add`).
-
-#### Dependency Graph:
-
-Copy code
-
-`1 → 2 → 3`
-
-#### Execution:
-
-1. Start with the ready queue containing Instruction 1 (`lw`).
-2. Issue Instruction 1. Add Instruction 2 to the queue (dependency resolved).
-3. Issue Instruction 2. Add Instruction 3 to the queue (dependency resolved).
-4. Issue Instruction 3.
-
-#### Output:
-
-Reordered Instructions:
-
-1. `lw t0, 0(t1)`
-2. `add t2, t0, t3`
-3. `sw t2, 4(t1)`
-
----
-
-### Implementation Plan
-
-1. **Parse Instructions:**
-    
-    - Represent each instruction with a struct (`Instruction`).
-2. **Build Dependency Graph:**
-    
-    - Use a `HashMap` to store dependencies and track indegree.
-3. **Reorder Instructions:**
-    
-    - Use a ready queue to process instructions in dependency order.
-4. **Output Results:**
-    
-    - Return the reordered list of instructions for hazard-free execution.
-
-This approach ensures correctness and minimizes execution stalls due to hazards, enhancing parallelism and performance.
-
-
-
-
-
+## Testing
+Since only selected instructions were implemented, we were required to develop our own test cases.
+This can be seen on the Team statement.
 
 ---
 # Learning and Project Summary
