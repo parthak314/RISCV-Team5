@@ -15,9 +15,9 @@
 - Quick Start
 - [Single Cycle CPU Implementation](#single-cycle)
 - [Pipelined CPU Implementation](#pipelined-cpu)
-- [Cached Implementation](#)
-- [Complete RISC-V](#)
-- [Superscalar Processor]()
+- [Cached Implementation](#data-memory-cache)
+- [Complete RISC-V](#complete-riscv-cpu)
+- [Superscalar Processor](#superscalar-riscv-cpu)
 - Appendix
 
 # Quick Start
@@ -354,7 +354,7 @@ Cache memory in RISC-V employs direct-mapped, set-associative, or fully associat
 **Tags** and **valid bits** identify cached data, while **replacement policies** like LRU handle evictions. Write policies such as **write-through** and **write-back** manage consistency between cache and memory.
 These techniques ensure efficient data access, reducing latency and leveraging locality principles for optimised performance.  
 ## Schematic
-![](../images/cache-schematic.png)
+![](/images/cache-schematic.png)
 ## Contributions
 
 | Module                       | Clarke | Joel | Kevin | Partha |
