@@ -24,7 +24,8 @@ public:
     {
         top->clk = 0;
         top->en = 1;
-        top->addr_mode = 0;
+        top->cache_miss = 0;
+        top->after_miss = 0;
         top->wd = 0;
         top->we = 0;
         top->addr = 0;
@@ -59,28 +60,62 @@ TEST_F(TestDut, WriteWordTest)
     top->we = 1;
     top->addr = 0x0004;
     runSimulation();
+    // on miss, we stall, so change none of the inputs
+    top->after_miss = 1;
+    runSimulation();
+    top->after_miss = 0;
     top->addr = 0x0804;
     top->we = 1;
     top->wd = 30;
     runSimulation();
+    top->after_miss = 1;
+    runSimulation();
+    top->after_miss = 0;
+
     // kick out the word at address 0x0004
     top->addr = 0x1804;
     top->wd = 55;
     top->we = 1;
     runSimulation();
+    top->after_miss = 1;
+    runSimulation();
+    top->after_miss = 0;
 
-    // check that we are correctly reading the kicked out word
+    // check that we are correctly reading the kicked out word from RAM
     top->we = 0;
     top->addr = 0x0004;
     top->eval();
-    EXPECT_EQ(top->re_from_ram, 1); // check that on miss, we are reading from ram
+    EXPECT_EQ(top->cache_miss, 1); // check that on miss, we are reading from ram
+    runSimulation();
+    top->after_miss = 1;
+    top->eval();
     EXPECT_EQ(top->rd, 100);
     runSimulation();
 
+    // setup to check that dirty bits are updating correctly
+    top->after_miss = 0;
+    top->wd = 110;
+    top->we = 1;
+    top->addr = 0x1804;
+    runSimulation();
+    top->addr = 0x0004;
+    top->we = 1;
+    top->wd = 111;
+    runSimulation();
+
+    // check that 
     top->addr = 0x0804;
-    top->rd_from_ram = 150;
+    top->rd_from_ram = 550;
     top->eval();
-    EXPECT_EQ(top->rd, 150);
+    EXPECT_EQ(top->cache_miss, 1);
+    EXPECT_EQ(top->we_to_ram, 1);
+    EXPECT_EQ(top->wd_to_ram, 110);
+    EXPECT_EQ(top->w_addr_to_ram, 0x1804);
+
+    runSimulation();
+    top->after_miss = 1;
+    top->eval();
+    EXPECT_EQ(top->rd, 550);
     runSimulation();
 }
 
