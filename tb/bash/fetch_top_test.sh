@@ -7,7 +7,7 @@ rm -f fetch.vcd
 # run Verilator to translate Verilog into C++, including C++ testbench
 verilator   -Wall -cc --trace \
             ../rtl/fetch/fetch_top.sv \
-            --exe ./our_tests/fetch_tb.cpp \
+            --exe ./our_tests/fetch_top_tb.cpp \
             -y ../rtl/ \
             --prefix "Vdut" \
             -o Vdut -LDFLAGS "-lgtest -lgtest_main -lpthread"
