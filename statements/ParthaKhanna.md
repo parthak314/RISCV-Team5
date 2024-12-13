@@ -18,6 +18,7 @@
 - Superscalar
 - Learnings and project summary
 
+==Check all links==
 
 ---
 
@@ -292,6 +293,15 @@ As a result of testing and debugging (using gtkwave), we found out that there we
 ---
 # Pipelined RISCV-32I Design
 
+## Aims
+- Developing a pipelined version of the 
+
+## Implementation
+
+## Testing
+
+## Potential Enhancements and Learnings
+
 controlmunit
 
 
@@ -327,6 +337,7 @@ jump:
 
 ---
 # Data Memory Cache Implementation
+[System Verilog (top level)](../rtl/) | [Testbench with test cases](../tb/our_tests/signextend_test_tb.cpp) | [Shell script for testing](../tb/bash/sign_extend_test.sh)
 This was a team effort between Joel and myself.
 ## Aims
 Implementing a 2-way set associative cache system which can:
@@ -370,7 +381,7 @@ hits[way] = v_bits[way] && (tags[way] == target_tag)
 ## Testing
 Before beginning testing, we nee to establish performance metrics. These are:
 1. **Hit and Miss Rates**: $HR$, $MR = 1-HR$ 
-2. **Average Memor==y Acc==ess times**: $= t_{cache} + t_{MM} \cdot MR_{cache}$ .
+2. **Average Memory Access times**: $= t_{cache} + t_{MM} \cdot MR_{cache}$ .
 		Given a miss rate of $20\%$ for this implementation of cache, it means that $AMAT =  1+(100*0.2) = 21 cycles$
 3. **Eviction Behaviour**
 
@@ -448,6 +459,8 @@ Then finally testing the entire system's performance with the new changes put in
        - `w_addr_to_ram = 0x0004`
        - `wd_to_ram = 0x11111111`
      - New Data: `rd = 0x33333333`
+
+In future testing scenarios, we could add corner cases, such as simultaneous reads and writes, and invalid addressing scenarios, expand tests to include write-through policies for comparison and stress-test with higher memory traffic to evaluate scalability.
 
 ## Summary and Learnings
 

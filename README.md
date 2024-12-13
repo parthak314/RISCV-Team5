@@ -35,6 +35,7 @@ We completed the Single-Cycle and all of the stretch goals (Pipelined, Two-Way S
 |`cache` | Cache + Single-Cycle Implementation |
 |`complete` | Pipelined + Cache + Full RV32I Implementation |
 |`superscalar` | Superscalar Implementation |
+|`reduced-riscv` | Simplified version of the RISC-V processor (lab 4) |
 
 <br>
 
@@ -105,7 +106,7 @@ const std::string distribution = "gaussian";
 | --------------- | ----------------------------------------------------- | -------- | --------------- | ------------------------------------------------- |
 | Clarke Chong    | [clarkechong](https://github.com/clarkechong)         | 02395382 | cc1823@ic.ac.uk | [Clarke's Statement](statements/ClarkeChong.md)   |
 | Joel Ng         | [energy-in-joles](https://github.com/energy-in-joles) | 02193809 | zjn22@ic.ac.uk  | [Joel's Statement](statements/JoelNg.md)          |
-| Kevin Aubeeluck | [Kevinaubeeluck](https://github.com/Kevinaubeeluck)   |          |                 | [Kevin's Statement](statements/KevinAubeeluck.md) |
+| Kevin Aubeeluck | [Kevinaubeeluck](https://github.com/Kevinaubeeluck)   |02029595|ka1423@ic.ac.uk| [Kevin's Statement](statements/KevinAubeeluck.md) |
 | Partha Khanna   | [parthak314](https://github.com/parthak314)           | 02374670 | pk1223@ic.ac.uk | [Partha's Statement](statements/ParthaKhanna.md)  |
 
 # Single Cycle
@@ -266,6 +267,9 @@ The entire program is still running every cycle, but display is changed to updat
 ---
 # Pipelined RISCV CPU
 
+## Schematic
+![RISC-V 32I Pipelined implementation](images/Pipelined.png)
+
 ## Overview
 
 # Abstract: Pipelining in RISC-V Processors
@@ -351,6 +355,9 @@ The following stages have been added on top of the basic RISC-V model (single cy
 
 ## Overview
 
+Cache memory in RISC-V employs direct-mapped, set-associative, or fully associative mapping to determine data placement, in this implementation we utilise 2-way set associative cache.
+**Tags** and **valid bits** identify cached data, while **replacement policies** like LRU handle evictions. Write policies such as **write-through** and **write-back** manage consistency between cache and memory.
+These techniques ensure efficient data access, reducing latency and leveraging locality principles for optimised performance.  
 ## Schematic
 ![](../images/cache-schematic.png)
 ## Contributions
@@ -393,8 +400,37 @@ The following stages have been added on top of the basic RISC-V model (single cy
 └── tb
 ```
 ## Implementation
+The two-way set-associative cache design consists of the following components:
+1. Cache Controller:
+    - Manages cache operations such as hits, misses, evictions, and updates.
+    - Tracks the valid bits, dirty bits, and tags for each block in a set.
+    - Uses an LRU (Least Recently Used) bit to determine which block to evict on a miss.
+    - Handles read and write operations:
+        - On a cache hit, data is retrieved or updated directly in the cache.
+        - On a cache miss, the controller fetches the data from RAM, updates the cache, and potentially writes back evicted data if dirty.
+2. Top Module (For cache):
+    - Instantiates the cache controller and connects it to the SRAM.
+    - Extracts the set index, tag, and byte offset from the input address.
+    - Handles interactions between the cache controller and the SRAM, ensuring consistency between cache and main memory.
+3. **Cache Structure**:
+    - Each set contains:
+        - Two data blocks with corresponding valid, dirty, and tag bits.
+        - An LRU bit to track usage.
+    - Designed to store 32-bit data across 512 sets (1024 words in total).
+
+This implementation efficiently handles data locality with low-latency access on hits and ensures correctness during evictions using write-back and read-through policies.
 
 ## Testing
+
+  For unit testing, we initially setup the environment to provide clear debug information and supports waveform analysis for issue tracking with gtkwave and also outputting variable status in between. We were then able to analyse the following through test cases:
+- Basic read and write operations perform correctly in isolation.
+- Proper handling of read and write hits for word and byte addressing.
+- Eviction Logic
+- Write Miss Handling
+- LRU Replacement policy and fetching from memory
+
+Moving onto the given test cases, we can see that the complete execution takes 646 ms in comparison to the 1054 ms for the single cycle model.
+![Cache testing](images/cache-testing.png)
 
 ---
 # Complete RISCV CPU
@@ -405,6 +441,7 @@ Here, we integrate a cache system to enhance memory access speed and reduce late
 Pipelining is incorporated to improve throughput by enabling the concurrent execution of multiple instructions (from `pipelined` branch).  
 The design ensures that each component, including the cache and pipeline, operates cohesively for optimal performance. This integration results in a high-performance RISC-V processor capable of handling complex tasks efficiently.
 ## Schematic
+![RISC-V 32I Pipelined + Cache implementation](images/Complete.png)
 
 ## Contributions
 
