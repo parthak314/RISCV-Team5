@@ -2,7 +2,7 @@
 
 - [Quick Start](#quick-start)
 - [Single Cycle CPU Implementation](#single-cycle)
-- [Pipelined CPU Implementation](#pipelined-cpu)
+- [Pipelined CPU Implementation](#pipelined-risc-v-cpu)
 - [Cached Implementation](#data-memory-cache)
 - [Complete RISC-V](#complete-riscv-cpu)
 - [Superscalar Processor](#superscalar-riscv-cpu)
@@ -221,30 +221,28 @@ Instructions implemented:
 ##### Note: if any of the videos fail to load, please find the videos in `./images/vbuddy_tests/`
 
 For the tests provided (`1_addi_bne` `2_li_add` `3_lbu_sb` `4_jal_ret` `5_pdf`):
+
 ![Single cycle testing](/images/single-cycle-tests.png)
+
 ### F1
+![Video for F1 lights](images/vbuddy_tests/F1.gif)
 
-https://github.com/user-attachments/assets/9f212d15-4109-42d0-b1a7-e5c23f5cd3c2
-
-[link](/images/vbuddy_tests/F1.gif)
+[Link to Video](images/vbuddy_tests/F1_FSM.mp4)
 
 ### PDF: Gaussian
+![Video for PDF: Gaussian Test](images/vbuddy_tests/PDF-Gaussian.gif)
 
-https://github.com/user-attachments/assets/ea8e738c-7042-4297-840e-35a427eaf2c0
-
-[link](/images/vbuddy_tests/PDF-Gaussian.gif)
+[Link to Video (Higher quality)](images/vbuddy_tests/PDF-Gaussian.mp4)
 
 ### PDF: Noisy
+![Video for PDF: Noisy test](images/vbuddy_tests/PDF-Noisy.gif)
 
-https://github.com/user-attachments/assets/cfd5bc62-d1f2-445f-99db-e14eacb9b977
-
-[link](/images/vbuddy_tests/PDF-Noisy.gif)
+[Link to Video (Higher Quality)](images/vbuddy_tests/PDF-Noisy.mp4)
 
 ### PDF: Triangle
+![Video for PDF: Triangle test](images/vbuddy_tests/PDF-Triangle.gif)
 
-https://github.com/user-attachments/assets/f4134cbb-5490-4b97-a8ce-6705e8a41cf7
-
-[link](/images/vbuddy_tests/PDF-Triangle.gif)
+[Link to Video (Higher Quality)](/images/vbuddy_tests/PDF-Triangle.mp4)
 
 For the PDF tests, there were initially several waveforms that were elongated. But this can be rectified by displaying the value every 3 clock cycles, as opposed to every clock cycle. We can do this by the following lines:
 ```cpp
