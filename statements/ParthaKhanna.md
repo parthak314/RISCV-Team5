@@ -5,12 +5,9 @@
 This document provides a comprehensive overview of my contributions to the RISC-V project. It outlines the completed work, the methodologies employed, the rationale behind key design decisions, the strategies used to address challenges, any mistakes encountered along the way and their subsequent resolution, as well as the insights and lessons learned from this experience.
 # Pending tasks
 - [ ] Check all links
-- [ ] Add images where needed
-- [ ] Complete RISC-V section
 - [ ] Learning section
 - [ ] F1 Assembly
-- [ ] Update single cycle diagram to include loading and storing
-- [ ] Update superscalar diagram with no 4/8
+- [ ] Place all images in my own folder
 
 ---
 ## Overview
