@@ -17,7 +17,7 @@ module dram_main_mem #(
         $readmemh("data.hex", ram_array, 32'h00010000); 
     end;
 
-    always @(posedge clk) begin
+    always_ff @(posedge clk) begin
         // if not meant to read from ram, just send a 32'b0 signal.
         if (re) begin
             rd <= {

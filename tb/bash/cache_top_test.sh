@@ -8,7 +8,7 @@ find ../rtl -type f -name "*.sv" > filelist.f
 
 # Translate Verilog -> C++ including testbench
 verilator   -Wall --trace \
-            -cc ../rtl/memwrite/two_way_cache_top.sv \
+            -cc ../rtl/memory/two_way_cache_top.sv \
             --exe ./our_tests/cache_top_tb.cpp \
             -f filelist.f \
             --top-module two_way_cache_top \
