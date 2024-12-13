@@ -353,6 +353,22 @@ Transitioning from single-cycle to pipelined introduces various significant chan
     - Handles parsing for byte and half type instructions, ensuring correct data alignment for memory operations.
 
 ## Testing
+### Test Cases: 1-5
+For the tests provided in the repo `tb` file, (`1_addi_bne` `2_li_add` `3_lbu_sb` `4_jal_ret` `5_pdf`):
+
+![pipelined tb case 1-5 testing](images/pipelined-testcases1-5.png)
+
+### Test Cases: 6-8
+Custom test cases written to assess full RV32I functionality. Uses instructions not included in the repo `tb` test cases:
+- `6_shift.s`: 
+    - Shift instructions `sll`, `srl` `sra` and their `imm`-type variations.
+- `7_logic.s`:
+    - Logic instructions `xor`, `or`, `and`, `slt`, `sltu` and their `imm`-type variations.
+- `8_load.s`:
+    - Previously untested load instructions `lb`, `lh`, `lw` and store instructions `sh`, `sw`
+
+![pipelined tb case 1-8 testing](images/pipelined-testcases1-8.png)
+> *Pipelined model passes all 8 test cases.*
 
 ---
 # Data Memory Cache
