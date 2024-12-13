@@ -4,11 +4,14 @@
 rm -rf obj_dir
 rm -f fetch.vcd
 
+find ../rtl -type f -name "*.sv" > filelist.f
+
 # run Verilator to translate Verilog into C++, including C++ testbench
 verilator   -Wall -cc --trace \
             ../rtl/fetch/fetch_top.sv \
             --exe ./our_tests/fetch_tb.cpp \
-            -y ../rtl/ \
+            -f filelist.f \
+            --top-module fetch_top \
             --prefix "Vdut" \
             -o Vdut -LDFLAGS "-lgtest -lgtest_main -lpthread"
 
