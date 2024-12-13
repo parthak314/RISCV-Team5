@@ -379,7 +379,7 @@ Finally, after passing the `lbu_sb.s` and `pdf.s` tests, I implemented the trigg
 
 ## Pipelined + Full RV32I + Cache
 
-### Integration
+### Integration, testing and debugging
 
 Joel and Parth implemented a 2-way set associative cache with 512 cache lines. Their cache was written in the single cycle version, so I took charge of integrating it into the pipelined + RV32I version.
 
@@ -427,6 +427,6 @@ One final point: the `ByteOffset` for half-type instructions is assumed to be a 
 
 ## Conclusion & final thoughts
 
-People always say the best way to learn is to apply your knowledge in practice. For myself, this project has been one of the best examples of this. I now feel confident in explaining each stage of a pipelined processor with cache, and even some of the nuances of associated with a RISC-V processor. Several personal statements from previous groups mention that they wished they had branched out across different sections of the project - I listened to this and did so from the start and I am glad I did so.
+People often say that the best way to learn is to apply your knowledge in practice, and for me, this project has been a prime example. By working closely with every stage of the processor during both development and integration, I gained a thorough understanding of each stage’s functionality. I now feel confident not only in explaining the processor's workings but also in addressing many of the finer details and nuances of the RISC-V architecture. Leading the integration of the pipeline and cache provided me with an even deeper understanding of the architecture. While I did not partake in writing the cache module myself, the process of integration required me to fully comprehend its principles and implementation. This was further reinforced by the intense debugging sessions, some of which took hours to pinpoint the root causes of issues. Through this, I became proficient with GTKWave, learning to identify critical signals and pinpoint specific moments in simulations to focus on.
 
-I am also incredibly fortunate to have worked with such a strong team. Everybody was proactive and communicated their ideas and criticism well. I look forwards to being able to work with them again in future.
+I am also incredibly proud and fortunate to have worked with such a dedicated and skilled team. Everyone was proactive, communicated their ideas effectively, and provided constructive feedback. Thanks to the combined efforts of the entire team, we successfully achieved all our stretch goals. I look forward to the opportunity to collaborate with them again in the future.
