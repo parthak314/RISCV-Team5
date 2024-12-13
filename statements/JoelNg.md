@@ -20,12 +20,11 @@
 3. [Completed integration of cache with single-cycle system](#completed-integration-of-cache-with-single-cycle-system)
 
 ### [Pipelined + Cache (Final Version)](#complete-pipelined--cache)
-1. Implemented pipelining stall for cache miss
+1. [Implemented pipelining stall for cache miss](#implemented-pipelining-stall-for-cache-miss)
 
 ### Extension: Superscalar Processor
 1. Designed out-of-order execution compiler extension with Partha
-2. Implemented the script in Python and C++
-3. Integrated compiler script with superscalar processor verilog system and debugged
+2. Integrated compiler script with superscalar processor and debugged
 
 ---
 
@@ -54,7 +53,7 @@ After everyone had completed their parts, I led the team in integrating their va
 2. We had not considered the implementation of JALR properly and were lacking the required hardware to perform PC = rs1 + imm. This was resolved with point 3.
 3. We had also not considered the implementation of trigger in the system. We required the ability to stall the system with the trigger input, and this was done by converting PCSrc to be 2 bits long. This accommodated additional cases: PCNext = rs1 + imm (PCSrc = 3) for JALR in point 2, and PCNext = PC (PCSrc = 4) for trigger stall.
 
-With the help of Partha, point 1 and 2 were discovered by debugging the system with `GTKWave`, where we scrutinised each instruction waveform in the failed `2_li_add` and `4_jal_ret` tests from the `doit.sh`.
+With the help of Partha, point 1 and 2 were discovered by debugging the system with GTKWave, where we scrutinised each instruction waveform in the failed `2_li_add` and `4_jal_ret` tests from the `doit.sh`.
 
 For point 3, we also encountered a bug where as the system stalled and instructions were repeated, instructions that involved register or memory write would continually write during the stall. This was an issue for an incremental instruction like `addi a0, a0, 5` because we would be continually adding 5 to `a0` during the stall. This was resolved by disabling write enables during stall to prevent unncessary overwrite.
 
@@ -299,7 +298,7 @@ The challenge now was integrating our cache system as a submodule in the `memory
 
 #### RAM Addressing Issue
 
-After meticulously debugging the system with gtkwave, we found a major oversight in our integration. For the cache system to work, it was imperative that we ONLY read and write to our RAM memory block in word aligned offsets (ie in blocks of 4 bytes starting from address 0).
+After meticulously debugging the system with GTKWave, we found a major oversight in our integration. For the cache system to work, it was imperative that we ONLY read and write to our RAM memory block in word aligned offsets (ie in blocks of 4 bytes starting from address 0).
 
 The issue we were facing was that we were reading from RAM directly with the address input in `memory_top.sv`. This includes when we were performing byte addressing, resulting in cache words being retreived wrongly. To address this, we replaced the least 2 significant bits in `r_addr` with `2'b0` to ensure that we always read from RAM in word addressing.
 
@@ -347,3 +346,131 @@ Finally, it was important to acknowledge an assumption in the simulation that ma
 Naturally, this is unrealistic and is antithetical to the purpose of the cache system. However, for the purpose of this single-cycle system, we have to make this assumption. When we migrate to an integrated cache + pipelined system, we are able to build a more realistic cache miss mechanism that requires a system stall for RAM data retreival. This will be discussed in the next section.
 
 ## Complete (Pipelined + Cache)
+
+### Implemented pipelining stall for cache miss
+
+After Clarke had integrated my cache module within his pipelined system, I assisted in debugging the system with GTKWave to ensure that the complete system passed all relevant tests (tests in `doit.sh`, `f1_test` and `pdf_test`).
+
+After everything was working as expected, I challenged myself to add a pipelining stall to the system on cache miss. I was unsatisfied with the idea that our RAM could be accessed immediately on demand, and wanted to make it more realistic.
+
+#### Stalling
+
+To implement this, I made use of the existing stall mechanism that Clarke had integrated into the pipelined version. This system was to allow us to stall the entire system using the `trigger` input. It was achieved by feeding the trigger input into the pipeline register at each stage. This way, each stage would maintain its state during a stall, and would "freeze" in place.
+
+Since we also want to stall with a cache miss, We just needed to change the input to each pipeline register as a `OR(trigger, cache_miss)`. To do this, I exposed a `cache_miss` output from the `memory_top` module, and connected it to an external `stall_top` module (found in `complete branch -> ./rtl/top-module-interfaces/stall_top.sv`) within `top.sv` to output whether or not to stall next cycle.
+
+The `stall_top` module:
+```sv
+module stall_top (
+    input logic         cache_miss,
+    input logic         trigger,
+
+    output logic        out
+);
+
+    assign out = (trigger || cache_miss); // OR(trigger, cache_miss)
+
+endmodule
+```
+
+Within the `top.sv` module:
+```sv
+module top #(
+    parameter DATA_WIDTH = 32
+) (
+    input logic                     clk,
+    input logic                     trigger,
+    input logic                     rst,
+
+    output logic [DATA_WIDTH-1:0]   a0
+);
+    ...
+    wire                    Stall_wire;
+    ...
+    stall_top stall (
+        .trigger(trigger),
+        .cache_miss(CacheMiss_wire),
+        .out(Stall_wire) // feed the stall outcome to all other submodules
+    );
+    ...
+    fetch_top fetch (
+        .clk(clk),
+        .stall(Stall_wire), // stall input changed to the output from stall_top
+        .reset(rst),
+
+        .PCSrc(PCSrcE_wire),
+        .PCTarget(PCTargetE_wire),
+
+        .InstrD(intfD.InstrD),
+        .PCD(intfD.PCD),
+        .PCPlus4D(intfD.PCPlus4D)
+    );
+    ...
+    // done the same for decode_top, execute_top, memory_top
+```
+
+#### Synchronous RAM read
+
+In order to handle reading from RAM on the miss, it made sense for us to update the read enable of RAM to high on the cycle that we miss. However, this proved to be an issue with an asynchronous version of RAM read, as the output of RAM would update immediately and result in circular logic within the entire system (change from a miss to a hit in cache, resulting in the stall value changing).
+
+This was not realistic, as we are specifically trying to simulate the RAM taking time to update its `rd` value. Hence, I decided to convert RAM to be both synchronous for read and write. This ensured a delay from RAM, where it would only update its output on the following clock cycle. This was far more realistic, where most DRAM systems are synchronous, pushing its `rd` output only during clock edges.
+
+#### Discerning Cycle After Miss
+
+The final implementation challenge was ensuring that we could discern when we are in the cycle after a cache miss. This is important, as it is the cycle when cache reads from the RAM output to replace the evicted value. We are unable to simply check if there was a stall last cycle, because the stall could be caused by trigger. Hence, I created an additional signal `after_miss` that is output from the memory pipeline register, when `cache_miss` was the register input last cycle.
+
+This is implemented in `./rtl/memory/memory_pipeline_register.sv` where `cache_miss_o` is routed to `after_miss`:
+
+```sv
+always_ff @ (negedge clk) begin
+    // notice that cache miss ignores the `en` check.
+    // `en` is set to LOW during a stall, which would cause cache_miss_o to be wrong
+    cache_miss_o    <= cache_miss_i;
+
+    if (en & !clear) begin
+        ...     
+    end
+
+    else if (clear) begin
+        cache_miss_o    <= 0;
+        ...
+    end
+
+end
+```
+
+This signal is then input back into the cache_controller, for it to know when there was a cache miss last cycle. During the `cache_miss` cycle, the cache controller evicts the LRU word. Then, on the `after_miss` cycle, it reads the output from RAM and updates the freshly evicted way.
+
+This is implemented in `./rtl/memory/two_way_cache_controller.sv`:
+
+```sv
+if (~after_miss) begin /// if cache_miss cycle
+    cache_miss = 1'b1;
+    // if need to write back to RAM: only when evicted word is valid and is dirty (ie not the same as in RAM)
+    if (v_bits[evicted_way] && dirty_bits[evicted_way]) begin
+        // prepare to write evicted way back to RAM
+        we_to_ram = 1'b1;
+        evicted_word = words[evicted_way];
+        evicted_tag = tags[evicted_way];
+        evicted_ram_addr = {evicted_tag, target_set, 2'b0};
+    end  // else throw away the evicted data because it's not relevant
+end else begin /// if after_miss cycle
+    // update with new data from RAM since RAM had one cycle to read
+    new_words[evicted_way] = rd_from_ram;
+    new_tags[evicted_way] = target_tag;
+    new_v_bits[evicted_way] = 1'b1;
+    new_dirty_bits[evicted_way] = 1'b0;
+    correct_way = evicted_way;
+    data_out = rd_from_ram;
+end
+```
+
+#### Testing
+
+In order to test the functionality of the cache system, I had to tweak the original `cache_top_tb.cpp` file to reflect the one cycle delay for reading from RAM. Besides this, there were no changes to the testbench. On running the testbench, we pass all relevant unit tests for cache read/write, eviction and enable:
+
+After unit testing, we also ran all provided tests and found that they worked as expected.
+
+## Extension: Superscalar Processor (Super Calculator!)
+
+### Designed out-of-order execution compiler extension with Partha
