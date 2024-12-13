@@ -2,6 +2,14 @@
 
 ***Partha Khanna***
 
+# Pending tasks
+- [ ] Check all links
+- [ ] Add images where needed
+- [ ] Complete pipelining section
+- [ ] Complete RISC-V section
+- [ ] Learning section
+- [ ] Data memory
+
 ---
 ## Overview
 - [[#Single Cycle RISCV-32I Design]] DONE
@@ -460,8 +468,6 @@ Then finally testing the entire system's performance with the new changes put in
        - `wd_to_ram = 0x11111111`
      - New Data: `rd = 0x33333333`
 
-In future testing scenarios, we could add corner cases, such as simultaneous reads and writes, and invalid addressing scenarios, expand tests to include write-through policies for comparison and stress-test with higher memory traffic to evaluate scalability.
-
 ## Summary and Learnings
 
 While Implementing Cache, I implemented set associativity, used LRU replacement, utilised valid and dirty bits, with byte and word addressing and this is done inside a cache controller.
@@ -483,7 +489,7 @@ In the future, we can enhance this model by implementing:
 ---
 # Complete RISCV-32I Design
 
-
+The main alterations for this section were checking over and making minor adjustments to `decode_top.sv`. No further contribution made to this section.
 
 ---
 # Superscalar Model of RISCV-32I
@@ -494,7 +500,7 @@ Looking at the schematic, we see that there are 2 major areas for development. T
 
 ### Out-of-order processor
 Note: The initial implementation was done in rust, but a different implementation was put in place by Joel (a more efficient alternative) which is available in both Python and C++.
-The initial implementation was in rust and is available here: 
+The initial implementation in rust is available here: 
 https://gist.github.com/parthak314/32b124b0622381cd2cc28686a15ba2fe
 
 Reorder instructions to avoid hazards while maximizing parallelism, respecting dependencies.
