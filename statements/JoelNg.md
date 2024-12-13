@@ -21,9 +21,11 @@
 ### [Pipelined + Cache (Final Version)](#complete-pipelined--cache)
 1. [Implemented pipelining stall for cache miss](#implemented-pipelining-stall-for-cache-miss)
 
-### Extension: Superscalar Processor
-1. Designed out-of-order execution compiler extension with Partha
-2. Integrated compiler script with superscalar processor and debugged
+### [Extension: Superscalar Processor](#extension-superscalar-processor-super-calculator)
+1. [Designed out-of-order assembly execution script with Partha](#designed-out-of-order-assembly-execution-script-with-partha)
+2. [Integrated compiler script with superscalar processor and debugged](#integrated-compiler-script-with-superscalar-processor-and-debugged)
+
+### [Conclusion](#conclusion-1)
 
 ---
 
@@ -467,4 +469,147 @@ After unit testing, we also ran all provided tests and found that they worked as
 
 ## Extension: Superscalar Processor (Super Calculator!)
 
-### Designed out-of-order execution compiler extension with Partha
+As part of an extension project, we implemented a superscalar processor with just ALU instructions to get a better understanding of the considerations behind the hardware design and reordering the assembly instructions to optimise the script for a superscalar processor. This project was largely led by me and Partha.
+
+### Designed out-of-order assembly execution script with Partha
+
+To optimise the superscalar system, we implemented an out-of-order assembly execution script that would re-order instructions to ensure that no dependencies were violated across the instructions (ie the expected output should be exactly the same as in-order), while minimising the number of clock cycles it would take the superscalar processor. I initially wrote a script in Python (`superscalar branch -> ./tb/reorder_asm.py`) for ease of development, but later converted it to C++ (`superscalar branch -> ./tb/reorder_asm.cpp`) to be compiled and run as an executable.
+
+For the remainder of this section, I will be explaining the concepts using the Python script for simplicity.
+
+#### Dependency Graph
+
+Firstly, we identified the 3 major dependency issues when considering ALU instructions:
+1. **Read-After-Write (RAW):** This referred to instructions that took registers as inputs, that were previously written by preceding instructions.
+2. **Write-After-Read (WAR):** This referred to instructions that wrote to registers after the register was previously read from (taken as input) by preceding instructions.
+3. **Write-After-Write (WAW):** This referred to instructions that wrote to registers after register was previously written to by preceding instructions.
+
+With these considerations in mind, it is possible to create a dependency graph and determine at any point in the assembly which remaining instruction has no dependency and could be inserted next. To build this graph, I created nodes for each instruction, that stored a set of its `dependents` and instructions it `depends_on`:
+```python
+class InstructionNode:
+    def __init__(self, cmd_line):
+        self.cmd_line = cmd_line # store the original command
+        self.cmd, self.dest, self.srcs = self._split_cmd_line(cmd_line)
+        self.dependents = set()
+        self.depends_on = set()
+```
+
+Then, I iterated through the in-order assembly script, and update dependencies in order. It was crucial that we update the dependencies based on the order of the assembly script, as preceding instructions do not depend on instructions that follow.
+
+```python
+# old instructions refer to instructions that preceded this newly inserted instruction
+
+def _add_dependency(self, new_instr: InstructionNode) -> None:
+    no_dependency = True
+    for old_instr in self.nodes:
+        raw_d = any(src == old_instr.dest for src in new_instr.srcs) # check for Read-After-Write (RAW) dependency
+        war_d = any(src == new_instr.dest for src in old_instr.srcs) # check for Write-After-Read (WAR) dependency
+        waw_d = (new_instr.dest == old_instr.dest) # check for Write-After-Write (WAW) dependency
+
+        if raw_d or war_d or waw_d: 
+            old_instr.dependents.add(new_instr)
+            new_instr.depends_on.add(old_instr)
+            no_dependency = False
+
+    self.nodes.append(new_instr)
+
+    if no_dependency:
+        self.head.append(new_instr) # add to the graph head (depends on no other instruction)
+```
+
+As we update the graph, we also add the instructions that do not depend on any other instruction. They will be the candidate instructions for starting the out-of-order execution script.
+
+#### Priority Queue
+
+Now that we have formed a dependency graph, and we have a candidate list of instructions to start with, I inserted this list of instructions into a priority queue heap, prioritised based on the number of instructions that depend on each candidate instruction. This way, a candidate instruction that a large number of other instructions depend on will be the highest priority and executed first. This is a greedy approach similar to common List Scheduling Algorithms.
+
+After popping two instructions (since we run two instructions at once) from the candidate heap, we then remove these two instructions from the `depends_on` set of all other instructions. This way, we can identify which instruction is now freed of dependents and is able to be executed next. These instructions are then inserted into the heap and sorted based on their priority.
+
+In the event that the heap contains only 1 instruction, we insert a NOP to the assembly script. This means there are no other suitable operations. Once there are no remaining instructions left in the heap, it means the program has completed. The logic can be observed below:
+
+```python
+def create_optimised_asm(self) -> list[str]:
+    new_asm_lst = []
+    heapq.heapify(self.head) # create priority queue heap
+    while self.head:
+        if len(self.head) == 1: # if just one instruction
+            instr1 = heapq.heappop(self.head)
+            instr2 = None # insert NOP
+        else:
+            instr1 = heapq.heappop(self.head) # else pop in order of priority
+            instr2 = heapq.heappop(self.head)
+
+        new_asm_lst.append(instr1.cmd_line)
+        self._add_next_instrs(instr1) 
+        # function that updates the depends_on set of other instructions
+        # and adds instructions with empty depends_on sets to the heap
+        
+        if instr2 is None:
+            new_asm_lst.append("nop")
+        else:
+            new_asm_lst.append(instr2.cmd_line)
+            self._add_next_instrs(instr2)
+
+    return new_asm_lst
+```
+
+Crucially, we know that this algorithm is guaranteed to work, provided the given assembly script is valid. In the worst case, when we are unable to optimise the program whatsoever, we should receive the same in-order execution script, interspersed with NOPs (ie only one ALU will actually be utilised each cycle).
+
+### Integrated compiler script with superscalar processor and debugged
+
+While I was working on the out-of-order script, Partha designed the entire hardware system of the superscalar processor. I created 3 test cases in `superscalar branch -> ./tb/asm/`. The first case is an example of a script with very poor optimisation potential. The second case is a complex assembly script with a variety of operations to test that everything works. Finally, the third case is an example of a script with high potential.
+
+You can view a comparison of the in-order assembly files in `./tb/asm` and the reorderd assembly files (using the C++ script) in `./tb/test_out`.
+
+The program worked as intended, where for test 3, the original script containing 7 lines (7 clock cycles), was optimised to 4 clock cycles.
+
+original script:
+```s
+addi x1, zero, 100 # cycle 1
+addi x2, zero, 400 # 2
+add x3, x1, x2 # 3
+addi x4, zero, 200 # 4
+addi x5, zero, 300 # 5
+add x6, x4, x5 # 6
+add a0, x3, x6 # 7
+```
+
+reordered script:
+```s
+addi x4, zero, 200 # cycle 1 (alu0)
+addi x1, zero, 100 # cycle 1 (alu1)
+addi x5, zero, 300 # 2 (alu0)
+addi x2, zero, 400 # 2 (alu1)
+add x6, x4, x5 # 3
+add x3, x1, x2 # 3 
+add a0, x3, x6 # 4
+nop # 4
+```
+
+##### As a note: although Kevin and Clarke did not play as significant a role in the actual implementation itself, they contributed immensely by helping to document and clean up the rest of the project. Without their help, it is unlikely that Partha and I would have had to bandwidth to complete this extension.
+
+## Conclusion
+
+I was very proud of our group for being able to complete all the stretch goals, while also having the time to work on additional extension work. This was a very exciting project, as it allowed me to have a very deep understanding of how processors work, along with critical optimisation techniques, namely cache and pipelining. I also have a significant level of appreciation for the design thinking and planning that goes behind building the ISA and processor. Overall, it was a joy to work with this group, and I am very proud of the progress that we have made.
+
+### Learning Points
+
+One of the key skills that I have honed during this experience was my debugging expertise. As I was heavily involved in integrating at many of the project milestones, I became very comfortable with analysing signal waveforms, such as choosing the right signals to look at to reason out the cause of error. Initially, this was extremely daunting, as the processor is such a complex system, and it is hard to pinpoint where the error occurs. However, with experience, I became a lot more comfortable with the process.
+
+Another important skill I developed during this experience was learning to work on a large-scale technical project as a team. This experience allowed me to become much more comfortable with git, ensuring that we were methodical in the way we updated and shared our code. Further, it also taught me the challenges of managing a large-scale technical project, such as identifying blocking and non-blocking tasks, and ensuring that work is equally distributed.
+
+A final skill that I definitely honed was my SystemVerilog skills. As pointed out by Prof Peter Cheung at the start of the course, we were reminded that we cannot see SystemVerilog as a software language, but a hardware design tool. This is crucial, as there were times when I often thought in a very sequential and programmatic way, only to realise that my solution was flawed due to the concurrent nature of hardware design.
+
+#### Mistakes Made
+
+One of the biggest issues we faced was communication. We had some instances of duplicate work, where two members had spent significant time working on the same part without telling the other party. The opposite issue we faced was that when we worked in our compartments (fetch, decode, execute, memory), we sometimes made assumptions that certain functionality would be done by other members of the team. These issues were costly in time and could be frustrating at times. 
+
+To mitigate this, we agreed to be more deliberate and transparent in informing others about the work we were embarking on, along with updating each other at every milestone. We also used frequent meetings to "draw our lines in the sand", ensure that the project is divided down to the most minute detail, such that we are all incredibly clear of our areas of responsibility.
+
+Another mistake that was made for me was not planning ahead in my design. During the conception of my cache design, I had a strong belief that I had a very clear understanding of how the cache would work, and started on the design immediately. However, as I was designing the system, there were so many moments where I realised that there were issues with what I was doing or things lacking. I believe that it would have saved me a lot of time to have taken some time to draw out the schematic and hardware design, walking through each process to ensure that I did not miss out on anything.
+
+#### If I Had More Time
+
+One of the areas I would have loved to explore further was to extend the superscalar processor for operations beyond ALU. The current system is quite limited, and being able to load and read from memory would have been fantastic. We already had envisioned how the out-of-order script would have been modified to accommodate such commands, but we simply did not have the time.
+
+Another area I would have wanted to explore would be branch predictions and L1/L2/L3 cache. These are all extremely common tools used in modern processing, and I would love to explore them further in the future.
