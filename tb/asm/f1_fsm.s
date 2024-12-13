@@ -2,41 +2,30 @@
 .globl main
 
 main:
-    # Initialize state and LFSR
-    addi    a0, zero, 0x0           # Set initial state to S_0 (00000000)
-    addi    t1, zero, 0b11111111    # Target state value for S_8 (11111111)
-    addi    t2, zero, 0b10110101    # Initialize LFSR seed value
+    # Initialize state and output registers
+    li      a0, 0x0                # a0 holds the current state (S_0 initially)
+    li      a2, 0                  # a2 is used for cmd_delay
+    li      a3, 0                  # a3 is used for cmd_seq
+    addi    t1, zero, 0b11111111   # t1 = 11111111 (Value at State 8)
 
-reset_check:
-    # Check for reset (pseudo-reset in this version)
-    # Replace with an actual input check if reset input is available
-    addi    t0, zero, 1            # Simulate a reset signal being high
-    beq     t0, zero, state_update # If reset signal is low, skip reset logic
-    addi    a0, zero, 0x0          # Reset state to S_0
-    jal     ra, random_delay       # Call random delay routine
-    beq     zero, zero, reset_check # Restart the loop after reset
+shift_loop:
+    # State machine logic with shifting
+    slli    a0, a0, 1              # Shift left
+    ori     a0, a0, 0b1            # Replace the gap with a 1 (increment states)
+    bne     a0, t1, state_output   # If not at State 8, jump to output logic
 
-state_update:
-    # Update state by shifting left and adding 1
-    slli    a0, a0, 1              # Shift state left
-    ori     a0, a0, 0b1            # Insert 1 to update state
-    bne     a0, t1, continue_loop  # Check if state reached S_8
-    addi    a0, zero, 0x0          # Reset to S_0 if S_8 is reached
+state_S8:
+    li      a2, 1                  # Set cmd_delay to 1 in S_8
+    li      a0, 0x0                # Reset state to S_0
+    j       shift_loop             # Restart the state sequence
 
-continue_loop:
-    # Add random delay before next state transition
-    jal     ra, random_delay
-    beq     zero, zero, reset_check # Continue the state machine loop
+state_output:
+    # Output control
+    beqz    a0, output_reset       # If state is S_0, reset outputs
+    li      a3, 1                  # Set cmd_seq to 1 in non-S_0 states
+    j       shift_loop             # Continue the sequence
 
-random_delay:
-    # Generate pseudo-random delay using LFSR
-    andi    t0, t2, 1              # Extract LSB of LFSR
-    srli    t2, t2, 1              # Shift LFSR right
-    beq     t0, zero, lfsr_skip    # Skip XOR if LSB is 0
-    xori    t2, t2, 0b10100101     # XOR with a feedback polynomial
-lfsr_skip:
-    addi    t0, t2, 0              # Use LFSR value as delay
-delay_loop:
-    addi    t0, t0, -1             # Decrement delay counter
-    bnez    t0, delay_loop         # Loop until delay counter is 0
-    ret                            # Return from delay routine
+output_reset:
+    li      a2, 0                  # Reset cmd_delay
+    li      a3, 0                  # Reset cmd_seq
+    j       shift_loop             # Restart the process
