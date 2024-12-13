@@ -8,10 +8,10 @@ find ../rtl -type f -name "*.sv" > filelist.f
 
 # run Verilator to translate Verilog into C++, including C++ testbench
 verilator   -Wall -cc --trace \
-            ../rtl/execute/execute_top.sv \
-            --exe ./our_tests/execute_top_tb.cpp \
+            ../rtl/decode/decode_top.sv \
+            --exe ./our_tests/decode_top_tb.cpp \
             -f filelist.f \
-            --top-module execute_top \
+            --top-module decode_top \
             --prefix "Vdut" \
             -o Vdut -LDFLAGS "-lgtest -lgtest_main -lpthread"
 
