@@ -68,8 +68,10 @@ sudo chmod +x pdf_test.sh
 Both `cpp` scripts can be found in `./tb/vbuddy_test`. The distribution for the pdf test can be changed by overwriting the distribution name in `./tb/vbuddy_test/pdf_tb.cpp` in line 13.
 ```cpp
 // can change to "noisy" or "triangle"
-const std::string distribution = "gaussian"; 
+const std::string distribution = "gaussian";
 ```
+
+###### Note that the F1 and PDF test toggle `trigger` using the Vbuddy rotary push button. F1 test run on green flag, and PDF test runs on red flag. Else, paused. For F1 test, press once on start to toggle the green flag (since Vbuddy starts with red flag). PDF test should load immediately and pause when the button is pressed.
 
 ### Top Level Contributions
 
