@@ -24,17 +24,14 @@ public:
     void initializeInputs()
     {
         top->clk = 0;
-        top->rst = 0;
-        top->pipeline_en = 1;
-        top->PCSrcE = 0;
-        top->ResultW = 5; // random value that will be obviously wrong if PCSrc is not working
-        top->PCE = 6;
-        top->RdE = 7;
-        top->ImmExtE = 8;
+        top->reset = 0;
+        top->stall = 0;
+        top->PCSrc = 0;
+        top->PCTarget = 5;  // random value that will be obviously wrong if PCSrc is not working
     }
     void runReset()
     {
-        top->rst = 1;
+        top->reset = 1;
         runSimulation();
         initializeInputs();
     }
@@ -114,80 +111,43 @@ TEST_F(TestDut, IterationTest)
     }
 }
 
-// // test that the fetch module branches correctly based on the ImmExtE input
-TEST_F(TestDut, BranchTest)
+// test that the fetch module selects PCTarget correctly
+TEST_F(TestDut, TargetTest)
 {
-    std::vector<int32_t> BRANCH_SEQ = { 1, 3, 4, 2, -2, 5, -1, -3, 2, 1, 4, -5, 3, -4, 1, -2, 4, 1, -5, 3 };
-    size_t length = BRANCH_SEQ.size();
+    std::vector<int32_t> TARGET_SEQ = {5,3,6,1,7,20,13,4};
+    size_t length = TARGET_SEQ.size();
     runReset();
-    top->PCSrcE = 1;
-    top->PCE = 0;
-    top->ImmExtE = BRANCH_SEQ[0] * 4; // because we need to branch in bytes of 4
-    int j = BRANCH_SEQ[0]; // This will only show up 1 cycle later (because of pipeline)
+    top->PCSrc = 1;
+    top->PCTarget = NUM_BYTES * TARGET_SEQ[0];
     runSimulation();
-    for (int i = 1; i < length; i++) {
-        top->PCE += top->ImmExtE; // feed the PC of current InstrD back into PCE to create test loop
-        top->ImmExtE = BRANCH_SEQ[i] * 4;
+    for (int i = 1; i < length; i ++) {
+        top->PCTarget = NUM_BYTES * TARGET_SEQ[i];
         runSimulation();
-        EXPECT_EQ(top->InstrD, GROUND_TRUTH[j]);
-        j += BRANCH_SEQ[i];
+        EXPECT_EQ(top->InstrD, GROUND_TRUTH[TARGET_SEQ[i - 1]]); // delay of 1 cycle because of pipeline register
     }
 }
 
-TEST_F(TestDut, ResultTest) {
-    runReset();
-    top->PCSrcE = 2;
-    top->ResultW = 20;
-    runSimulation(2);
-    EXPECT_EQ(top->InstrD, GROUND_TRUTH[20 / 4]);
-}
-
-TEST_F(TestDut, PCRepeatTest) {
-    int first_instr_i = 5;
+// test that the fetch module stalls correctly
+TEST_F(TestDut, StallTest) {
+    int first_instr_i = 6;
     int second_instr_i = 3;
     runReset();
-    top->PCSrcE = 2;
-    top->ResultW = first_instr_i * 4;
+    top->PCSrc = 1;
+    top->PCTarget = first_instr_i * NUM_BYTES;
     runSimulation();
 
-    // set PCF to repeat itself
-    top->PCSrcE = 3;
-    top->ResultW = second_instr_i * 4;
+    // get first instr and set target for second
+    top->PCTarget = second_instr_i * NUM_BYTES;
     runSimulation();
     EXPECT_EQ(top->InstrD, GROUND_TRUTH[first_instr_i]);
 
     // expect PCF to repeat itself
-    top->PCSrcE = 2;
+    top->stall = 1;
     runSimulation();
     EXPECT_EQ(top->InstrD, GROUND_TRUTH[first_instr_i]);
 
     // return back to original PCSrcE (aka from ResultW)
-    runSimulation();
-    EXPECT_EQ(top->InstrD, GROUND_TRUTH[second_instr_i]);
-}
-
-// Test that the fetch module en works correctly
-TEST_F(TestDut, EnableTest)
-{
-    int first_instr_i = 3;
-    int second_instr_i = 2;
-    runReset();
-    // send the first and second instr into the pc pipeline
-    top->PCSrcE = 1;
-    top->ImmExtE = first_instr_i * 4;
-    top->PCE = 0;
-    runSimulation();
-    top->ImmExtE = second_instr_i * 4;
-    runSimulation();
-    EXPECT_EQ(top->InstrD, GROUND_TRUTH[first_instr_i]);
-
-    // disable en, ie retain instrD output. If en was high, it should return GROUND_TRUTH[second_instr_i]
-    top->pipeline_en = 0;
-    runSimulation();
-    EXPECT_EQ(top->InstrD, GROUND_TRUTH[first_instr_i]);
-
-    // set en back to HIGH, continue on to second_instr
-    top->pipeline_en = 1;
+    top->stall = 0;
     runSimulation();
     EXPECT_EQ(top->InstrD, GROUND_TRUTH[second_instr_i]);
 }
