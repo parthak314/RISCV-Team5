@@ -105,8 +105,8 @@ const std::string distribution = "gaussian";
 | Partha Khanna   | [parthak314](https://github.com/parthak314)           | 02374670 | pk1223@ic.ac.uk | [Partha's Statement](statements/ParthaKhanna.md)  |
 
 # Single Cycle
-### Overview
-This single cycle implementation covers the basic requirements for most CPU operations, this implements the following instructions: `R-type`, `I-type (immediate)`, `lbu`, `lw`, `sb`, `sw`, `beq`, `bne`, `jal`, `jalr`, `lui`.
+## Overview
+This single cycle implementation covers the basic requirements for most CPU operations, this implements the following instructions: `R-type`, `I-type (immediate)`, `lbu`, `sb`, `beq`, `bne`, `jal`, `jalr`, `lui`.
 ## Schematic
 ![RISC-V 32I single cycle CPU implementation](images/single-cycle-model.png)
 
@@ -260,18 +260,13 @@ bool is_paused = vbdFlag();
 The entire program is still running every cycle, but display is changed to updating every 3 cycles.
 
 ---
-# Pipelined RISCV CPU
+# Pipelined RISC-V CPU
+
+## Overview
+The pipelined implementation supports the full RV32I instruction set, dividing the processor into four main stages: fetch, decode, execute, and memory. The fundamental principle of pipelining is parallel instruction execution, where different stages of multiple instructions are processed simultaneously. This increases instruction throughput and, in real-world CPUs, enables higher clock speeds. Together, these improvements result in faster program execution compared to the single-cycle variant.
 
 ## Schematic
 ![RISC-V 32I Pipelined implementation](images/Pipelined.png)
-
-## Overview
-
-# Abstract: Pipelining in RISC-V Processors
-
-Pipelining is used to enhance performance by dividing instruction execution into stages: Fetch, Decode, Execute, Memory, and Writeback, thus enabling parallel execution of multiple instructions. This reduces overall execution time while maintaining individual instruction latency. 
-Challenges such as data hazards, control hazards, structural hazards are mitigated using techniques like data forwarding, stalling, and flushing. Pipelining significantly improves throughput, achieving faster program execution compared to single-cycle designs.
-## Schematic
 
 ## Contributions
 
@@ -280,11 +275,11 @@ Challenges such as data hazards, control hazards, structural hazards are mitigat
 | Decode block               |        |      |       | `X`    |
 | Execute block              | `X`    |      |       |        |
 | Fetch block                |        | `X`  |       |        |
-| Memory block             | `*`    |      | `X`   |        |
+| Memory block               | `*`    |      | `X`   |        |
 | Decode pipeline register   |        |      |       | `X`    |
 | Execute pipeline register  | `X`    |      |       |        |
 | Fetch pipeline register    |        | `X`  |       |        |
-| Memory pipeline register |        |      | `X`   |        |
+| Memory pipeline register   |        |      | `X`   |        |
 | System Integration         | `X`    |      | `X`   |        |
 | Testing and Debugging      | `X`    |      | `X`   |        |
 
@@ -328,20 +323,34 @@ Challenges such as data hazards, control hazards, structural hazards are mitigat
 └── tb
 ```
 ## Implementation
-==TO CHANGE==
-The following stages have been added on top of the basic RISC-V model (single cycle):
-- Pipeline Registers between all stages
-    - storing instruction data, intermediate data, control signals
-- control unit
-    - generate pipelined control signals
-    - hazard detection and forwarding controls, data dependencies and when to forward or stall
-- Hazard detection unit
-    - compare source reg of current instr in decode with destination reg in execute, mem and writeback
-    - stall/forward signals as needed
-- Multiplexers for forwarding
-    - at ALU inputs to choose between reg file vs forwarded data from Execute/memory or memory/writeback pipeline reg
-- Flushing
-    - if a branch is taken, clear instr in pipeline that have not been executed -> replace with nop
+Transitioning from single-cycle to pipelined introduces various significant changes to the design structure. Combined with the full RV32I instruction set, there are many new modules and concepts in the pipelined version.
+
+1. Pipeline Registers:  
+    - Pipeline registers separate each stage of the pipeline
+    - They hold all relevant instruction data, including control signals, for processing in the next stage.
+    - Updated on every negative clock edge with new subsequent instruction information.
+
+2. New Control Unit Signals:  
+    - Branch Flag: Carried to the execute stage for branch evaluation.
+    - Jump Flag: Controls JAL and JALR instructions in the execute stage.
+    - UpperOp Flag: For LUI and AUIPC instructions.
+    - Memory Operation Flag: Drives the parse unit for load/store operations.
+
+3. Branch Logic Module:  
+    - Branch evaluation is deferred to the execute stage to utilize ALU flags, introducing a delay compared to single-cycle processing.  
+    - Determines branch conditions using ALU flags, branch, and jump signals.  
+
+4. Hazard Detection Unit:  
+    - Resolves data hazards by forwarding data from the memory or write-back stages to the execute stage.
+    - Uses new wires from the decode stage carrying operand addresses to compare against destination registers in later stages.
+    - Includes forwarding multiplexers to select the appropriate forwarding data source.
+
+5. Flushing Mechanism:  
+    - Clears the decode pipeline register to remove incorrect instructions if a branch is taken.
+    - Activates when the branch logic module determines a jump is executing.
+
+6. Parse Unit:  
+    - Handles parsing for byte and half type instructions, ensuring correct data alignment for memory operations.
 
 ## Testing
 
