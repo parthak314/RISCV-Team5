@@ -8,10 +8,10 @@ find ../rtl -type f -name "*.sv" > filelist.f
 
 # run Verilator to translate Verilog into C++, including C++ testbench
 verilator   -Wall -cc --trace \
-            ../rtl/memwrite/memwrite_top.sv \
+            ../rtl/memwrite/memory_top.sv \
             --exe ./our_tests/memory_top_tb.cpp \
             -f filelist.f \
-            --top-module memwrite_top \
+            --top-module memory_top \
             --prefix "Vdut" \
             -o Vdut -LDFLAGS "-lgtest -lgtest_main -lpthread"
 
