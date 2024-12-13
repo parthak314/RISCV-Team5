@@ -454,6 +454,7 @@ This implementation efficiently handles data locality with low-latency access on
 - LRU Replacement policy and fetching from memory
 
 Moving onto the given test cases, we can see that the complete execution takes 646 ms in comparison to the 1054 ms for the single cycle model.
+
 ![Cache testing](images/cache-testing.png)
 
 We also ran the same `pdf` and `f1_fsm` tests on Vbuddy, and observed the similar outputs as in single-cycle.
