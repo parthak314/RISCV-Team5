@@ -112,7 +112,7 @@ module top #(
         .PCSrcE(PCSrcE_wire)
     );
 
-    memwrite_top memory_write (
+    memory_top memory (
         .clk(clk),
         .stall(Stall_wire),
         .reset(rst),

@@ -1,4 +1,4 @@
-module memwrite_top #(
+module memory_top #(
     parameter DATA_WIDTH = 32
 ) (
     input logic                     clk,
@@ -86,7 +86,7 @@ module memwrite_top #(
         .rd(RAM_ReadDataOut_Wire)
     );
 
-    memwrite_pipeline_regfile memwrite_pipeline_reg (
+    memory_pipeline_regfile memory_pipeline_reg (
         .en(~stall),
         .clk(clk),
         .clear(reset),
